@@ -31,6 +31,7 @@ import { GTMStudio } from "./gtm-studio.js";
 import { PublicationQueue } from "./publication-queue.js";
 import type { AgentWorkService } from "./agent-work.js";
 import { MediaTranscripts } from "./media-transcripts.js";
+import { AcademyStudio } from "./academy-studio.js";
 import packageMetadata from "../../package.json" with { type: "json" };
 
 const text = z.string().max(2000);
@@ -370,6 +371,10 @@ export function createApp(
     new MediaTranscripts(application, creatorProduction).routes(),
   );
   app.use("/api/expansion/media", creatorProduction.routes());
+  app.use(
+    "/api/academy",
+    new AcademyStudio(application, new Expansion(application)).routes(),
+  );
   app.use(
     "/api/expansion/promotions",
     new GTMStudio(application, creatorProduction).routes(),

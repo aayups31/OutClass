@@ -23,6 +23,7 @@ import {
   type AgentDomain,
 } from "./agent-handoffs.js";
 import type { ProductAgentRun } from "./product-agents.js";
+import { lessonEvidence } from "../academy-design.js";
 
 const key = "suite:work:v1";
 const digest = (value: unknown) =>
@@ -151,7 +152,9 @@ export class AgentWorkService {
       text: JSON.stringify({
         objective: lesson.objective,
         practice: lesson.practice,
-        content: lesson.content,
+        content: lessonEvidence(lesson.content, input.goal || lesson.objective)
+          .text,
+        contentComplete: lesson.content.length <= 16000,
         currentAssignment: lesson.learn
           ? {
               ...lesson.learn,
@@ -205,6 +208,17 @@ export class AgentWorkService {
     const context = {
       domain: input.domain,
       selectedLesson: input.lessonIndex,
+      learningProject: course.learningProject
+        ? {
+            title: course.learningProject.title,
+            problem: course.learningProject.problem,
+            deliverable: course.learningProject.deliverable,
+            milestone:
+              course.learningProject.milestones.find(
+                (m) => m.lessonIndex === input.lessonIndex,
+              ) || null,
+          }
+        : null,
       allowedPrerequisiteLessons: Array.from(
         { length: input.lessonIndex },
         (_, index) => index,
@@ -220,8 +234,8 @@ export class AgentWorkService {
       brief,
       curriculum: course.lessons.map((l, index) => ({
         index,
-        title: l.title,
-        objective: l.objective.slice(0, 200),
+        title: l.title.slice(0, 100),
+        objective: l.objective.slice(0, course.lessons.length > 50 ? 100 : 200),
       })),
       sources,
       asset: asset || null,
@@ -663,6 +677,9 @@ export class AgentWorkService {
             outcome: course.outcome,
             rightsConfirmed: course.rightsConfirmed,
             lessons: course.lessons,
+            ...(course.learningProject
+              ? { learningProject: course.learningProject }
+              : {}),
           });
           row.delivery = [
             {

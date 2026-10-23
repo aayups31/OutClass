@@ -12,11 +12,16 @@ import {
 import { AgentHandoffs } from "./agent-handoffs.js";
 import { assertClean, UserError } from "./safety.js";
 import { designExport } from "./creator-design.js";
+import { COURSE_LESSON_LIMIT } from "../course-limits.js";
 const request = z
   .object({
     rightsConfirmed: z.literal(true),
     releaseId: z.string().uuid(),
-    lessonIndex: z.number().int().min(0).max(29),
+    lessonIndex: z
+      .number()
+      .int()
+      .min(0)
+      .max(COURSE_LESSON_LIMIT - 1),
     title: z.string().trim().min(1).max(150),
     audience: z.string().trim().min(1).max(1500),
     destination: z.string().url().max(2000),

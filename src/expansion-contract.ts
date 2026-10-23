@@ -1,5 +1,7 @@
 import { z } from "zod";
 import { learnPackage } from "./learn-package-contract.js";
+import { learningProject } from "./academy-design-contract.js";
+import { COURSE_LESSON_LIMIT, COURSE_SOURCE_LIMIT } from "./course-limits.js";
 import type { CompiledProject } from "./server/academy-compiler.js";
 
 const text = (max = 4000) => z.string().trim().max(max);
@@ -8,7 +10,7 @@ export const academyLesson = z
     title: text(200),
     objective: text(1000),
     practice: text(2000),
-    content: text(8000),
+    content: text(COURSE_SOURCE_LIMIT),
     learn: learnPackage.optional(),
   })
   .strict();
@@ -18,14 +20,19 @@ export const courseDraft = z
     audience: text(1000),
     outcome: text(2000),
     rightsConfirmed: z.boolean(),
-    lessons: z.array(academyLesson).max(30),
+    lessons: z.array(academyLesson).max(COURSE_LESSON_LIMIT),
+    learningProject: learningProject.optional(),
   })
   .strict();
 export const creativeDraft = z
   .object({
     title: text(200).min(1),
     releaseId: z.string().uuid(),
-    lessonIndex: z.number().int().min(0).max(29),
+    lessonIndex: z
+      .number()
+      .int()
+      .min(0)
+      .max(COURSE_LESSON_LIMIT - 1),
     brief: text(2000),
     copy: text(8000),
     brandColor: z.string().regex(/^#[0-9a-f]{6}$/i),

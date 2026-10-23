@@ -43,6 +43,15 @@ export class LearnDelivery {
       objective: lesson.objective,
       brief: lesson.practice,
       plan,
+      project: binding.release.learningProject
+        ? {
+            ...binding.release.learningProject,
+            milestone:
+              binding.release.learningProject.milestones.find(
+                (m) => m.lessonIndex === index,
+              ) || null,
+          }
+        : null,
       progress,
       preview: binding.preview,
       assessment: "instructor_criteria_self_review" as const,
@@ -75,6 +84,16 @@ export class LearnDelivery {
         content: `# ${value.lessonTitle}\n\n${value.objective}\n\n${value.brief}\n\n## Acceptance criteria\n${plan.acceptanceCriteria.map((c) => `- ${c}`).join("\n")}\n\n## Reflection\n${plan.reflection}\n\n## Apply it differently\n${plan.transferChallenge}\n\nInstructor-authored assignment, release ${value.releaseId}. Self-review is not automated grading. Starter files are never executed automatically.\n`,
       },
     ];
+    if (value.project)
+      files.push({
+        path: "PROJECT_CONNECTION.md",
+        content:
+          `# ${value.project.title}\n\n${value.project.problem}\n\n## Final deliverable\n${value.project.deliverable}\n\n` +
+          (value.project.milestone
+            ? `## This lesson’s increment: ${value.project.milestone.title}\n${value.project.milestone.brief}\n\n${value.project.milestone.acceptanceCriteria.map((c) => `- ${c}`).join("\n")}\n\n`
+            : "") +
+          `## Project path\n${value.project.milestones.map((m) => `- Lesson ${m.lessonIndex + 1}: ${m.title}`).join("\n")}\n\nYour project folder is shared across this released course. Existing files are preserved.\n`,
+      });
     for (const file of files) {
       try {
         await workspace.save(
@@ -162,6 +181,14 @@ export class LearnDelivery {
       source: "instructor-authored Learn package",
       objective: value.objective,
       brief: value.brief,
+      project: value.project
+        ? {
+            title: value.project.title,
+            problem: value.project.problem,
+            deliverable: value.project.deliverable,
+            milestone: value.project.milestone,
+          }
+        : null,
       acceptanceCriteria: value.plan.acceptanceCriteria,
       revealedHints: value.plan.hints.slice(0, value.progress.revealedHints),
       reflectionPrompt: value.plan.reflection,

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { COURSE_LESSON_LIMIT } from "./course-limits.js";
 const text = (max: number) => z.string().min(1).max(max);
 const citations = z.array(text(100)).min(1).max(6);
 export const agentWorkArtifact = z.discriminatedUnion("kind", [
@@ -7,11 +8,23 @@ export const agentWorkArtifact = z.discriminatedUnion("kind", [
       kind: z.literal("lesson_package"),
       title: text(160),
       sourceIds: citations,
-      lessonIndex: z.number().int().min(0).max(29),
+      lessonIndex: z
+        .number()
+        .int()
+        .min(0)
+        .max(COURSE_LESSON_LIMIT - 1),
       objective: text(1000),
       practice: text(2000),
       minutes: z.number().int().min(5).max(120),
-      prerequisiteLessons: z.array(z.number().int().min(0).max(29)).max(6),
+      prerequisiteLessons: z
+        .array(
+          z
+            .number()
+            .int()
+            .min(0)
+            .max(COURSE_LESSON_LIMIT - 1),
+        )
+        .max(6),
       acceptanceCriteria: z.array(text(500)).min(2).max(6),
       hints: z.array(text(800)).min(2).max(4),
       reflection: text(1200),
@@ -89,7 +102,11 @@ export const agentWorkRequest = z
     entityId: z.string().uuid(),
     expectedRevision: z.number().int().positive(),
     goal: z.string().trim().min(8).max(1500),
-    lessonIndex: z.number().int().min(0).max(29),
+    lessonIndex: z
+      .number()
+      .int()
+      .min(0)
+      .max(COURSE_LESSON_LIMIT - 1),
     assetId: z.string().uuid().nullable(),
     providers: z
       .array(z.enum(["youtube", "linkedin", "x", "instagram"]))

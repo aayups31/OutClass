@@ -28,6 +28,7 @@ import { LearnDelivery } from "./learn-delivery.js";
 import { AgentHandoffs, agentDomain } from "./agent-handoffs.js";
 import { AgentWorkService } from "./agent-work.js";
 import type { CreatorProduction } from "./creator-production.js";
+import { COURSE_LESSON_LIMIT } from "../course-limits.js";
 
 const key = "expansion:v1";
 const stamp = () => new Date().toISOString();
@@ -164,12 +165,26 @@ export class Expansion {
   async publishHosted(releaseId: string) {
     const release = this.state().releases.find((r) => r.id === releaseId);
     if (!release) throw new UserError("Choose a local course release.", 404);
-    const { title, audience, outcome, rightsConfirmed, lessons } = release;
+    const {
+      title,
+      audience,
+      outcome,
+      rightsConfirmed,
+      lessons,
+      learningProject,
+    } = release;
     const result = await this.app.ai.platform("publish", {
       releaseId: release.id,
       lineageId: release.courseId,
       revision: release.revision,
-      course: { title, audience, outcome, rightsConfirmed, lessons },
+      course: {
+        title,
+        audience,
+        outcome,
+        rightsConfirmed,
+        lessons,
+        ...(learningProject ? { learningProject } : {}),
+      },
       projectTemplate: release.project?.verified
         ? "python_activity_api_v1"
         : null,
@@ -190,7 +205,11 @@ export class Expansion {
         id: z.string().uuid(),
         title: z.string(),
         revision: z.number().int().positive(),
-        lessonIndex: z.number().int().min(0).max(29),
+        lessonIndex: z
+          .number()
+          .int()
+          .min(0)
+          .max(COURSE_LESSON_LIMIT - 1),
         course: courseDraft,
         projectTemplate: z.enum(["python_activity_api_v1"]).nullable(),
         scopes: z.tuple([z.literal("read_assignment")]),
@@ -284,6 +303,12 @@ export class Expansion {
       this.app.store.save(state);
     }
     await this.app.mirror(courseId);
+    if (
+      release.learningProject &&
+      !this.app.store.state().courses.find((c) => c.id === courseId)
+        ?.workspaceMode
+    )
+      await this.app.bindProject(courseId, "project");
     await this.app.start(courseId, lessonId);
     const delivery = new LearnDelivery(this.app);
     delivery.bind(courseId, release, preview);
@@ -528,7 +553,13 @@ export function expansionRoutes(
   });
   router.post("/releases/:id/launch", async (req, res) => {
     const input = z
-      .object({ lessonIndex: z.number().int().min(0).max(29) })
+      .object({
+        lessonIndex: z
+          .number()
+          .int()
+          .min(0)
+          .max(COURSE_LESSON_LIMIT - 1),
+      })
       .strict()
       .parse(req.body);
     res.json(
@@ -539,7 +570,13 @@ export function expansionRoutes(
   });
   router.post("/releases/:id/preview", async (req, res) => {
     const input = z
-      .object({ lessonIndex: z.number().int().min(0).max(29) })
+      .object({
+        lessonIndex: z
+          .number()
+          .int()
+          .min(0)
+          .max(COURSE_LESSON_LIMIT - 1),
+      })
       .strict()
       .parse(req.body);
     res.json(

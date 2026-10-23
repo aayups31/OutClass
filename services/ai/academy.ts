@@ -9,6 +9,7 @@ import {
 } from "../../src/expansion-contract.js";
 import { validateCourse } from "../../src/server/expansion.js";
 import { assertClean, UserError } from "../../src/server/safety.js";
+import { COURSE_LESSON_LIMIT } from "../../src/course-limits.js";
 const publication = z
   .object({
     releaseId: z.string().uuid(),
@@ -218,7 +219,11 @@ export class HostedAcademy {
   }
   grant(actor: string, id: string, index: number) {
     z.string().uuid().parse(id);
-    z.number().int().min(0).max(29).parse(index);
+    z.number()
+      .int()
+      .min(0)
+      .max(COURSE_LESSON_LIMIT - 1)
+      .parse(index);
     return this.scoped(actor, async (db) => {
       const enrolled = await db.query(
         "SELECT c.body FROM outclass_platform.courses c JOIN outclass_platform.enrollments e ON e.course_id=c.id WHERE c.id=$1 AND e.user_id=$2 AND c.status='published'",
@@ -325,7 +330,12 @@ export class HostedAcademy {
         await this.grant(
           res.locals.user,
           req.params.id,
-          z.number().int().min(0).max(29).parse(req.body.lessonIndex),
+          z
+            .number()
+            .int()
+            .min(0)
+            .max(COURSE_LESSON_LIMIT - 1)
+            .parse(req.body.lessonIndex),
         ),
       ),
     );

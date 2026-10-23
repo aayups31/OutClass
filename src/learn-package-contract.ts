@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { COURSE_LESSON_LIMIT } from "./course-limits.js";
 export const starterPath = z
   .string()
   .min(1)
@@ -24,7 +25,15 @@ export const starterPath = z
 export const learnPackage = z
   .object({
     minutes: z.number().int().min(5).max(240),
-    prerequisiteLessons: z.array(z.number().int().min(0).max(29)).max(12),
+    prerequisiteLessons: z
+      .array(
+        z
+          .number()
+          .int()
+          .min(0)
+          .max(COURSE_LESSON_LIMIT - 1),
+      )
+      .max(12),
     acceptanceCriteria: z
       .array(z.string().trim().max(500))
       .max(12)

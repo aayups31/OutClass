@@ -1,0 +1,3 @@
+export const COURSE_LESSON_LIMIT = 200;
+export const COURSE_SOURCE_LIMIT = 40000;
+export const COURSE_CHAR_LIMIT = 300000;
