@@ -61,13 +61,12 @@ test("adjustable layout supports keyboard, pointer, persistence, focus and reset
   const divider = page.getByRole("separator", {
     name: "OffCourse panel width",
   });
-  await page
-    .getByRole("button", { name: "Show OffCourse", exact: true })
-    .click();
+
   await divider.focus();
   await divider.press("ArrowLeft");
   await expect(divider).toHaveAttribute("aria-valuenow", "370");
-  const sidebar = page.getByRole("separator", { name: "Course sidebar width" });
+  await page.getByRole("button", { name: "Show files", exact: true }).click();
+  const sidebar = page.getByRole("separator", { name: "File explorer width" });
   const b = (await sidebar.boundingBox())!;
   await page.mouse.move(b.x + 3, b.y + 150);
   await page.mouse.down();
@@ -90,9 +89,7 @@ test("adjustable layout supports keyboard, pointer, persistence, focus and reset
   await page.getByLabel("Layout options", { exact: true }).click();
   await page.getByRole("button", { name: "Reset layout", exact: true }).click();
   await page.getByLabel("Layout options", { exact: true }).click();
-  await page
-    .getByRole("button", { name: "Show OffCourse", exact: true })
-    .click();
+
   await expect(divider).toHaveAttribute("aria-valuenow", "354");
   await page.getByRole("button", { name: "Terminal", exact: true }).click();
   await expect(
@@ -134,9 +131,7 @@ test("a delayed OffCourse answer stays with its course when switching courses", 
     });
   });
   await page.goto(base + "/?view=studio");
-  await page
-    .getByRole("button", { name: "Show OffCourse", exact: true })
-    .click();
+
   await page
     .getByLabel("Ask learning assistant")
     .fill("Explain this saved Python attempt.");
@@ -145,14 +140,14 @@ test("a delayed OffCourse answer stays with its course when switching courses", 
     .click();
   await expect.poll(() => requested).toBe(true);
   await page
+    .getByRole("button", { name: "Show course explorer", exact: true })
+    .click();
+  await page
     .getByRole("button", { name: /React for useful interfaces/ })
     .click();
   await expect(
-    page.getByRole("heading", {
-      name: "React for useful interfaces",
-      exact: true,
-    }),
-  ).toBeVisible();
+    page.getByRole("button", { name: "Switch course", exact: true }),
+  ).toHaveText("React for useful interfaces");
   finish();
   await page.waitForResponse("**/api/assistant-chat");
   await expect(

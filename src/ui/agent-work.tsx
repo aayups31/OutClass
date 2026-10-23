@@ -16,7 +16,12 @@ type Context = {
   revision: number;
   lessons: { index: number; title: string }[];
   sources: { id: string; title: string }[];
-  assets: { id: string; name: string; duration: number }[];
+  assets: {
+    id: string;
+    name: string;
+    duration: number;
+    transcriptCues?: number;
+  }[];
   pinnedLesson: number | null;
 };
 const working = (phase?: string) =>
@@ -73,6 +78,16 @@ export function AgentWorkPanel({
   const [maxCalls, setMaxCalls] = useState<1 | 2>(2),
     [busy, setBusy] = useState(false),
     [error, setError] = useState("");
+  const [shareTo, setShareTo] = useState<AgentWorkRequest["domain"]>(
+    domain === "analytics"
+      ? "growth"
+      : domain === "academy"
+        ? "creative"
+        : domain === "creative"
+          ? "growth"
+          : "analytics",
+  );
+  const [shareNotice, setShareNotice] = useState("");
   const target = useRef(entity?.id);
   target.current = entity?.id;
   const selected = useRef(job?.id);
@@ -83,6 +98,7 @@ export function AgentWorkPanel({
     setJob(undefined);
     setHistory([]);
     setError("");
+    setShareNotice("");
     setBusy(false);
     setGoal(goals[domain]);
     setAsset("");
@@ -282,6 +298,7 @@ export function AgentWorkPanel({
                 {context?.assets.map((a) => (
                   <option key={a.id} value={a.id}>
                     {a.name} · {a.duration.toFixed(1)}s
+                    {a.transcriptCues ? " · transcript indexed" : ""}
                   </option>
                 ))}
               </select>
@@ -477,6 +494,62 @@ export function AgentWorkPanel({
                     </li>
                   ))}
                 </ul>
+              )}
+              {(["ready", "applied"] as string[]).includes(job.phase) && (
+                <div className="agent-work-handoff">
+                  <select
+                    aria-label={`${roles[domain]} handoff recipient`}
+                    value={shareTo}
+                    onChange={(e) =>
+                      setShareTo(e.target.value as AgentWorkRequest["domain"])
+                    }
+                  >
+                    {(["academy", "creative", "growth", "analytics"] as const)
+                      .filter((d) => d !== domain)
+                      .map((d) => (
+                        <option key={d} value={d}>
+                          {roles[d]}
+                        </option>
+                      ))}
+                  </select>
+                  <button
+                    className="button"
+                    disabled={busy || dirty}
+                    onClick={async () => {
+                      const owner = entity?.id;
+                      setError("");
+                      setShareNotice("");
+                      setBusy(true);
+                      try {
+                        const result = await api<AgentWork>(
+                          `expansion/work/${job.id}/handoff`,
+                          { to: shareTo, approve: true },
+                        );
+                        if (target.current !== owner) return;
+                        setJob(result);
+                        setShareNotice(
+                          "Handoff offered. Accept it in the receiving specialist’s inbox to use this context.",
+                        );
+                      } catch (e) {
+                        if (target.current !== owner) return;
+                        setError(
+                          e instanceof Error
+                            ? e.message
+                            : "Could not offer this handoff.",
+                        );
+                      } finally {
+                        if (target.current === owner) setBusy(false);
+                      }
+                    }}
+                  >
+                    Offer handoff
+                  </button>
+                </div>
+              )}
+              {shareNotice && (
+                <p role="status" className="agent-work-state">
+                  {shareNotice}
+                </p>
               )}
               <button
                 className="agent-work-export"

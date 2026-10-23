@@ -40,6 +40,10 @@ const terminals = new LocalTerminals((event) => {
 });
 const keyFile = path.join(app.getPath("userData"), "openai-key.encrypted");
 const accountFile = path.join(app.getPath("userData"), "ai-account.encrypted");
+const socialFile = path.join(
+  app.getPath("userData"),
+  "social-accounts.encrypted",
+);
 const acknowledgements = new Map<string, () => void>();
 const allowedExternal = new Set([
   "git-learn-black.vercel.app",
@@ -111,6 +115,7 @@ async function available(command: string) {
 }
 async function startCompanion() {
   let accountSession: unknown = null;
+  let socialSessions: unknown = [];
   try {
     const response = await fetch(`${origin}/api/health`, {
       signal: AbortSignal.timeout(1500),
@@ -133,6 +138,14 @@ async function startCompanion() {
       throw error;
   }
   if (safeStorage.isEncryptionAvailable()) {
+    const social = await readFile(socialFile).catch(() => null);
+    if (social) {
+      try {
+        socialSessions = JSON.parse(safeStorage.decryptString(social));
+      } catch {
+        /* Reconnect if the encrypted connection file cannot be restored. */
+      }
+    }
     const account = await readFile(accountFile).catch(() => null);
     if (account) {
       try {
@@ -205,6 +218,30 @@ async function startCompanion() {
             }),
         );
       }
+      if (message.type === "social-save") {
+        void (async () => {
+          if (!safeStorage.isEncryptionAvailable())
+            throw Error("Connection encryption unavailable.");
+          await writeFile(
+            socialFile,
+            safeStorage.encryptString(JSON.stringify(message.sessions)),
+            { mode: 0o600 },
+          );
+        })().then(
+          () =>
+            companion?.postMessage({
+              type: "social-saved",
+              id: message.id,
+              ok: true,
+            }),
+          () =>
+            companion?.postMessage({
+              type: "social-saved",
+              id: message.id,
+              ok: false,
+            }),
+        );
+      }
       if (message.type === "ready") {
         clearTimeout(timer);
         resolve();
@@ -237,6 +274,8 @@ async function startCompanion() {
       port,
       apiKey: savedKey,
       accountSession,
+      socialSessions,
+      secureStorage: safeStorage.isEncryptionAvailable(),
       editorVsix: app.isPackaged
         ? path.join(
             process.resourcesPath,

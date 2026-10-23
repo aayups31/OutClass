@@ -1,0 +1,389 @@
+/* The working frame has only a context bar and a file tab row. */
+.studio-shell > main > .topbar {
+  display: none;
+}
+.studio-shell > main > .content {
+  height: 100dvh;
+}
+.studio-shell .sidebar-divider {
+  display: none;
+}
+.studio .layout-tools {
+  height: 40px;
+  min-height: 40px;
+  gap: 7px;
+  padding: 0 10px;
+  background: var(--soft);
+}
+.workspace-location {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+}
+.studio .workspace-location .workspace-course-switch {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+  min-width: 0;
+  padding-inline: 4px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.workspace-location > svg {
+  flex-shrink: 0;
+  color: var(--muted);
+}
+.workspace-location h1 {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: -0.15px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  line-height: 1.5;
+}
+.workspace-lesson-menu {
+  position: relative;
+  flex-shrink: 0;
+}
+.workspace-lesson-menu > summary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 26px;
+  width: 23px;
+  cursor: pointer;
+  color: var(--muted);
+  list-style: none;
+}
+.workspace-lesson-menu > div {
+  position: absolute;
+  top: 32px;
+  left: 0;
+  z-index: 12;
+  min-width: 220px;
+  max-width: 320px;
+  padding: 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  box-shadow: 0 12px 35px #0003;
+  font-size: 11px;
+  line-height: 1.8;
+}
+.workspace-lesson-menu strong {
+  font-size: 11px;
+  font-weight: 500;
+}
+.workspace-lesson-menu p {
+  font-size: 10px;
+  color: var(--muted);
+  margin: 5px 0 12px;
+}
+.workspace-lesson-menu a {
+  font-size: 11px;
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.studio .workspace-lesson-menu > div > button {
+  padding: 0;
+  margin-top: 12px;
+}
+.studio .layout-tools .studio-checkpoint {
+  font-size: 10px !important;
+  min-height: 26px !important;
+  padding: 5px 9px !important;
+  flex-shrink: 0;
+}
+.studio .layout-tools .lesson-toggle,
+.studio .layout-tools .assistant-toggle {
+  font-size: 10px;
+  padding-inline: 7px;
+}
+.studio .layout-tools .lesson-toggle > svg,
+.studio .layout-tools .assistant-toggle > svg {
+  height: 13px;
+  width: 13px;
+}
+.studio .editor-tabs {
+  height: 34px;
+  min-height: 34px;
+  overflow: hidden;
+  background: var(--soft);
+  gap: 0;
+}
+.editor-file-tabs {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+.studio .editor-file-tabs > button {
+  height: 34px;
+  padding: 0 13px;
+  font-size: 11px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  border-right: 1px solid var(--line);
+  position: relative;
+}
+.studio .editor-file-tabs > button.selected {
+  color: var(--ink);
+  background: var(--paper);
+}
+.editor-file-tabs > button.selected:before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 1px;
+  background: var(--accent);
+}
+.editor-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 8px;
+  margin-left: auto;
+  flex-shrink: 0;
+  background: var(--soft);
+}
+.studio .editor-actions > button {
+  font-size: 10px;
+  height: 28px;
+  white-space: nowrap;
+  padding: 0;
+  gap: 5px;
+}
+.studio .editor-actions > .run-button {
+  color: var(--accent);
+}
+.studio .editor-tabs > .reload-file {
+  margin-left: 0;
+  padding: 0 8px;
+  height: 34px;
+  background: var(--soft);
+}
+.studio .file-explorer {
+  background: var(--soft);
+}
+.course-explorer > button > span {
+  white-space: normal !important;
+  line-height: 1.6;
+}
+.studio .course-explorer > .manage-course-link {
+  font-size: 10px !important;
+  color: var(--accent);
+  margin-top: 16px;
+}
+.studio-rail-tools {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin: 2px 0 12px;
+}
+.studio-rail-tools > button {
+  height: 34px;
+  width: 34px;
+  background: none;
+  border: 0;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  border-radius: 5px;
+}
+.studio-rail-tools > button:hover {
+  background: var(--hover);
+  color: var(--ink);
+}
+.studio-rail-tools > button.selected {
+  background: var(--active);
+  color: var(--accent);
+}
+@media (min-width: 761px) {
+  .shell.studio-shell > .sidebar {
+    width: 48px;
+    padding: 12px 6px;
+    align-items: center;
+  }
+  .shell.studio-shell > main {
+    margin-left: 48px;
+  }
+  .shell.studio-shell.sidebar-hidden > .sidebar {
+    display: none;
+  }
+  .shell.studio-shell.sidebar-hidden > main {
+    margin-left: 0;
+  }
+  .shell.studio-shell > .sidebar .brand {
+    padding: 0;
+    margin-bottom: 20px;
+  }
+  .studio-shell > .sidebar .brand-name,
+  .studio-shell > .sidebar .brand small,
+  .studio-shell > .sidebar .nav-label,
+  .studio-shell > .sidebar .count,
+  .studio-shell > .sidebar .sidebar-course-list,
+  .studio-shell > .sidebar .connection {
+    display: none;
+  }
+  .studio-shell > .sidebar nav {
+    width: 100%;
+  }
+  .shell.studio-shell > .sidebar .nav {
+    width: 34px;
+    min-height: 34px;
+    padding: 8px 0;
+    justify-content: center;
+    margin: 0 0 7px;
+    gap: 0;
+  }
+  .shell.studio-shell > .sidebar .nav.active:before {
+    display: none;
+  }
+  .studio-shell > .sidebar .workspace-more > summary {
+    justify-content: center;
+    padding: 8px 0;
+    min-height: 34px;
+    width: 34px;
+  }
+  .studio-shell > .sidebar .workspace-more > summary > span {
+    display: none;
+  }
+  .studio-shell > .sidebar .workspace-more-items {
+    position: absolute;
+    top: 0;
+    left: 42px;
+    width: 210px;
+    padding: 6px;
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    background: var(--surface);
+    box-shadow: 0 12px 35px #0003;
+    max-height: 65dvh;
+    z-index: 20;
+  }
+  .shell.studio-shell > .sidebar .workspace-more-items .nav {
+    width: 100%;
+    justify-content: flex-start;
+    gap: 9px;
+    padding: 9px;
+    margin: 0;
+  }
+  .studio-shell > .sidebar .workspace-more-items .nav-label {
+    display: inline;
+    font-size: 12px;
+  }
+  .studio-shell > .sidebar .sidebar-bottom {
+    width: 34px;
+  }
+  .studio-shell > .sidebar .brand-mark {
+    width: 21px;
+    height: 24px;
+  }
+}
+@media (max-width: 1100px) {
+  .studio .workspace-location .workspace-course-switch {
+    max-width: 130px;
+  }
+  .studio .layout-tools {
+    gap: 4px;
+  }
+}
+@media (max-width: 1020px) {
+  .studio .layout-tools {
+    padding-right: 117px;
+  }
+  .studio .layout-tools .assistant-toggle {
+    display: none;
+  }
+  .studio .studio-mobile-switch {
+    height: 40px;
+  }
+  .workspace-location h1 {
+    font-size: 11px;
+  }
+  .studio .workspace-location .workspace-course-switch {
+    max-width: 100px;
+  }
+  .studio .file-explorer {
+    width: 180px;
+  }
+}
+@media (max-width: 760px) {
+  .studio-shell > main > .content {
+    height: calc(100dvh - 58px);
+  }
+  .studio-rail-tools {
+    display: none;
+  }
+  .studio .workspace-location .workspace-course-switch,
+  .workspace-location > svg {
+    display: none;
+  }
+  .workspace-location {
+    gap: 1px;
+  }
+  .workspace-location h1 {
+    font-size: 10px;
+  }
+  .workspace-lesson-menu > summary {
+    width: 16px;
+  }
+  .workspace-lesson-menu > div {
+    left: auto;
+    right: -90px;
+    min-width: 210px;
+    max-width: calc(100vw - 32px);
+  }
+  .studio .layout-tools {
+    gap: 2px;
+    padding-left: 9px;
+    padding-right: 112px;
+  }
+  .studio .layout-tools .lesson-toggle {
+    font-size: 0;
+    gap: 3px;
+    width: 24px;
+    padding: 4px;
+    min-width: 24px;
+  }
+  .studio .layout-tools .studio-checkpoint {
+    font-size: 0 !important;
+    width: 27px;
+    min-width: 27px;
+    padding: 4px !important;
+    gap: 0;
+  }
+  .studio .studio-checkpoint > svg {
+    height: 13px;
+    width: 13px;
+  }
+  .studio .editor-actions {
+    gap: 10px;
+    padding-inline: 7px;
+  }
+  .studio .editor-actions > button {
+    font-size: 9px;
+    gap: 4px;
+  }
+  .studio .editor-actions > button > svg {
+    width: 11px;
+  }
+  .studio .editor-file-tabs > button {
+    font-size: 10px;
+    padding-inline: 9px;
+  }
+  .studio .editor-tabs > .reload-file {
+    padding-inline: 6px;
+  }
+  .studio .file-explorer {
+    width: 130px;
+  }
+}

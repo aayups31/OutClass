@@ -16,6 +16,13 @@ import { ProductAgents } from "./product-agents.js";
 import type { CreatorProduction } from "./creator-production.js";
 import { GTMStudio } from "./gtm-studio.js";
 import { assertClean, UserError } from "./safety.js";
+import { MediaTranscripts } from "./media-transcripts.js";
+import {
+  AgentHandoffs,
+  agentDomain,
+  type AgentDomain,
+} from "./agent-handoffs.js";
+import type { ProductAgentRun } from "./product-agents.js";
 
 const key = "suite:work:v1";
 const digest = (value: unknown) =>
@@ -53,6 +60,8 @@ export type AgentWork = {
   error?: string;
   validation: string[];
   promotionId?: string;
+  handoffRunId?: string;
+  handoffRevision?: number;
   delivery?: { kind: string; id: string; revision?: number; label: string }[];
 };
 
@@ -102,7 +111,7 @@ export class AgentWorkService {
     input: Pick<
       AgentWorkRequest,
       "domain" | "entityId" | "lessonIndex" | "assetId"
-    >,
+    > & { goal?: string },
   ) {
     const base = this.proposals.context(input.domain, input.entityId),
       state = this.expansion.state();
@@ -180,6 +189,13 @@ export class AgentWorkService {
       title: "Saved task brief",
       text: JSON.stringify(brief),
     });
+    if (asset)
+      sources.push(
+        ...new MediaTranscripts(this.app, this.media).sources(
+          asset.id,
+          `${input.goal || ""} ${lesson.title} ${lesson.objective}`,
+        ),
+      );
     if (asset)
       sources.push({
         id: `asset:${asset.id}`,
@@ -333,6 +349,24 @@ export class AgentWorkService {
         let duration = 0;
         for (const scene of a.scenes) {
           cite(scene.sourceIds);
+          const transcriptSources = row.sources.filter((s) =>
+            s.id.startsWith("transcript:"),
+          );
+          if (snapshot.asset && transcriptSources.length) {
+            const cited = transcriptSources
+              .filter((s) => scene.sourceIds.includes(s.id))
+              .map((s) => JSON.parse(s.text) as { start: number; end: number });
+            if (
+              !cited.length ||
+              scene.start === null ||
+              scene.end === null ||
+              scene.start < Math.min(...cited.map((c) => c.start)) - 0.05 ||
+              scene.end > Math.max(...cited.map((c) => c.end)) + 0.05
+            )
+              throw new UserError(
+                "Each source scene must cite its supplied transcript cues and keep its range inside those cue times.",
+              );
+          }
           if (!snapshot.asset && (scene.start !== null || scene.end !== null))
             throw new UserError(
               "A script without footage cannot have invented timestamps.",
@@ -406,18 +440,21 @@ export class AgentWorkService {
             ? "Producing the requested deliverable."
             : "Correcting the validation findings within the approved call limit.",
         );
+        const payload = {
+          ...snapshot.context,
+          goal: row.request.goal,
+          requestedProviders: row.request.providers,
+          validationFindings: row.validation,
+          previousAttempt: row.answer || null,
+        };
+        if (JSON.stringify(payload).length > 85000)
+          payload.previousAttempt = null;
         const answer = await this.app.ai.structured({
           task: "work",
           schema: agentWorkAnswer,
           name: "outclass_agent_work",
           instructions: agentWorkInstructions,
-          context: JSON.stringify({
-            ...snapshot.context,
-            goal: row.request.goal,
-            requestedProviders: row.request.providers,
-            validationFindings: row.validation,
-            previousAttempt: row.answer || null,
-          }),
+          context: JSON.stringify(payload),
         });
         if (this.stopped || this.get(id).phase === "canceled") return;
         row = this.get(id);
@@ -491,6 +528,76 @@ export class AgentWorkService {
         row.error = "OutClass closed during this task.";
         this.save(row, "Stopped for app shutdown.");
       }
+  }
+  offer(id: string, to: AgentDomain) {
+    const row = this.get(id);
+    if (
+      !row.answer ||
+      !row.reviewHash ||
+      !["ready", "applied"].includes(row.phase)
+    )
+      throw new UserError(
+        "Complete and review the task before offering a handoff.",
+      );
+    const current = this.proposals.context(
+      row.request.domain,
+      row.request.entityId,
+    ).entity;
+    const canonicalRevision =
+      row.phase === "applied"
+        ? row.delivery?.find((d) => d.id === row.request.entityId)?.revision ||
+          row.request.expectedRevision
+        : row.request.expectedRevision;
+    if (current.revision !== canonicalRevision)
+      throw new UserError(
+        "The delivered draft changed. Run its specialist again before sharing.",
+        409,
+      );
+    if (row.phase === "ready") this.validate(row, row.answer);
+    if (!row.handoffRunId || row.handoffRevision !== canonicalRevision) {
+      row.handoffRunId = randomUUID();
+      row.handoffRevision = canonicalRevision;
+    }
+    const provenance = `Task generated from revision ${row.request.expectedRevision}; reviewed source revision ${canonicalRevision}. Structural checks are not factual or learning certification.`;
+    const run: ProductAgentRun = {
+      id: row.handoffRunId,
+      domain: row.request.domain,
+      entityId: row.request.entityId,
+      revision: canonicalRevision,
+      startedAt: row.createdAt,
+      finishedAt: row.finishedAt,
+      state: "completed",
+      maxCalls: row.request.maxCalls,
+      sources: row.sources,
+      answer: {
+        summary: row.answer.summary,
+        steps: row.answer.artifacts.map((a) => ({
+          title: a.title,
+          detail: JSON.stringify(a).slice(0, 1000),
+          sourceIds: a.sourceIds,
+        })),
+        draftText:
+          `${provenance}\n\n${JSON.stringify(row.answer.artifacts)}`.slice(
+            0,
+            5000,
+          ),
+        limitations: [provenance, ...row.answer.limitations].slice(0, 6),
+      },
+    };
+    const rows =
+      this.app.store.get<ProductAgentRun[]>("expansion:agent-runs") || [];
+    this.app.store.transaction(() => {
+      this.app.store.put(
+        "expansion:agent-runs",
+        [...rows.filter((r) => r.id !== run.id), run].slice(-40),
+      );
+      new AgentHandoffs(this.app).offer(run.id, to);
+      this.save(
+        row,
+        `Offered the reviewed deliverable to ${to}; it becomes shared context only after acceptance.`,
+      );
+    });
+    return row;
   }
   async apply(id: string, hash: string) {
     const row = this.get(id);
@@ -724,13 +831,14 @@ export class AgentWorkService {
           title: l.title,
         })),
         sources: s.sources.map((s) => ({ id: s.id, title: s.title })),
-        assets: this.media
-          .state()
-          .assets.map((a) => ({
-            id: a.id,
-            name: a.name,
-            duration: a.duration,
-          })),
+        assets: this.media.state().assets.map((a) => ({
+          id: a.id,
+          name: a.name,
+          duration: a.duration,
+          transcriptCues:
+            new MediaTranscripts(this.app, this.media).get(a.id)?.cues.length ||
+            0,
+        })),
         pinnedLesson: s.creative?.lessonIndex ?? null,
       });
     });
@@ -755,6 +863,13 @@ export class AgentWorkService {
           input.reviewHash,
         ),
       );
+    });
+    router.post("/:id/handoff", (req, res) => {
+      const input = z
+        .object({ to: agentDomain, approve: z.literal(true) })
+        .strict()
+        .parse(req.body);
+      res.json(this.offer(z.string().uuid().parse(req.params.id), input.to));
     });
     return router;
   }

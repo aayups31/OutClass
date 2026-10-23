@@ -82,9 +82,6 @@ test("course project → actual error → hint → fix → reviewed checkpoints 
   ).toContainText("ReferenceError");
   const run = store.get<any[]>("runs:javascript")![0];
   await page
-    .getByRole("button", { name: "Show OffCourse", exact: true })
-    .click();
-  await page
     .getByRole("button", { name: "Enable learning assistant", exact: true })
     .click();
   let requests = 0;

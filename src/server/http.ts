@@ -23,13 +23,14 @@ import { workspaceFeatures } from "./workspace-features.js";
 import { EditorIntegration } from "./editor-integration.js";
 import { expansionRoutes, Expansion } from "./expansion.js";
 import { CreatorProduction } from "./creator-production.js";
-import { SocialConnections } from "./social-connections.js";
+import { SocialConnections, type SocialVault } from "./social-connections.js";
 import { GTMPublishing } from "./gtm-publishing.js";
 import { GTMAnalytics } from "./gtm-analytics.js";
 import { LearnDelivery } from "./learn-delivery.js";
 import { GTMStudio } from "./gtm-studio.js";
 import { PublicationQueue } from "./publication-queue.js";
 import type { AgentWorkService } from "./agent-work.js";
+import { MediaTranscripts } from "./media-transcripts.js";
 
 const text = z.string().max(2000);
 function matches(a: string, b: string) {
@@ -43,13 +44,14 @@ export function createApp(
   focusDesktop?: () => void,
   editorVsix = process.env.OUTCLASS_EDITOR_VSIX ||
     path.resolve("dist/editor/OutClass-Editor-0.7.0.vsix"),
+  socialVault: SocialVault = {},
 ) {
   const app = express();
   let agentWork: AgentWorkService | undefined;
   const creatorProduction = new CreatorProduction(application, () =>
     new Expansion(application).state(),
   );
-  const social = new SocialConnections(port),
+  const social = new SocialConnections(port, fetch, socialVault),
     publishing = new GTMPublishing(
       application,
       () => new Expansion(application).state(),
@@ -361,6 +363,10 @@ export function createApp(
     await learning.assertFresh(input.courseId);
     res.json(delivery.hint(input.courseId, input.lessonId));
   });
+  app.use(
+    "/api/expansion/media/transcripts",
+    new MediaTranscripts(application, creatorProduction).routes(),
+  );
   app.use("/api/expansion/media", creatorProduction.routes());
   app.use(
     "/api/expansion/promotions",

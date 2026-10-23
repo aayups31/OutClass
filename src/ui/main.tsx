@@ -40,6 +40,7 @@ import { AIAccessSettings } from "./ai-access";
 import { EditorsAndExtensions } from "./editors";
 import { LearningHub, LiveWorkHub, PracticePrompt } from "./practical";
 import "./workspace-clean.css";
+import "./workspace-frame.css";
 const Studio = lazy(() =>
   import("./studio").then((module) => ({ default: module.Studio })),
 );
@@ -259,6 +260,7 @@ function App() {
       <aside className="sidebar">
         <a
           className="brand"
+          aria-label="OutClass home"
           href="#"
           onClick={(event) => {
             event.preventDefault();
@@ -269,6 +271,50 @@ function App() {
           <span className="brand-name">OutClass</span>
           <small>Personal workspace</small>
         </a>
+        {page === "studio" && (
+          <div className="studio-rail-tools" aria-label="Explorer views">
+            <button
+              aria-label="Show files"
+              title="Files"
+              className={
+                !layout.hideExplorer && layout.explorerTab === "files"
+                  ? "selected"
+                  : ""
+              }
+              onClick={() =>
+                layoutControl.update({
+                  hideExplorer:
+                    layout.explorerTab === "files"
+                      ? !layout.hideExplorer
+                      : false,
+                  explorerTab: "files",
+                })
+              }
+            >
+              <Folder size={19} />
+            </button>
+            <button
+              aria-label="Show course explorer"
+              title="Courses"
+              className={
+                !layout.hideExplorer && layout.explorerTab === "courses"
+                  ? "selected"
+                  : ""
+              }
+              onClick={() =>
+                layoutControl.update({
+                  hideExplorer:
+                    layout.explorerTab === "courses"
+                      ? !layout.hideExplorer
+                      : false,
+                  explorerTab: "courses",
+                })
+              }
+            >
+              <BookOpen size={19} />
+            </button>
+          </div>
+        )}
         <div className="nav-caption">Workspace</div>
         <nav aria-label="Workspace navigation">
           {(
@@ -520,6 +566,10 @@ function App() {
                     state={state}
                     selectedCourse={selectedCourse}
                     theme={theme}
+                    onToggleTheme={() =>
+                      setTheme(theme === "dark" ? "light" : "dark")
+                    }
+                    onSelectCourse={(id) => navigate("studio", id)}
                     api={request}
                     onCourses={() => navigate("courses")}
                     onSetup={() => navigate("setup")}

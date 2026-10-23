@@ -83,14 +83,14 @@ test("editor-first layout keeps tools optional, restores focus and preserves dra
   await expect(editor).toBeVisible();
   await expect(
     page.getByLabel("Course assistant", { exact: true }),
-  ).toBeHidden();
+  ).toBeVisible();
   await expect(page.locator(".studio-bottom")).toBeHidden();
   await expect(
     page.getByLabel("Integrated terminal", { exact: true }),
   ).toBeHidden();
   const initial = (await surface.boundingBox())!;
-  expect(initial.width).toBeGreaterThan(1366 * 0.7);
-  expect(initial.height).toBeGreaterThan(768 * 0.65);
+  expect(initial.width).toBeGreaterThan(1366 * 0.65);
+  expect(initial.height).toBeGreaterThan(768 * 0.8);
   await page.screenshot({ path: ".local/design/studio-minimal-laptop.png" });
   await editor.fill(
     "// Keep my unfinished idea\nconsole.log('A focused workspace');",
@@ -201,7 +201,6 @@ test("local studio edits, runs, preserves external edits, imports course materia
     .getByRole("button", { name: "Reload current file from disk" })
     .click();
   await expect(editor).toContainText("External edit preserved");
-  await page.getByRole("button", { name: "Show OffCourse" }).click();
   await page.getByRole("button", { name: "Sources", exact: false }).click();
   await page.getByRole("button", { name: "Add material", exact: true }).click();
   await page.getByLabel("Source title").fill("Lesson 7 · Tool descriptions");
@@ -299,7 +298,9 @@ test("local studio edits, runs, preserves external edits, imports course materia
   await page.getByRole("button", { name: "Code", exact: true }).click();
   await expect(editor).toBeVisible();
   await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.getByLabel("Layout options", { exact: true }).click();
   await page.getByRole("button", { name: "Switch to light mode" }).click();
+  await page.getByLabel("Layout options", { exact: true }).click();
   await page.screenshot({
     path: "test-results/studio-light.png",
     animations: "disabled",

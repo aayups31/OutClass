@@ -43,6 +43,36 @@ parentPort!.once("message", async ({ data }) => {
     port,
     () => parentPort.postMessage({ type: "focus" }),
     data.editorVsix,
+    {
+      initial: data.socialSessions,
+      ...(data.secureStorage
+        ? {
+            persist: (sessions: unknown) =>
+              new Promise<void>((resolve, reject) => {
+                const id = randomUUID(),
+                  timer = setTimeout(() => {
+                    pendingAccounts.delete(id);
+                    reject(
+                      Error(
+                        "Your channel connection could not be saved securely.",
+                      ),
+                    );
+                  }, 5000);
+                pendingAccounts.set(id, (ok) => {
+                  clearTimeout(timer);
+                  ok
+                    ? resolve()
+                    : reject(
+                        Error(
+                          "Windows could not encrypt this channel connection.",
+                        ),
+                      );
+                });
+                parentPort.postMessage({ type: "social-save", id, sessions });
+              }),
+          }
+        : {}),
+    },
   );
   web.use((_req, res, next) => {
     res.setHeader(
@@ -69,7 +99,7 @@ parentPort!.once("message", async ({ data }) => {
     process.exit(1);
   });
   parentPort!.on("message", async ({ data: message }) => {
-    if (message.type === "account-saved") {
+    if (message.type === "account-saved" || message.type === "social-saved") {
       pendingAccounts.get(message.id)?.(message.ok);
       pendingAccounts.delete(message.id);
     }

@@ -6,6 +6,7 @@ export type Layout = {
   explorer: number;
   terminal: number;
   panel: number;
+  explorerTab: "files" | "courses";
   hideSidebar: boolean;
   hideAssistant: boolean;
   hideExplorer: boolean;
@@ -16,17 +17,18 @@ export type Layout = {
 const defaults: Layout = {
   sidebar: 200,
   assistant: 354,
-  explorer: 140,
+  explorer: 200,
   terminal: 240,
   panel: 220,
+  explorerTab: "files",
   hideSidebar: false,
-  hideAssistant: true,
-  hideExplorer: false,
+  hideAssistant: false,
+  hideExplorer: true,
   assistantSide: "right",
   terminalOpen: false,
   terminalMax: false,
 };
-const key = "outclass-layout-v2";
+const key = "outclass-layout-v3";
 function read(): Layout {
   try {
     const stored = JSON.parse(localStorage.getItem(key) || "{}");
@@ -34,7 +36,11 @@ function read(): Layout {
     // secondary panels closed. Subsequent visibility choices are remembered.
     const sizes = localStorage.getItem(key)
       ? stored
-      : JSON.parse(localStorage.getItem("outclass-layout-v1") || "{}");
+      : JSON.parse(
+          localStorage.getItem("outclass-layout-v2") ||
+            localStorage.getItem("outclass-layout-v1") ||
+            "{}",
+        );
     const result = { ...defaults };
     for (const n of [
       "sidebar",
@@ -62,6 +68,7 @@ function read(): Layout {
     ] as const)
       if (typeof stored[n] === "boolean") result[n] = stored[n];
     if (stored.assistantSide === "left") result.assistantSide = "left";
+    if (stored.explorerTab === "courses") result.explorerTab = "courses";
     return result;
   } catch {
     return { ...defaults };

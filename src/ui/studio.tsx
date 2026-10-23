@@ -27,6 +27,9 @@ import {
   MessageSquare,
   PanelRightClose,
   PanelLeft,
+  ChevronDown,
+  Sun,
+  Moon,
   Maximize2,
   Minimize2,
   Settings2,
@@ -268,6 +271,8 @@ export function Studio({
   state,
   selectedCourse,
   theme,
+  onToggleTheme,
+  onSelectCourse,
   api,
   onCourses,
   onSetup,
@@ -285,6 +290,8 @@ export function Studio({
   state: Status;
   selectedCourse?: string;
   theme: string;
+  onToggleTheme: () => void;
+  onSelectCourse: (id: string) => void;
   api: Api;
   onCourses: () => void;
   onSetup: () => void;
@@ -795,26 +802,61 @@ export function Studio({
       }
     >
       <div className="layout-tools" aria-label="Workspace layout">
-        <button
-          data-wide
-          className="layout-icon"
-          aria-label={layout.hideSidebar ? "Show courses" : "Hide courses"}
-          title={layout.hideSidebar ? "Show courses" : "Hide courses"}
-          onClick={() => updateLayout({ hideSidebar: !layout.hideSidebar })}
-        >
-          <PanelLeft size={16} />
-        </button>
-        <button
-          className="layout-icon"
-          aria-label={layout.hideExplorer ? "Show files" : "Hide files"}
-          title={layout.hideExplorer ? "Show files" : "Hide files"}
-          onClick={() => updateLayout({ hideExplorer: !layout.hideExplorer })}
-        >
-          <Folder size={15} />
-        </button>
-        <span className="workspace-course-name" title={course.title}>
-          {course.title}
-        </span>
+        <div className="workspace-location">
+          <button
+            className="workspace-course-switch"
+            aria-label="Switch course"
+            title={course.title}
+            onClick={() =>
+              updateLayout({ hideExplorer: false, explorerTab: "courses" })
+            }
+          >
+            {course.title}
+          </button>
+          <ChevronRight size={12} />
+          <h1
+            title={[session?.section, session?.lessonTitle || course.title]
+              .filter(Boolean)
+              .join(" · ")}
+          >
+            {session?.lessonTitle || "Course workspace"}
+          </h1>
+          <details className="workspace-lesson-menu">
+            <summary aria-label="Lesson details" title="Lesson details">
+              <ChevronDown size={12} />
+            </summary>
+            <div>
+              <strong>{course.title}</strong>
+              <p>{session?.section || `${course.lessons.length} lessons`}</p>
+              <a href={course.url} target="_blank" rel="noreferrer">
+                Open on Udemy <ArrowUpRight size={12} />
+              </a>
+              <button onClick={onCourses}>Manage courses</button>
+            </div>
+          </details>
+        </div>
+        {session && (
+          <button
+            className="button primary studio-checkpoint"
+            disabled={busy || !!action || running || projectRunning}
+            onClick={
+              session.contributionId
+                ? () =>
+                    safe("end", async () => {
+                      for (const name of Object.keys(drafts))
+                        await saveFile(name);
+                      await api("note", { sessionId: session.id, note });
+                      await api("session", { action: "discard" });
+                      await onRefresh();
+                      onLive();
+                    })
+                : finish
+            }
+          >
+            <GitCommitHorizontal size={15} />
+            {session.contributionId ? "End work session" : "Checkpoint"}
+          </button>
+        )}
         <button
           className="lesson-toggle"
           aria-label="Lesson"
@@ -878,6 +920,34 @@ export function Studio({
           </summary>
           <div>
             <button
+              aria-label={
+                theme === "dark"
+                  ? "Switch to light mode"
+                  : "Switch to dark mode"
+              }
+              onClick={onToggleTheme}
+            >
+              {theme === "dark" ? <Sun size={13} /> : <Moon size={13} />}{" "}
+              {theme === "dark" ? "Light appearance" : "Dark appearance"}
+            </button>
+            <button
+              onClick={() =>
+                updateLayout({
+                  hideExplorer: !layout.hideExplorer,
+                  explorerTab: "files",
+                })
+              }
+            >
+              {layout.hideExplorer ? "Open file explorer" : "Close explorer"}
+            </button>
+            <button
+              onClick={() =>
+                updateLayout({ hideExplorer: false, explorerTab: "courses" })
+              }
+            >
+              Open course explorer
+            </button>
+            <button
               onClick={() =>
                 updateLayout({
                   assistantSide:
@@ -917,47 +987,6 @@ export function Studio({
         </button>
       </div>
       <section className="studio-main" aria-label="Local coding workspace">
-        <div className="studio-context">
-          <div>
-            <h1
-              title={[session?.section, session?.lessonTitle || course.title]
-                .filter(Boolean)
-                .join(" · ")}
-            >
-              {session?.lessonTitle || course.title}
-            </h1>
-          </div>
-          <a
-            href={course.url}
-            target="_blank"
-            rel="noreferrer"
-            title="Open course on Udemy"
-          >
-            Udemy <ArrowUpRight size={13} />
-          </a>
-          {session && (
-            <button
-              className="button primary studio-checkpoint"
-              disabled={busy || !!action || running || projectRunning}
-              onClick={
-                session.contributionId
-                  ? () =>
-                      safe("end", async () => {
-                        for (const name of Object.keys(drafts))
-                          await saveFile(name);
-                        await api("note", { sessionId: session.id, note });
-                        await api("session", { action: "discard" });
-                        await onRefresh();
-                        onLive();
-                      })
-                  : finish
-              }
-            >
-              <GitCommitHorizontal size={15} />
-              {session.contributionId ? "End work session" : "Checkpoint"}
-            </button>
-          )}
-        </div>
         {error && (
           <div className="studio-error" role="alert">
             {error}
@@ -1004,56 +1033,6 @@ export function Studio({
           </div>
         ) : (
           <>
-            <div className="studio-toolbar">
-              <span>
-                <Folder size={13} />
-                {session.workspace.split(/[\\/]/).slice(-1)[0]}
-              </span>
-              <div>
-                <button
-                  disabled={!!action || running}
-                  onClick={() => setNewFile(!newFile)}
-                >
-                  <Plus size={13} />
-                  New file
-                </button>
-                <button
-                  disabled={
-                    !file ||
-                    !!action ||
-                    running ||
-                    projectRunning ||
-                    taskWorking
-                  }
-                  onClick={() =>
-                    safe("save", async () => {
-                      await saveFile();
-                      await loadFiles();
-                    })
-                  }
-                  title="Ctrl / Cmd + S"
-                >
-                  <Save size={13} />
-                  {file && file.content !== file.saved
-                    ? "Save changes"
-                    : "Saved"}
-                </button>
-                <button
-                  className="run-button"
-                  disabled={
-                    !file ||
-                    !!action ||
-                    running ||
-                    projectRunning ||
-                    taskWorking
-                  }
-                  onClick={run}
-                >
-                  <Play size={13} />
-                  {/\.html?$/i.test(active) ? "Preview" : "Run"}
-                </button>
-              </div>
-            </div>
             {newFile && (
               <form
                 className="new-file"
@@ -1105,44 +1084,76 @@ export function Studio({
               </form>
             )}
             <div className="studio-code-area">
-              <aside className="file-explorer" aria-label="Lesson files">
-                <div>
-                  <span>Files</span>
-                  <button
-                    aria-label="Refresh files"
-                    onClick={() =>
-                      safe("refresh", async () => {
-                        await loadFiles();
-                      })
-                    }
-                  >
-                    <RefreshCw size={12} />
+              {layout.explorerTab === "courses" ? (
+                <aside
+                  className="file-explorer course-explorer"
+                  aria-label="Course explorer"
+                >
+                  <div>
+                    <span>Your courses</span>
+                    <button
+                      aria-label="Close course explorer"
+                      onClick={() => updateLayout({ hideExplorer: true })}
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+                  {state.courses.map((item) => (
+                    <button
+                      key={item.id}
+                      title={item.title}
+                      className={course.id === item.id ? "selected" : ""}
+                      onClick={() => onSelectCourse(item.id)}
+                    >
+                      <BookOpen size={13} />
+                      <span>{item.title}</span>
+                    </button>
+                  ))}
+                  <button className="manage-course-link" onClick={onCourses}>
+                    <Plus size={12} />
+                    Manage courses
                   </button>
-                </div>
-                {files.map((item) => (
-                  <button
-                    key={item.path}
-                    className={active === item.path ? "selected" : ""}
-                    title={item.path}
-                    onClick={() => safe("open", () => openFile(item.path))}
-                  >
-                    <FileCode2 size={12} />
-                    <span>
-                      {item.path.split("/").pop()}
-                      {item.path.includes("/") && (
-                        <small>
-                          {item.path.slice(0, item.path.lastIndexOf("/"))}
-                        </small>
-                      )}
-                    </span>
-                    {drafts[item.path] &&
-                      drafts[item.path].content !== drafts[item.path].saved && (
-                        <i />
-                      )}
-                  </button>
-                ))}
-                {!files.length && <p>Create a file to start building.</p>}
-              </aside>
+                </aside>
+              ) : (
+                <aside className="file-explorer" aria-label="File explorer">
+                  <div>
+                    <span>Files</span>
+                    <button
+                      aria-label="Refresh files"
+                      onClick={() =>
+                        safe("refresh", async () => {
+                          await loadFiles();
+                        })
+                      }
+                    >
+                      <RefreshCw size={12} />
+                    </button>
+                  </div>
+                  {files.map((item) => (
+                    <button
+                      key={item.path}
+                      className={active === item.path ? "selected" : ""}
+                      title={item.path}
+                      onClick={() => safe("open", () => openFile(item.path))}
+                    >
+                      <FileCode2 size={12} />
+                      <span>
+                        {item.path.split("/").pop()}
+                        {item.path.includes("/") && (
+                          <small>
+                            {item.path.slice(0, item.path.lastIndexOf("/"))}
+                          </small>
+                        )}
+                      </span>
+                      {drafts[item.path] &&
+                        drafts[item.path].content !==
+                          drafts[item.path].saved && <i />}
+                    </button>
+                  ))}
+                  {!files.length && <p>Create a file to start building.</p>}
+                </aside>
+              )}
+
               {!layout.hideExplorer && (
                 <Divider
                   className="explorer-divider"
@@ -1155,21 +1166,67 @@ export function Studio({
               )}
               <div className="editor-wrap">
                 <div className="editor-tabs">
-                  {Object.values(drafts).map((item) => (
+                  <div className="editor-file-tabs">
+                    {Object.values(drafts).map((item) => (
+                      <button
+                        key={item.path}
+                        className={active === item.path ? "selected" : ""}
+                        onClick={() => {
+                          setActive(item.path);
+                          setPreviewUrl("");
+                          setSelection("");
+                        }}
+                      >
+                        <FileCode2 size={12} />
+                        {item.path.split("/").pop()}
+                        {item.content !== item.saved && <i />}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="editor-actions">
                     <button
-                      key={item.path}
-                      className={active === item.path ? "selected" : ""}
-                      onClick={() => {
-                        setActive(item.path);
-                        setPreviewUrl("");
-                        setSelection("");
-                      }}
+                      disabled={!!action || running}
+                      onClick={() => setNewFile(!newFile)}
                     >
-                      <FileCode2 size={12} />
-                      {item.path.split("/").pop()}
-                      {item.content !== item.saved && <i />}
+                      <Plus size={13} />
+                      New file
                     </button>
-                  ))}
+                    <button
+                      disabled={
+                        !file ||
+                        !!action ||
+                        running ||
+                        projectRunning ||
+                        taskWorking
+                      }
+                      onClick={() =>
+                        safe("save", async () => {
+                          await saveFile();
+                          await loadFiles();
+                        })
+                      }
+                      title="Ctrl / Cmd + S"
+                    >
+                      <Save size={13} />
+                      {file && file.content !== file.saved
+                        ? "Save changes"
+                        : "Saved"}
+                    </button>
+                    <button
+                      className="run-button"
+                      disabled={
+                        !file ||
+                        !!action ||
+                        running ||
+                        projectRunning ||
+                        taskWorking
+                      }
+                      onClick={run}
+                    >
+                      <Play size={13} />
+                      {/\.html?$/i.test(active) ? "Preview" : "Run"}
+                    </button>
+                  </div>
                   {file && (
                     <button
                       className="reload-file"

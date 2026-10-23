@@ -95,6 +95,9 @@ test("language-aware studio creates React/Next/Python/native projects and runs T
     }
     if (kind === "cpp" && (await nativeCompiler(true))) {
       await page
+        .getByRole("button", { name: "Show files", exact: true })
+        .click();
+      await page
         .locator(`.file-explorer button[title="${folder}/main.cpp"]`)
         .click();
       await page.getByRole("button", { name: "Run", exact: true }).click();

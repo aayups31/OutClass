@@ -336,6 +336,19 @@
   padding: 0;
   margin-top: 16px;
 }
+.agent-work-handoff {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 18px;
+}
+.agent-work-handoff select {
+  width: auto;
+  max-width: 190px;
+  font-size: 11px;
+  padding: 8px;
+  border-radius: 5px;
+}
 .agent-work-error,
 .agent-work-state,
 .agent-work-empty {

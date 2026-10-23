@@ -13,6 +13,9 @@ import {
   type AgentWorkRequest,
 } from "../src/agent-work-contract";
 import { GTMAnalytics } from "../src/server/gtm-analytics";
+import { MediaTranscripts } from "../src/server/media-transcripts";
+import { AgentHandoffs } from "../src/server/agent-handoffs";
+import { zodTextFormat } from "openai/helpers/zod";
 let dir: string,
   store: Store,
   app: Application,
@@ -374,31 +377,29 @@ it("separates analytics interpretations from actual supplied metrics and keeps p
   const report = work
     .context(request("analytics", campaign.id))
     .sources.find((s) => s.id.startsWith("report:"))!;
-  const model = vi
-    .spyOn(app.ai, "structured")
-    .mockResolvedValue({
-      summary: "Measure outcomes before claiming conversion.",
-      artifacts: [
-        {
-          kind: "analysis_brief",
-          title: "A bounded measurement experiment",
-          sourceIds: [report.id],
-          hypotheses: [
-            {
-              interpretation:
-                "The supplied report does not establish enrollment.",
-              sourceIds: [report.id],
-              experiment:
-                "Tag one course landing link and inspect consented enrollment events.",
-              measure: "Observed attributed enrollments where available",
-              stopRule: "Review after seven days; do not infer missing values.",
-            },
-          ],
-          missingData: ["Enrollment attribution is not connected."],
-        },
-      ],
-      limitations: ["Manual reports are not settled sales."],
-    });
+  const model = vi.spyOn(app.ai, "structured").mockResolvedValue({
+    summary: "Measure outcomes before claiming conversion.",
+    artifacts: [
+      {
+        kind: "analysis_brief",
+        title: "A bounded measurement experiment",
+        sourceIds: [report.id],
+        hypotheses: [
+          {
+            interpretation:
+              "The supplied report does not establish enrollment.",
+            sourceIds: [report.id],
+            experiment:
+              "Tag one course landing link and inspect consented enrollment events.",
+            measure: "Observed attributed enrollments where available",
+            stopRule: "Review after seven days; do not infer missing values.",
+          },
+        ],
+        missingData: ["Enrollment attribution is not connected."],
+      },
+    ],
+    limitations: ["Manual reports are not settled sales."],
+  });
   const row = await work.wait(work.start(request("analytics", campaign.id)).id);
   expect(row.phase).toBe("ready");
   expect(model.mock.calls[0][0].context).not.toContain(
@@ -434,5 +435,98 @@ it("supports atomic nested product writes and recoverable inner rollbacks", () =
   expect(() => zodSchema()).not.toThrow();
 });
 function zodSchema() {
-  return agentWorkAnswer.toJSONSchema();
+  return zodTextFormat(agentWorkAnswer,"outclass_work_test");
 }
+it("hands delivered work to another specialist through an explicitly accepted, release-pinned source",async()=>{
+  const c=course();vi.spyOn(app.ai,"structured").mockResolvedValue(lessonAnswer());
+  const row=await work.wait(work.start(request("academy",c.id)).id);await work.apply(row.id,row.reviewHash!);
+  expect(()=>work.offer(row.id,"creative")).toThrow(/Release/);
+  const release=expansion.release(c.id,{expectedRevision:2,approve:true});
+  work.offer(row.id,"creative");
+  const handoffs=new AgentHandoffs(app),offer=handoffs.list()[0];
+  expect(offer.releaseHash).toBe(release.hash);expect(offer.sourceRevision).toBe(2);
+  expect(offer.proposal).toContain("Task generated from revision 1");expect(handoffs.sources("creative",release.id)).toEqual([]);
+  handoffs.accept(offer.id,offer.hash);expect(handoffs.sources("creative",release.id)[0].text).toContain("Empty input");
+  work.offer(row.id,"creative");expect(handoffs.list()).toHaveLength(1);
+});
+it("grounds proposed scenes in timed transcript evidence and blocks changed transcript application", async () => {
+  const { creative } = released(),
+    assetId = randomUUID();
+  store.put("creator:production:v1", {
+    assets: [
+      {
+        id: assetId,
+        name: "source.mp4",
+        hash: "c".repeat(64),
+        duration: 15,
+        rightsConfirmed: true,
+      },
+    ],
+    jobs: [],
+    drafts: [],
+  });
+  const transcripts = new MediaTranscripts(app, media),
+    text =
+      "1\n00:00:01,000 --> 00:00:05,000\nGroup repeated people using a dictionary.\n\n2\n00:00:07,000 --> 00:00:10,000\nTrace the accumulation for that person.\n";
+  transcripts.save({
+    assetId,
+    expectedRevision: 0,
+    name: "source.srt",
+    text,
+    rightsConfirmed: true,
+  });
+  const answer = {
+    summary: "A source-aligned preview.",
+    artifacts: [
+      {
+        kind: "production_script",
+        title: "Grouping",
+        sourceIds: ["lesson:0"],
+        format: "landscape",
+        assetId,
+        scenes: [
+          {
+            narration: "Introduce the grouping example.",
+            caption: "Group repeated records",
+            sourceIds: [`transcript:${assetId}:0`],
+            start: 1,
+            end: 6,
+          },
+          {
+            narration: "Trace how the total changes.",
+            caption: "Trace the update",
+            sourceIds: [`transcript:${assetId}:1`],
+            start: 7,
+            end: 10,
+          },
+        ],
+      },
+    ],
+    limitations: ["Imported captions are owner-supplied; review playback."],
+  };
+  const model = vi.spyOn(app.ai, "structured").mockResolvedValue(answer);
+  const invalid = await work.wait(
+    work.start(request("creative", creative.id, { assetId, maxCalls: 1 })).id,
+  );
+  expect(invalid.phase).toBe("failed");
+  expect(invalid.error).toContain("cue times");
+  answer.artifacts[0].scenes[0].end = 5;
+  const valid = await work.wait(
+    work.start(request("creative", creative.id, { assetId, maxCalls: 1 })).id,
+  );
+  expect(valid.phase).toBe("ready");
+  expect(model.mock.calls.at(-1)![0].context).toContain(
+    "Group repeated people",
+  );
+  transcripts.save({
+    assetId,
+    expectedRevision: 1,
+    name: "source.srt",
+    text: text.replace("Group repeated people", "Accumulate repeated people"),
+    rightsConfirmed: true,
+  });
+  await expect(work.apply(valid.id, valid.reviewHash!)).rejects.toThrow(
+    /source changed/,
+  );
+  expect(expansion.state().creatives[0].revision).toBe(1);
+});

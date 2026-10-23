@@ -51,7 +51,27 @@ export type SocialAccount = {
   expiresAt: number;
   connectedAt: string;
 };
-type Session = SocialAccount & { token: string; refresh?: string };
+export type SocialSession = SocialAccount & { token: string; refresh?: string };
+export type SocialVault = {
+  initial?: unknown;
+  persist?: (sessions: SocialSession[]) => Promise<void>;
+};
+const storedSessions = z
+  .array(
+    z
+      .object({
+        provider: z.enum(providers),
+        id: z.string().min(1).max(200),
+        name: z.string().max(500),
+        scopes: z.array(z.string().max(250)).max(20),
+        expiresAt: z.number().finite().positive(),
+        connectedAt: z.string().max(50),
+        token: z.string().min(1).max(12000),
+        refresh: z.string().max(12000).optional(),
+      })
+      .strict(),
+  )
+  .max(4);
 export class SocialConnections {
   private pending = new Map<
     string,
@@ -60,13 +80,27 @@ export class SocialConnections {
       verifier: string;
       redirect: string;
       expires: number;
+      generation: number;
     }
   >();
-  private sessions = new Map<SocialProvider, Session>();
+  private sessions = new Map<SocialProvider, SocialSession>();
+  private generations = new Map<SocialProvider, number>();
+  private writes: Promise<void> = Promise.resolve();
   constructor(
     private port: number,
     private send: typeof fetch = fetch,
-  ) {}
+    private vault: SocialVault = {},
+  ) {
+    const parsed = storedSessions.safeParse(vault.initial || []);
+    if (parsed.success)
+      for (const session of parsed.data)
+        this.sessions.set(session.provider, session);
+  }
+  private enqueue(write: () => Promise<void>) {
+    const next = this.writes.catch(() => {}).then(write);
+    this.writes = next;
+    return next;
+  }
   private config(provider: SocialProvider) {
     const prefix = `OUTCLASS_${provider.toUpperCase()}`;
     return {
@@ -102,7 +136,9 @@ export class SocialConnections {
         note: session
           ? expired
             ? "Session expired; reconnect."
-            : "Tokens stay in this process. Reconnect after restart."
+            : this.vault.persist
+              ? "Connection encrypted with your Windows account; reconnect when its token expires."
+              : "Tokens stay in this process. Reconnect after restart."
           : "Connect your developer app to authorize an account.",
       };
     });
@@ -152,6 +188,7 @@ export class SocialConnections {
       verifier,
       redirect,
       expires: Date.now() + 600000,
+      generation: this.generations.get(provider) || 0,
     });
     return {
       url: url.href,
@@ -280,7 +317,7 @@ export class SocialConnections {
           scopes = verified.scope.split(/[\s,]+/).filter(Boolean);
       }
     }
-    this.sessions.set(provider, {
+    const session: SocialSession = {
       provider,
       id,
       name,
@@ -291,6 +328,22 @@ export class SocialConnections {
         Date.now() +
         Math.max(60, Math.min(Number(result.expires_in) || 3600, 86400)) * 1000,
       connectedAt: new Date().toISOString(),
+    };
+    await this.enqueue(async () => {
+      if ((this.generations.get(provider) || 0) !== pending.generation)
+        throw new UserError(
+          "This channel was disconnected while authorization was completing.",
+          409,
+        );
+      const next = new Map(this.sessions);
+      next.set(provider, session);
+      if (this.vault.persist) await this.vault.persist([...next.values()]);
+      if ((this.generations.get(provider) || 0) !== pending.generation)
+        throw new UserError(
+          "This channel was disconnected while authorization was completing.",
+          409,
+        );
+      this.sessions = next;
     });
     return this.status().find((s) => s.provider === provider);
   }
@@ -305,8 +358,15 @@ export class SocialConnections {
       );
     return account;
   }
-  disconnect(provider: SocialProvider) {
+  async disconnect(provider: SocialProvider) {
+    this.generations.set(provider, (this.generations.get(provider) || 0) + 1);
+    for (const [id, value] of this.pending)
+      if (value.provider === provider) this.pending.delete(id);
     this.sessions.delete(provider);
+    await this.enqueue(async () => {
+      if (this.vault.persist)
+        await this.vault.persist([...this.sessions.values()]);
+    });
     return this.status();
   }
   routes() {
@@ -315,8 +375,10 @@ export class SocialConnections {
     router.post("/:provider/connect", (req, res) =>
       res.json(this.authorize(z.enum(providers).parse(req.params.provider))),
     );
-    router.post("/:provider/disconnect", (req, res) =>
-      res.json(this.disconnect(z.enum(providers).parse(req.params.provider))),
+    router.post("/:provider/disconnect", async (req, res) =>
+      res.json(
+        await this.disconnect(z.enum(providers).parse(req.params.provider)),
+      ),
     );
     return router;
   }

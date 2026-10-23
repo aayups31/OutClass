@@ -17,6 +17,15 @@ Each saved product draft has a task workspace. A task snapshots the selected les
 - Applying the same reviewed result again returns its saved receipt. GTM retains prepared artifact IDs to avoid duplicate channel preparation when a delivery is retried.
 - Cancellation discards subsequent results. A provider request already in flight can still complete and incur its normal charge, but its returned output is not applied.
 - Every result can be exported with its evidence and progress receipt. Source passages remain untrusted material, not instructions.
+- Reviewed task outputs can be offered to another specialist without another model call. The receiver explicitly accepts the handoff. Academy requires a release matching the current course revision, and receipts preserve both the input revision and the reviewed output revision.
+
+## Footage and timed evidence
+
+Import an owned SRT or WebVTT transcript beside selected footage in Creator Studio. OutClass validates cue ranges against the actual media duration and binds the index to the footage hash. Search returns timed passages that can be added to the editable timeline. Creative tasks use matching cue IDs and reject scene ranges outside their cited cues. Replacing a transcript invalidates an earlier review. Imported captions remain owner-supplied evidence; this does not claim visual scene recognition or automatic transcription.
+
+## Desktop connections
+
+Social account tokens are encrypted by Electron's Windows account storage and restored privately to the companion process. Public status contains scopes and expiry, never tokens. Disconnect clears the persisted session and prevents an in-flight OAuth response from restoring it. Expired tokens require reconnection; developer-app credentials and platform approval remain necessary.
 
 ## Boundaries
 

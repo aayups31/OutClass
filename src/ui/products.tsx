@@ -360,7 +360,7 @@ export function ProductWorkspace({
                   onWorkApplied={workApplied}
                   domain="academy"
                   entity={selected}
-                  dirty={dirty}
+                  dirty={dirty || mediaDirty || promotionDirty || composerDirty}
                   api={api}
                 />
 
@@ -745,7 +745,7 @@ export function ProductWorkspace({
                 onWorkApplied={workApplied}
                 domain="creative"
                 entity={selectedCreative}
-                dirty={dirty}
+                dirty={dirty || mediaDirty || promotionDirty || composerDirty}
                 api={api}
                 onApply={(text) => {
                   setCreative({ ...creative, copy: text });
@@ -958,6 +958,7 @@ export function ProductWorkspace({
                 dirty={dirty}
               />
               <CreatorMedia
+                key={`${selectedCreative?.id || "new"}:${composerSession}`}
                 onTimelineDirty={setMediaDirty}
                 api={api}
                 creative={selectedCreative}
@@ -1026,7 +1027,7 @@ export function ProductWorkspace({
                 onWorkApplied={workApplied}
                 domain="growth"
                 entity={selectedCampaign}
-                dirty={dirty}
+                dirty={dirty || mediaDirty || promotionDirty || composerDirty}
                 api={api}
                 onApply={(text) => {
                   setCampaign({ ...campaign, goal: text.slice(0, 2000) });
@@ -1232,7 +1233,7 @@ export function ProductWorkspace({
                 onWorkApplied={workApplied}
                 domain="analytics"
                 entity={selectedCampaign}
-                dirty={dirty}
+                dirty={dirty || mediaDirty || promotionDirty || composerDirty}
                 api={api}
               />
               <p className="product-limit">

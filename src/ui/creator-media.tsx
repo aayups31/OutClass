@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Film, Plus, Play, Download, CheckCircle2, X } from "lucide-react";
 import type { Creative } from "../expansion-contract";
+import { MediaTranscriptPanel } from "./media-transcripts";
 import type {
   MediaAsset,
   RenderJob,
@@ -199,6 +200,33 @@ export function CreatorMedia({
           ))}
         </select>
       </label>
+      {assetId && (
+        <MediaTranscriptPanel
+          key={assetId}
+          api={api}
+          assetId={assetId}
+          onRange={(cue) => {
+            const current =
+              scenes.length === 1 && !scenes[0].caption ? [] : scenes;
+            if (current.length >= 8) {
+              setError(
+                "This timeline already has eight scenes. Remove one before adding another.",
+              );
+              return;
+            }
+            updateScenes([
+              ...current,
+              {
+                start: cue.start,
+                end: cue.end,
+                caption: cue.text.slice(0, 150),
+              },
+            ]);
+            if (sourcePlayer.current)
+              sourcePlayer.current.currentTime = cue.start;
+          }}
+        />
+      )}
       <button
         className="button"
         disabled={busy || !assetId}

@@ -19,7 +19,7 @@ export type ProductAgentRun = {
   error?: string;
   sources: { id: string; title: string; text: string }[];
   answer?: ReturnType<typeof productAgentAnswer.parse>;
-  maxCalls: 1;
+  maxCalls: 1 | 2;
 };
 export class ProductAgents {
   private active = new Set<string>();

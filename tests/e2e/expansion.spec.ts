@@ -182,6 +182,31 @@ test("author a course, launch Learn, approve grounded copy and prepare a manual 
   await expect(page.getByLabel("Source library")).not.toHaveValue("", {
     timeout: 15000,
   });
+  await page.locator(".media-transcript-panel > summary").click();
+  await page
+    .getByLabel("Owned footage transcript")
+    .setInputFiles({
+      name: "lesson.srt",
+      mimeType: "text/plain",
+      buffer: Buffer.from(
+        "1\n00:00:01,000 --> 00:00:03,000\nGroup repeated students in a dictionary.\n\n2\n00:00:04,000 --> 00:00:06,000\nTrace the accumulated total.\n",
+      ),
+    });
+  await page.getByLabel("I have permission to use this transcript").check();
+  await page
+    .getByRole("button", { name: "Index transcript locally", exact: true })
+    .click();
+  await expect(page.locator(".media-transcript-panel")).toContainText(
+    "2 timed cues",
+  );
+  await page.getByLabel("Find a source moment").fill("repeated students");
+  await page
+    .locator(".media-transcript-search")
+    .getByRole("button", { name: "Search", exact: true })
+    .click();
+  await page.getByRole("button", { name: "Add as scene", exact: true }).click();
+  await expect(page.getByLabel("Start seconds 1")).toHaveValue("1");
+  await expect(page.getByLabel("End seconds 1")).toHaveValue("3");
   await page
     .getByRole("button", { name: "Preview source footage", exact: true })
     .click();
