@@ -17,6 +17,8 @@
 
 The hosted included-AI environment remains an owner test preview. Public email requires a verified sender domain; Stripe is in test mode; social APIs require configured, approved developer applications and eligible accounts. The Chrome Web Store and signed distribution remain separate from a GitHub preview release.
 
+The [0.8.0 preview release](https://github.com/aayups31/OutClass/releases/tag/v0.8.0) is published at source commit `a5660f12a4ef33463ef510eef70883cc2c6ca326`. All three public downloads return HTTP 200; GitHub's asset byte sizes and SHA-256 digests match the table, and the public checksum file matches the local one. The promoted Vercel origin serves the 0.8.0 manifest and fallback link, and gateway contract version 2 advertises `work`. All nine deployed runtime checks pass, including real database readiness, unauthenticated rejection, billing return routes, invalid email rejection and exact test-webhook signature handling. The stale cancel-page copy assertion was replaced with its stable billing-result marker. No sign-in email or inference was triggered by these deployment checks.
+
 ## October 13: 0.7.1 connected learning
 
 - The full backend candidate passed 122 tests in 19 files. After the final evidence-based fallback refinement, all 34 focused teacher/provider/library/gateway tests passed, including the added fallback case. TypeScript and the final production build passed.

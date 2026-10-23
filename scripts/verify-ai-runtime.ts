@@ -30,11 +30,11 @@ async function get(path: string, status: number, fragment?: string) {
   return response;
 }
 try {
-  await get("/health", 200, "OutClass included AI");
+  await get("/health", 200, '"work"');
   await get("/ready", 200, '"ok":true');
   await get("/v1/usage", 401);
   await get("/billing/success", 200, "Refresh allowance");
-  await get("/billing/cancel", 200, "Back to learning");
+  await get("/billing/cancel", 200, 'data-billing-result="cancel"');
   const css = await get("/billing/style.css", 200, "color-scheme:dark");
   assert.ok(css.headers.get("content-type")?.includes("text/css"));
   await get("/billing/unknown", 404);
