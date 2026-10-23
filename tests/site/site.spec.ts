@@ -1,4 +1,6 @@
 import { test, expect } from "@playwright/test";
+import { readFileSync } from "node:fs";
+const release = JSON.parse(readFileSync("src/site/assets/release.json", "utf8"));
 
 test("product story leads to real downloads and a separate complete setup guide", async ({
   page,
@@ -395,7 +397,7 @@ test("downloads and the product story remain usable without animation scripts or
     .click();
   await expect(nojs.locator("#windows-download")).toHaveAttribute(
     "href",
-    /OutClass-Setup-0.7.1.exe$/,
+    release.windows.url,
   );
   await nojs
     .getByRole("link", { name: "Follow the setup guide", exact: true })

@@ -1,5 +1,22 @@
 # OutClass preview verification
 
+## October 23: 0.8.0 connected agents
+
+- The full backend sweep passed 198 cases and skipped the opt-in live Academy database case; one runtime setup hook timed out during a long interruption. All five runtime cases passed an isolated rerun. The final AI/provider/gateway group passed 36 cases, and the added public task-contract check passed in its nine-case gateway suite. TypeScript and the final production/package build pass.
+- Fourteen relevant browser cases pass across the final run and targeted reruns: compact editor, persistent adjustable layouts, course isolation, local model/editor setup, source retrieval, notes/checkpoints, actual execution, language projects, practical work, the included-AI teacher loop, all four product agents, transcript search-to-timeline and an accepted Creative-to-Growth task handoff. The learning checkpoint/resume case passed its isolated rerun after the interruption.
+- All three scenarios pass against the actual packaged Windows executable: first-run setup, encrypted personal key, local files/runs/restart; encrypted included-AI and social-session restoration/disconnect; and the native terminal's real interactive input, resize, persistent sessions and shutdown. The package's health version, Chrome manifest, editor companion and bundled download guide agree with the release version.
+- Two final live synthetic four-agent smoke passes produced schema-valid, source-checked artifacts with one call per specialist. The first earlier Academy attempt exposed a self-prerequisite; the validator blocked it and the explicit zero-based prerequisite context corrected it. The subsequent prompt pass strengthened concrete tasks, editorial specificity and unknown-measurement handling. These are smoke checks, not expert-quality certification or learner trials. No learner code, real campaign data, public posts or ad spending was used.
+- Actual FFmpeg render tests, cue-bound scene checks, changed-source rejection, atomic rollback, idempotent delivery, cancellation and disconnect/OAuth races pass. Installer resources, site, browser extension and editor companion were scanned for environment files and configured API-key bytes; none were found.
+- The release audit identified vulnerable Vite development-server behavior and a nested Vercel configuration dependency. Vite was patched within major version 7 and the nested Zod copy aligned with the already-tested current compatible version. The final install reports zero vulnerabilities, including production-only audit. The 22 focused agent/gateway/config tests, both connected-product browser scenarios, no-JavaScript download check and packaged account/guide scenario pass after those fixes.
+
+| Artifact | Bytes | SHA-256 |
+| --- | ---: | --- |
+| OutClass-Setup-0.8.0.exe | 121,073,561 | `918cd817dbc5678b6439ce8ead8f99533d62b1acfd91593f3ee1871d694de0c7` |
+| OutClass-Chrome-0.8.0.zip | 135,300 | `3a3e8f86d58daf96271d1d20897d6755c7e5e952a0899e1c46aaa1a3036fc7e8` |
+| OutClass-Editor-0.8.0.vsix | 8,730 | `49224dd4cb5894dbd5e59687dc4a0582a5491f94266f862680446c232edbb92f` |
+
+The hosted included-AI environment remains an owner test preview. Public email requires a verified sender domain; Stripe is in test mode; social APIs require configured, approved developer applications and eligible accounts. The Chrome Web Store and signed distribution remain separate from a GitHub preview release.
+
 ## October 13: 0.7.1 connected learning
 
 - The full backend candidate passed 122 tests in 19 files. After the final evidence-based fallback refinement, all 34 focused teacher/provider/library/gateway tests passed, including the added fallback case. TypeScript and the final production build passed.

@@ -1,17 +1,17 @@
 {
-  "version": "0.7.1",
+  "version": "0.8.0",
   "productName": "OutClass",
   "windows": {
-    "url": "https://github.com/aayups31/OutClass/releases/download/v0.7.1/OutClass-Setup-0.7.1.exe",
-    "size": "115 MB"
+    "url": "https://github.com/aayups31/OutClass/releases/download/v0.8.0/OutClass-Setup-0.8.0.exe",
+    "size": "116 MB"
   },
   "extension": {
-    "url": "https://github.com/aayups31/OutClass/releases/download/v0.7.1/OutClass-Chrome-0.7.1.zip",
+    "url": "https://github.com/aayups31/OutClass/releases/download/v0.8.0/OutClass-Chrome-0.8.0.zip",
     "size": "135 KB"
   },
   "chromeStoreUrl": null,
   "editor": {
-    "url": "https://github.com/aayups31/OutClass/releases/download/v0.7.1/OutClass-Editor-0.7.1.vsix",
+    "url": "https://github.com/aayups31/OutClass/releases/download/v0.8.0/OutClass-Editor-0.8.0.vsix",
     "size": "9 KB"
   }
 }

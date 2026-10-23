@@ -1,6 +1,6 @@
-# GitLearn 0.4 Windows preview
+# OutClass Windows desktop preview
 
-The public product is a static marketing site. The Windows download is the actual learning workspace. GitLearn remains the release name.
+The public site showcases the product and setup. The Windows download contains Learn, Academy, Creator Studio and GTM. See [the current release](releases/0.8.0.md) for capabilities and account requirements. Historical GitLearn app-data paths remain compatible.
 
 ## Architecture
 
@@ -36,8 +36,8 @@ npm run package:extension
 npm run preview:site
 ```
 
-- Installer: `dist/releases/GitLearn-Setup-0.4.1.exe`.
-- Chrome upload: `dist/releases/GitLearn-Chrome-0.4.1.zip`.
+- Installer: `dist/releases/OutClass-Setup-0.8.0.exe`.
+- Chrome upload: `dist/releases/OutClass-Chrome-0.8.0.zip`.
 - Public site only: `dist/site/`; no workspace APIs or application build required by the host.
 - Native workspace: `dist/desktop/` and `dist/web/` plus runtime dependencies.
 
@@ -57,10 +57,10 @@ The installer keeps the extension in resources/extension as ordinary files outsi
 
 ## Distribution state
 
-This is an unsigned Windows x64 preview, not a signed general-availability release. The Chrome developer dashboard is empty; no store item ID exists. Package the extension and follow chrome-web-store.md to create the listing. Do not invent a Chrome store link. Once an actual item is published, set chromeStoreUrl in the static release metadata and rebuild the site.
+This is an unsigned Windows x64 preview. The last verified Chrome item `iaokfcjeghdefpgcgbcomiehhogbkbcp` was pending review; it does not establish approval of the current package. Use the matching preview ZIP with Load unpacked until an updated store release is verified. Set chromeStoreUrl in static release metadata only after public availability is confirmed.
 
 Release assets belong in GitHub Releases, not Git source history. The site uses verified release asset URLs once uploaded and degrades to the release page when metadata or JavaScript is unavailable. The user selected Vercel for hosting. Import the repository using the committed vercel.json; see vercel-deployment.md.
 
 ## Verification
 
-Use `npm run check`, `npm test`, `npm run test:desktop`, `npx playwright test --config playwright.site.config.ts`, and the existing workflow suite. The desktop test uses its own temporary profile, database, learning folder, and port; it does not alter the user's setup or contact OpenAI. Set GITLEARN_PACKAGED_TEST to the unpacked packaged GitLearn.exe to exercise the actual distributed runtime. The page tests exercise desktop/mobile, keyboard tabs, privacy, no JavaScript, live reduced-motion switching, and absence of workspace API calls.
+Use `npm run check`, `npm test`, `npm run test:desktop`, `npx playwright test --config playwright.site.config.ts`, and the existing workflow suite. The desktop test uses its own temporary profile, database, learning folder, and port; it does not alter the user's setup or contact OpenAI. Set GITLEARN_PACKAGED_TEST to the unpacked packaged OutClass.exe to exercise the actual distributed runtime. The page tests exercise desktop/mobile, keyboard tabs, privacy, no JavaScript, live reduced-motion switching, and absence of workspace API calls.
