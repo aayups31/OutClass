@@ -31,8 +31,10 @@ import { GTMStudio } from "./gtm-studio.js";
 import { PublicationQueue } from "./publication-queue.js";
 import type { AgentWorkService } from "./agent-work.js";
 import { MediaTranscripts } from "./media-transcripts.js";
+import packageMetadata from "../../package.json" with { type: "json" };
 
 const text = z.string().max(2000);
+const { version } = packageMetadata;
 function matches(a: string, b: string) {
   const aa = Buffer.from(a);
   const bb = Buffer.from(b);
@@ -43,7 +45,7 @@ export function createApp(
   port: number,
   focusDesktop?: () => void,
   editorVsix = process.env.OUTCLASS_EDITOR_VSIX ||
-    path.resolve("dist/editor/OutClass-Editor-0.7.0.vsix"),
+    path.resolve(`dist/editor/OutClass-Editor-${version}.vsix`),
   socialVault: SocialVault = {},
 ) {
   const app = express();
@@ -136,7 +138,7 @@ export function createApp(
   app.use("/social-image", publishing.images.publicRoutes());
   app.use("/social/callback", social.callbacks());
   app.get("/api/health", (_req, res) =>
-    res.json({ ok: true, name: "GitLearn", version: "0.4.2" }),
+    res.json({ ok: true, name: "GitLearn", version }),
   );
   app.get("/preview/:token", (req, res) => {
     res.setHeader("X-Frame-Options", "SAMEORIGIN");

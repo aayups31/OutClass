@@ -63,6 +63,17 @@ async function fixture(overrides: Partial<GatewayDependencies> = {}) {
       }),
   };
 }
+it("advertises the task contract without inference or account secrets", async () => {
+  const f = await fixture();
+  const response = await fetch(f.base + "/health");
+  expect(response.status).toBe(200);
+  expect(await response.json()).toMatchObject({
+    ok: true,
+    contractVersion: 2,
+    tasks: expect.arrayContaining(["work", "teacher", "promotion"]),
+  });
+  expect(f.deps.answer).not.toHaveBeenCalled();
+});
 it("requires a verified account, reserves allowance before inference and blocks overspending", async () => {
   const f = await fixture(),
     input = { task: "teacher", context: "Course material", history: [] };

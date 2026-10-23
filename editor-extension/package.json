@@ -2,7 +2,7 @@
   "name": "outclass-learning",
   "displayName": "OutClass — OffCourse learning guide",
   "description": "Connect your course workspace, OffCourse teacher and local OutClass companion to VS Code or Code OSS.",
-  "version": "0.7.2",
+  "version": "0.8.0",
   "publisher": "outclass",
   "license": "MIT",
   "repository": {

@@ -205,6 +205,18 @@ export class AgentWorkService {
     const context = {
       domain: input.domain,
       selectedLesson: input.lessonIndex,
+      allowedPrerequisiteLessons: Array.from(
+        { length: input.lessonIndex },
+        (_, index) => index,
+      ),
+      measurementEvidence: {
+        status: sources.some((s) => /^(report|trend|observation):/.test(s.id))
+          ? "available"
+          : "not_recorded",
+        sourceIds: sources
+          .filter((s) => /^(report|trend|observation):/.test(s.id))
+          .map((s) => s.id),
+      },
       brief,
       curriculum: course.lessons.map((l, index) => ({
         index,
@@ -326,12 +338,15 @@ export class AgentWorkService {
     for (const a of answer.artifacts) {
       cite(a.sourceIds);
       if (a.kind === "lesson_package") {
-        if (
-          a.lessonIndex !== input.lessonIndex ||
-          a.prerequisiteLessons.some((p) => p >= a.lessonIndex)
-        )
+        if (a.lessonIndex !== input.lessonIndex)
           throw new UserError(
-            "Use the selected lesson and earlier prerequisites only.",
+            `lessonIndex must equal the zero-based selectedLesson ${input.lessonIndex}.`,
+          );
+        if (a.prerequisiteLessons.some((p) => p >= a.lessonIndex))
+          throw new UserError(
+            input.lessonIndex === 0
+              ? "For selectedLesson 0, prerequisiteLessons MUST be []. The first lesson cannot depend on itself."
+              : `prerequisiteLessons may contain only indices 0–${input.lessonIndex - 1}, never the selected lesson ${input.lessonIndex}.`,
           );
         const lessons = structuredClone(snapshot.course.lessons);
         lessons[a.lessonIndex].learn = {

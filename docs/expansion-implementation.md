@@ -3,6 +3,10 @@
 October 14, 2026. Source: expansion-master-spec.md. This is a multi-release
 programme; delivery status is recorded explicitly rather than equating pages with products.
 
+## October 23, 2026 · Connected agent execution
+
+The [0.8.0 preview](releases/0.8.0.md) adds bounded task workspaces that produce and apply concrete lesson packages, source-grounded scripts/timelines, channel campaigns and evidence briefs. Reviewed outputs become shared context only after a receiver accepts the handoff. Owned timed-caption imports now support keyword retrieval and cue-grounded clip proposals. Windows social sessions persist through account encryption; platform developer setup and a public OAuth broker remain separate gates. The earlier milestone descriptions below are historical snapshots. See [execution and validation boundaries](agent-work.md).
+
 ## Verified reusable foundation
 
 - React/TypeScript desktop, CodeMirror, Node loopback companion, SQLite KV transactions.

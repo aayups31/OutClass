@@ -58,7 +58,7 @@ if (args[0] === "status") {
     env,
   );
   console.log(repo.trim());
-} else if (args[0] === "publish") {
+} else if (args[0] === "publish" || args[0] === "draft") {
   const version = JSON.parse(await readFile("package.json", "utf8")).version;
   const assets = [
     `dist/releases/OutClass-Setup-${version}.exe`,
@@ -80,14 +80,44 @@ if (args[0] === "status") {
       "--title",
       `OutClass ${version} · Windows preview`,
       "--prerelease",
+      ...(args[0] === "draft" ? ["--draft"] : []),
       "--notes-file",
       `docs/releases/${version}.md`,
     ],
     env,
   );
   console.log(
-    `Published preview release: https://github.com/aayups31/OutClass/releases/tag/v${version}`,
+    `${args[0] === "draft" ? "Prepared draft" : "Published preview"} release: https://github.com/aayups31/OutClass/releases/tag/v${version}`,
   );
+} else if (args[0] === "publish-prepared") {
+  const { version } = JSON.parse(await readFile("package.json", "utf8"));
+  const sha = (await command("git", ["rev-parse", "HEAD"], env)).trim();
+  if ((await command("git", ["status", "--porcelain"], env)).trim())
+    throw Error(
+      "Commit and push the exact tested release sources before publishing.",
+    );
+  const remote = (
+    await command("git", ["ls-remote", "origin", "refs/heads/main"], env)
+  )
+    .trim()
+    .split(/\s+/)[0];
+  if (remote !== sha) throw Error("The release commit must match pushed main.");
+  await command(
+    "gh",
+    [
+      "release",
+      "edit",
+      `v${version}`,
+      "--repo",
+      "aayups31/OutClass",
+      "--draft=false",
+      "--prerelease",
+      "--target",
+      sha,
+    ],
+    env,
+  );
+  console.log(`Published prepared preview v${version} at ${sha}.`);
 } else if (args[0] === "replace-preview") {
   const { version } = JSON.parse(await readFile("package.json", "utf8"));
   await command(
@@ -143,4 +173,7 @@ if (args[0] === "status") {
       )
     ).trim(),
   );
-} else throw Error("Use status, publish, replace-installer, or view.");
+} else
+  throw Error(
+    "Use status, draft, publish-prepared, publish, replace-installer, or view.",
+  );

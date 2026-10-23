@@ -527,6 +527,7 @@ export function AgentWorkPanel({
                         );
                         if (target.current !== owner) return;
                         setJob(result);
+                        window.dispatchEvent(new Event("outclass:handoffs"));
                         setShareNotice(
                           "Handoff offered. Accept it in the receiving specialist’s inbox to use this context.",
                         );

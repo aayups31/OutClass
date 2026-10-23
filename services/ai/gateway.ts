@@ -182,7 +182,12 @@ export function createGateway(deps: GatewayDependencies) {
     return entry.count > max;
   }
   app.get("/health", (_req, res) =>
-    res.json({ ok: true, name: "OutClass included AI" }),
+    res.json({
+      ok: true,
+      name: "OutClass included AI",
+      contractVersion: 2,
+      tasks: hostedRequest.shape.task.options,
+    }),
   );
   // Stateless HTTPS OAuth relay. The local companion alone verifies the one-use
   // state and exchanges the code; tokens and client secrets never pass here.

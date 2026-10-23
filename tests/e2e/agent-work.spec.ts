@@ -233,7 +233,22 @@ test("the four specialists produce, review, deliver and restore actual product a
     "Trace the grouping update",
   );
   expect(expansion.state().creatives[0].approval).toBeUndefined();
+  await creative
+    .getByLabel("Creative Director handoff recipient")
+    .selectOption("growth");
+  await creative.getByRole("button", { name: "Offer handoff" }).click();
+  await expect(creative).toContainText("Handoff offered.");
   await page.getByRole("button", { name: "GTM", exact: true }).click();
+  await page.locator(".agent-handoff-inbox > summary").click();
+  await page
+    .getByRole("button", { name: "Accept shared context", exact: true })
+    .click();
+  await expect(
+    page.getByRole("button", {
+      name: "Included in next agent context",
+      exact: true,
+    }),
+  ).toBeDisabled();
   await page
     .getByRole("button", { name: "Campaigns & insights", exact: true })
     .click();

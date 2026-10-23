@@ -1,6 +1,6 @@
 {
   "name": "git-for-learning",
-  "version": "0.7.2",
+  "version": "0.8.0",
   "description": "A local learning workspace for Udemy, code, and sourced AI help.",
   "author": "Aayu Pratap Singh",
   "main": "dist/desktop/main.cjs",
@@ -102,6 +102,11 @@
     "react-markdown": "^10.1.0",
     "twitter-text": "3.1.0",
     "zod": "^4.1.12"
+  },
+  "overrides": {
+    "@vercel/cli-config": {
+      "zod": "^4.6.5"
+    }
   },
   "devDependencies": {
     "@playwright/test": "^1.56.0",

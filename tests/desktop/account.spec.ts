@@ -58,6 +58,11 @@ test("packaged account sessions use Windows encryption, restore and sign out wit
       (await fetch("/welcome/assets/release.json")).json(),
     );
     expect(await desktop.evaluate(({ app }) => app.getVersion())).toBe(version);
+    expect(
+      await page.evaluate(
+        async () => (await (await fetch("/api/health")).json()).version,
+      ),
+    ).toBe(version);
     // A local preview may be newer than the published downloads. Keep those
     // links pinned to the public release until its new assets are published.
     const publishedGuide = JSON.parse(
@@ -108,12 +113,23 @@ test("packaged account sessions use Windows encryption, restore and sign out wit
     expect(encrypted.includes(Buffer.from(session.refresh_token))).toBe(false);
     // Seed an offline OAuth fixture through the actual Windows encryption API.
     const socialCipher = await desktop.evaluate(({ safeStorage }) => {
-      const rows = [{ provider: "x", id: "fixture-channel", name: "Fixture channel",
-        scopes: ["tweet.write"], expiresAt: Date.now() + 600000,
-        connectedAt: new Date().toISOString(), token: "fixture-social-private" }];
+      const rows = [
+        {
+          provider: "x",
+          id: "fixture-channel",
+          name: "Fixture channel",
+          scopes: ["tweet.write"],
+          expiresAt: Date.now() + 600000,
+          connectedAt: new Date().toISOString(),
+          token: "fixture-social-private",
+        },
+      ];
       return safeStorage.encryptString(JSON.stringify(rows)).toString("base64");
     });
-    await writeFile(path.join(directory, "profile", "social-accounts.encrypted"), Buffer.from(socialCipher, "base64"));
+    await writeFile(
+      path.join(directory, "profile", "social-accounts.encrypted"),
+      Buffer.from(socialCipher, "base64"),
+    );
     await desktop.close();
     desktop = await electron.launch(options);
     const reopened = await desktop.firstWindow();
@@ -127,7 +143,9 @@ test("packaged account sessions use Windows encryption, restore and sign out wit
         access: await (await fetch("/api/ai-access", { headers })).json(),
         usage: await (await fetch("/api/ai-usage", { headers })).json(),
         state: await (await fetch("/api/state", { headers })).json(),
-        social: await (await fetch("/api/expansion/social", { headers })).json(),
+        social: await (
+          await fetch("/api/expansion/social", { headers })
+        ).json(),
       };
     });
     expect(result.access.account.email).toBe(session.email);
@@ -136,7 +154,10 @@ test("packaged account sessions use Windows encryption, restore and sign out wit
     expect(result.state.hasAI).toBe(true);
     expect(result.usage.remaining).toBe(20);
     expect(JSON.stringify(result)).not.toContain(session.access_token);
-    expect(result.social.find((s: {provider:string}) => s.provider === "x").connected).toBe(true);
+    expect(
+      result.social.find((s: { provider: string }) => s.provider === "x")
+        .connected,
+    ).toBe(true);
     expect(JSON.stringify(result)).not.toContain("fixture-social-private");
     await reopened.evaluate(async () => {
       const { token } = await (
@@ -152,13 +173,25 @@ test("packaged account sessions use Windows encryption, restore and sign out wit
       });
       if (!r.ok) throw new Error("Sign out failed.");
       const social = await fetch("/api/expansion/social/x/disconnect", {
-        method: "POST", headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" }, body: "{}"
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: "{}",
       });
       if (!social.ok) throw new Error("Disconnect failed.");
     });
-    const cleared = await readFile(path.join(directory, "profile", "social-accounts.encrypted"));
-    expect(await desktop.evaluate(({ safeStorage }, encoded) =>
-      safeStorage.decryptString(Buffer.from(encoded, "base64")), cleared.toString("base64"))).toBe("[]");
+    const cleared = await readFile(
+      path.join(directory, "profile", "social-accounts.encrypted"),
+    );
+    expect(
+      await desktop.evaluate(
+        ({ safeStorage }, encoded) =>
+          safeStorage.decryptString(Buffer.from(encoded, "base64")),
+        cleared.toString("base64"),
+      ),
+    ).toBe("[]");
     expect(
       await readFile(
         path.join(directory, "profile", "ai-account.encrypted"),

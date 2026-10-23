@@ -1,4 +1,6 @@
-# OutClass current build — 0.7.1 Windows preview
+# OutClass current build — 0.8.0 connected agents preview
+
+October 23, 2026: [0.8.0](releases/0.8.0.md) adds task-based production across Academy, Creator Studio, Growth and Analytics; explicit reviewed handoffs; timed caption retrieval and scene selection; encrypted desktop social-session restoration; and the compact editor with OffCourse on the right. See [agent execution architecture](agent-work.md) and [workspace controls](workspace-layout.md). Release validation distinguishes local/package checks, bounded live-model smoke tests and external launch gates. Historical snapshots below describe the compatible foundation.
 
 October 13, 2026: [0.7.1](releases/0.7.1.md) connects course goals, in-editor practice, saved-code checks, teacher guidance, reflection and transfer. AI modes share the teaching policy and actual execution context; account changes and failures have explicit recovery. Task evidence expands on demand and program output can collapse to keep space for coding. Included AI works against the local integration fixture; public infrastructure remains deferred. The sections below retain the historical implementation foundation.
 

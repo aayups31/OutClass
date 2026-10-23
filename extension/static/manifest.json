@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "OutClass \u2014 Udemy learning companion",
-  "version": "0.7.2",
+  "name": "OutClass — Udemy learning companion",
+  "version": "0.8.0",
   "icons": {
     "16": "icons/icon-16.png",
     "32": "icons/icon-32.png",
@@ -9,7 +9,10 @@
     "128": "icons/icon-128.png"
   },
   "description": "Connect your Udemy lessons with your own local code, notes, and Git checkpoints.",
-  "permissions": ["storage", "alarms"],
+  "permissions": [
+    "storage",
+    "alarms"
+  ],
   "host_permissions": [
     "http://127.0.0.1:47831/*",
     "https://*.udemy.com/course/*",
@@ -24,8 +27,13 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://*.udemy.com/course/*", "https://udemy.com/course/*"],
-      "js": ["content.js"],
+      "matches": [
+        "https://*.udemy.com/course/*",
+        "https://udemy.com/course/*"
+      ],
+      "js": [
+        "content.js"
+      ],
       "run_at": "document_idle"
     }
   ]

@@ -360,6 +360,9 @@ it("materializes distinct reviewed channel campaigns and retains sources without
 });
 it("separates analytics interpretations from actual supplied metrics and keeps private learner data out of context", async () => {
   const { campaign } = released();
+  expect(
+    work.context(request("analytics", campaign.id)).context.measurementEvidence,
+  ).toEqual({ status: "not_recorded", sourceIds: [] });
   store.put("private-learner-memory", "NEVER_INCLUDE_LEARNER_CONTENT");
   new GTMAnalytics(app, () => expansion.state()).record({
     campaignId: campaign.id,
@@ -406,6 +409,9 @@ it("separates analytics interpretations from actual supplied metrics and keeps p
     "NEVER_INCLUDE_LEARNER_CONTENT",
   );
   expect(model.mock.calls[0][0].context).toContain("manual_report");
+  expect(
+    JSON.parse(model.mock.calls[0][0].context).measurementEvidence,
+  ).toEqual({ status: "available", sourceIds: [report.id] });
   await work.apply(row.id, row.reviewHash!);
   expect(expansion.state().campaigns[0].revision).toBe(1);
 });
@@ -435,19 +441,31 @@ it("supports atomic nested product writes and recoverable inner rollbacks", () =
   expect(() => zodSchema()).not.toThrow();
 });
 function zodSchema() {
-  return zodTextFormat(agentWorkAnswer,"outclass_work_test");
+  return zodTextFormat(agentWorkAnswer, "outclass_work_test");
 }
-it("hands delivered work to another specialist through an explicitly accepted, release-pinned source",async()=>{
-  const c=course();vi.spyOn(app.ai,"structured").mockResolvedValue(lessonAnswer());
-  const row=await work.wait(work.start(request("academy",c.id)).id);await work.apply(row.id,row.reviewHash!);
-  expect(()=>work.offer(row.id,"creative")).toThrow(/Release/);
-  const release=expansion.release(c.id,{expectedRevision:2,approve:true});
-  work.offer(row.id,"creative");
-  const handoffs=new AgentHandoffs(app),offer=handoffs.list()[0];
-  expect(offer.releaseHash).toBe(release.hash);expect(offer.sourceRevision).toBe(2);
-  expect(offer.proposal).toContain("Task generated from revision 1");expect(handoffs.sources("creative",release.id)).toEqual([]);
-  handoffs.accept(offer.id,offer.hash);expect(handoffs.sources("creative",release.id)[0].text).toContain("Empty input");
-  work.offer(row.id,"creative");expect(handoffs.list()).toHaveLength(1);
+it("hands delivered work to another specialist through an explicitly accepted, release-pinned source", async () => {
+  const c = course();
+  vi.spyOn(app.ai, "structured").mockResolvedValue(lessonAnswer());
+  const row = await work.wait(work.start(request("academy", c.id)).id);
+  await work.apply(row.id, row.reviewHash!);
+  expect(() => work.offer(row.id, "creative")).toThrow(/Release/);
+  const release = expansion.release(c.id, {
+    expectedRevision: 2,
+    approve: true,
+  });
+  work.offer(row.id, "creative");
+  const handoffs = new AgentHandoffs(app),
+    offer = handoffs.list()[0];
+  expect(offer.releaseHash).toBe(release.hash);
+  expect(offer.sourceRevision).toBe(2);
+  expect(offer.proposal).toContain("Task generated from revision 1");
+  expect(handoffs.sources("creative", release.id)).toEqual([]);
+  handoffs.accept(offer.id, offer.hash);
+  expect(handoffs.sources("creative", release.id)[0].text).toContain(
+    "Empty input",
+  );
+  work.offer(row.id, "creative");
+  expect(handoffs.list()).toHaveLength(1);
 });
 it("grounds proposed scenes in timed transcript evidence and blocks changed transcript application", async () => {
   const { creative } = released(),
