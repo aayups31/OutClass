@@ -6,6 +6,7 @@ import { randomBytes } from "node:crypto";
 import type { AppState, Preview, ResumeAnchor } from "../shared.js";
 
 export class Store {
+  private transactionDepth = 0;
   readonly db: DatabaseSync;
   constructor(public directory: string) {
     mkdirSync(directory, { recursive: true, mode: 0o700 });
@@ -73,14 +74,23 @@ export class Store {
     this.put("state", state);
   }
   transaction<T>(fn: () => T): T {
-    this.db.exec("BEGIN IMMEDIATE");
+    const nested = this.transactionDepth > 0;
+    const savepoint = `outclass_nested_${this.transactionDepth}`;
+    this.db.exec(nested ? `SAVEPOINT ${savepoint}` : "BEGIN IMMEDIATE");
+    this.transactionDepth++;
     try {
       const result = fn();
-      this.db.exec("COMMIT");
+      this.db.exec(nested ? `RELEASE SAVEPOINT ${savepoint}` : "COMMIT");
       return result;
     } catch (error) {
-      this.db.exec("ROLLBACK");
+      this.db.exec(
+        nested
+          ? `ROLLBACK TO SAVEPOINT ${savepoint}; RELEASE SAVEPOINT ${savepoint}`
+          : "ROLLBACK",
+      );
       throw error;
+    } finally {
+      this.transactionDepth--;
     }
   }
   seen(id: string) {

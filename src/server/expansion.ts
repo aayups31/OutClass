@@ -26,6 +26,8 @@ import { CourseLibrary } from "./library.js";
 import { learnPackageIssues } from "../learn-package-contract.js";
 import { LearnDelivery } from "./learn-delivery.js";
 import { AgentHandoffs, agentDomain } from "./agent-handoffs.js";
+import { AgentWorkService } from "./agent-work.js";
+import type { CreatorProduction } from "./creator-production.js";
 
 const key = "expansion:v1";
 const stamp = () => new Date().toISOString();
@@ -416,10 +418,17 @@ export class Expansion {
     });
   }
 }
-export function expansionRoutes(app: Application) {
+export function expansionRoutes(
+  app: Application,
+  media: CreatorProduction,
+  onWork?: (work: AgentWorkService) => void,
+) {
   const router = Router(),
     expansion = new Expansion(app);
   const agents = new ProductAgents(app, () => expansion.state());
+  const work = new AgentWorkService(app, expansion, media);
+  onWork?.(work);
+  router.use("/work", work.routes());
   router.get("/agents", (_req, res) => res.json(agents.list()));
   router.post("/agents/run", async (req, res) => {
     const input = z

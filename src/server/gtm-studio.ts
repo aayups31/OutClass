@@ -26,6 +26,7 @@ const request = z
   })
   .strict();
 export type PromotionPlan = {
+  sources?: { id: string; title: string; text: string }[];
   id: string;
   revision: number;
   releaseId: string;
@@ -64,7 +65,13 @@ export class GTMStudio {
     if (!p) throw new UserError("Promotion plan not found.", 404);
     return p;
   }
-  async create(raw: unknown) {
+  async create(
+    raw: unknown,
+    reviewedAnswer?: {
+      answer: z.infer<typeof promotionAnswer>;
+      sources: { id: string; title: string; text: string }[];
+    },
+  ) {
     const input = request.parse(raw);
     assertClean(JSON.stringify(input), "promotion brief");
     const url = new URL(input.destination);
@@ -97,11 +104,15 @@ export class GTMStudio {
         ),
       },
       ...new AgentHandoffs(this.app).sources("growth", release.id),
+      ...(reviewedAnswer?.sources || []),
     ];
     this.active = true;
     try {
+      // Internal agent-work delivery reuses the same source/channel validators.
+      // HTTP callers can only supply the first argument.
       const generated =
-        input.mode === "agent"
+        reviewedAnswer?.answer ??
+        (input.mode === "agent"
           ? await (async () => {
               if (!input.approveProvider)
                 throw new UserError("Approve this one provider call first.");
@@ -139,7 +150,7 @@ export class GTMStudio {
               limitations: [
                 "Drafts describe the course material; they are not evidence of learner outcomes. Source footage must be selected and reviewed separately.",
               ],
-            };
+            });
       const answer = promotionAnswer.parse(generated),
         ids = new Set(sources.map((s) => s.id));
       if (
@@ -176,6 +187,7 @@ export class GTMStudio {
         createdAt: new Date().toISOString(),
         provenance: input.mode === "agent" ? "agent_draft" : "source_template",
         answer,
+        sources,
         artifacts: [],
       };
       this.save(plan);

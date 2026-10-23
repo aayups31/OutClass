@@ -29,6 +29,7 @@ import { GTMAnalytics } from "./gtm-analytics.js";
 import { LearnDelivery } from "./learn-delivery.js";
 import { GTMStudio } from "./gtm-studio.js";
 import { PublicationQueue } from "./publication-queue.js";
+import type { AgentWorkService } from "./agent-work.js";
 
 const text = z.string().max(2000);
 function matches(a: string, b: string) {
@@ -44,6 +45,7 @@ export function createApp(
     path.resolve("dist/editor/OutClass-Editor-0.7.0.vsix"),
 ) {
   const app = express();
+  let agentWork: AgentWorkService | undefined;
   const creatorProduction = new CreatorProduction(application, () =>
     new Expansion(application).state(),
   );
@@ -74,6 +76,7 @@ export function createApp(
   app.locals.stopPrograms = async () => {
     app.locals.closing = true;
     creatorProduction.stop();
+    agentWork?.stop();
     publicationQueue.stop();
     live.stopAll();
     runtime.stopAll();
@@ -328,7 +331,12 @@ export function createApp(
     res.json(await application.status()),
   );
   workspaceFeatures(app, application, notebook);
-  app.use("/api/expansion", expansionRoutes(application));
+  app.use(
+    "/api/expansion",
+    expansionRoutes(application, creatorProduction, (work) => {
+      agentWork = work;
+    }),
+  );
   const delivery = new LearnDelivery(application);
   app.get("/api/learn-assignment", (req, res) =>
     res.json(

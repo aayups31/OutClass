@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   BookOpen,
   Film,
@@ -114,6 +114,8 @@ export function ProductWorkspace({
   const [composerDirty, setComposerDirty] = useState(false);
   const [composerSession, setComposerSession] = useState(0);
   const [gtmTab, setGtmTab] = useState<"create" | "campaigns">("create");
+  const unsaved = useRef(false);
+  unsaved.current = dirty || mediaDirty || promotionDirty || composerDirty;
   useEffect(
     () => onDirty(dirty || mediaDirty || promotionDirty || composerDirty),
     [dirty, mediaDirty, promotionDirty, composerDirty, onDirty],
@@ -122,6 +124,40 @@ export function ProductWorkspace({
     const result = await api<ExpansionState>("expansion/state");
     setData(result);
     return result;
+  };
+  const workApplied = async () => {
+    const result = await reload();
+    if (unsaved.current) {
+      setNotice(
+        "The agent saved a new revision. Your unsaved edits are preserved; reload before saving them.",
+      );
+      return;
+    }
+    if (selected) {
+      const next = result.courses.find((c) => c.id === selected.id);
+      if (next) {
+        setSelected(next);
+        setCourse(courseValues(next));
+      }
+    }
+    if (selectedCreative) {
+      const next = result.creatives.find((c) => c.id === selectedCreative.id);
+      if (next) {
+        setSelectedCreative(next);
+        setCreative(creativeValues(next));
+      }
+    }
+    if (selectedCampaign) {
+      const next = result.campaigns.find((c) => c.id === selectedCampaign.id);
+      if (next) {
+        setSelectedCampaign(next);
+        setCampaign(campaignValues(next));
+      }
+    }
+    setComposerSession((v) => v + 1);
+    setNotice(
+      "Agent work delivered. Review the updated draft and its next step.",
+    );
   };
   useEffect(() => {
     let live = true;
@@ -320,6 +356,14 @@ export function ProductWorkspace({
                 )}
               </aside>
               <section className="product-editor">
+                <AgentPanel
+                  onWorkApplied={workApplied}
+                  domain="academy"
+                  entity={selected}
+                  dirty={dirty}
+                  api={api}
+                />
+
                 <div className="product-panel-heading">
                   <h2>Course builder</h2>
                   <span>
@@ -558,12 +602,7 @@ export function ProductWorkspace({
                   </button>
                 </div>
                 <CompilerPanel course={selected} dirty={dirty} api={api} />
-                <AgentPanel
-                  domain="academy"
-                  entity={selected}
-                  dirty={dirty}
-                  api={api}
-                />
+
                 <p className="product-limit">
                   Structure checks validate required course content. The
                   laboratory executes the supported Python template separately.
@@ -702,6 +741,18 @@ export function ProductWorkspace({
               ))}
             </aside>
             <section className="product-editor">
+              <AgentPanel
+                onWorkApplied={workApplied}
+                domain="creative"
+                entity={selectedCreative}
+                dirty={dirty}
+                api={api}
+                onApply={(text) => {
+                  setCreative({ ...creative, copy: text });
+                  changed();
+                }}
+              />
+
               <div className="product-panel-heading">
                 <h2>Writing & creative brief</h2>
                 <span>
@@ -900,16 +951,7 @@ export function ProductWorkspace({
                   Export editable brief
                 </button>
               </div>
-              <AgentPanel
-                domain="creative"
-                entity={selectedCreative}
-                dirty={dirty}
-                api={api}
-                onApply={(text) => {
-                  setCreative({ ...creative, copy: text });
-                  changed();
-                }}
-              />
+
               <CreatorDesign
                 api={api}
                 creative={selectedCreative}
@@ -980,6 +1022,18 @@ export function ProductWorkspace({
               </div>
             </aside>
             <section className="product-editor">
+              <AgentPanel
+                onWorkApplied={workApplied}
+                domain="growth"
+                entity={selectedCampaign}
+                dirty={dirty}
+                api={api}
+                onApply={(text) => {
+                  setCampaign({ ...campaign, goal: text.slice(0, 2000) });
+                  changed();
+                }}
+              />
+
               <h2>Campaign planner</h2>
               <label>
                 Campaign title
@@ -1166,16 +1220,7 @@ export function ProductWorkspace({
                   </li>
                 </ol>
               </div>
-              <AgentPanel
-                domain="growth"
-                entity={selectedCampaign}
-                dirty={dirty}
-                api={api}
-                onApply={(text) => {
-                  setCampaign({ ...campaign, goal: text.slice(0, 2000) });
-                  changed();
-                }}
-              />
+
               <GTMOperations
                 key={`${selectedCampaign?.id || "new"}:${composerSession}`}
                 onDirty={setComposerDirty}
@@ -1184,6 +1229,7 @@ export function ProductWorkspace({
                 dirty={dirty}
               />
               <AgentPanel
+                onWorkApplied={workApplied}
                 domain="analytics"
                 entity={selectedCampaign}
                 dirty={dirty}

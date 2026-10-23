@@ -3,6 +3,7 @@ import { Sparkles, Play, CheckCircle2, Download } from "lucide-react";
 import type { CompiledProject } from "../server/academy-compiler";
 import type { ProductAgentRun } from "../server/product-agents";
 import { ShareProposal } from "./agent-handoffs";
+import { AgentWorkPanel } from "./agent-work";
 type API = <T>(route: string, body?: unknown) => Promise<T>;
 export function AgentPanel({
   domain,
@@ -10,12 +11,14 @@ export function AgentPanel({
   dirty,
   api,
   onApply,
+  onWorkApplied,
 }: {
   domain: "academy" | "creative" | "growth" | "analytics";
   entity?: { id: string; revision: number };
   dirty: boolean;
   api: API;
   onApply?: (text: string) => void;
+  onWorkApplied?: () => Promise<void>;
 }) {
   const [run, setRun] = useState<ProductAgentRun>();
   const [busy, setBusy] = useState(false);
@@ -50,119 +53,138 @@ export function AgentPanel({
           ? "Analytics specialist"
           : "Growth Strategist";
   return (
-    <section className="product-intelligence">
-      <div className="product-panel-heading">
-        <h3>
-          <Sparkles size={16} /> {name}
-        </h3>
-        <span>One bounded model call</span>
-      </div>
-      <p>
-        A source-aware proposal for this saved revision. You review the changes.
-      </p>
-      <button
-        className="button"
-        disabled={busy || !entity || dirty}
-        onClick={async () => {
-          if (
-            !entity ||
-            !confirm(
-              "Send this saved creator draft and selected lesson excerpts to your configured AI provider? This uses one bounded model call and may consume allowance or provider credits. No learner code is included.",
-            )
-          )
-            return;
-          const target = entity.id;
-          setBusy(true);
-          setError("");
-          try {
-            const result = await api<ProductAgentRun>("expansion/agents/run", {
-              domain,
-              entityId: target,
-              expectedRevision: entity.revision,
-              approveProvider: true,
-            });
-            if (current.current === target) setRun(result);
-          } catch (err) {
-            setError(err instanceof Error ? err.message : "The run failed.");
-          } finally {
-            setBusy(false);
-          }
-        }}
-      >
-        <Sparkles size={14} />
-        {busy ? "Developing the proposal…" : `Ask ${name}`}
-      </button>
-      {error && <p role="alert">{error}</p>}
-      {run?.state === "failed" && <p role="alert">{run.error}</p>}
-      {run?.answer && (
-        <div className="product-agent-proposal">
-          <h4>{run.answer.summary}</h4>
-          {run.answer.steps.map((s, i) => (
-            <article key={i}>
-              <strong>{s.title}</strong>
-              <p>{s.detail}</p>
-              <small>
-                {s.sourceIds
-                  .map(
-                    (id) => run.sources.find((x) => x.id === id)?.title || id,
-                  )
-                  .join(" · ")}
-              </small>
-            </article>
-          ))}
-          <details>
-            <summary>Editable draft text</summary>
-            <p className="product-preserve">{run.answer.draftText}</p>
-          </details>
-          {run.answer.limitations.map((l, i) => (
-            <p className="product-limit" key={i}>
-              {l}
-            </p>
-          ))}
-          <ShareProposal
-            api={api}
-            runId={run.id}
-            from={domain}
-            disabled={dirty || entity?.revision !== run.revision}
-          />
-          <div className="product-actions">
-            {onApply && (
-              <button
-                className="button"
-                disabled={dirty || entity?.revision !== run.revision}
-                onClick={() => onApply(run.answer!.draftText)}
-              >
-                Use draft text
-              </button>
-            )}
-            <button
-              className="button"
-              onClick={() => {
-                const href = URL.createObjectURL(
-                  new Blob([JSON.stringify(run, null, 2)], {
-                    type: "application/json",
-                  }),
-                );
-                const a = document.createElement("a");
-                a.href = href;
-                a.download = `outclass-agent-${run.id}.json`;
-                a.click();
-                setTimeout(() => URL.revokeObjectURL(href), 1000);
-              }}
-            >
-              <Download size={14} />
-              Export proposal & sources
-            </button>
+    <>
+      <AgentWorkPanel
+        domain={domain}
+        entity={entity}
+        dirty={dirty}
+        api={api}
+        onApplied={onWorkApplied}
+      />
+      <details className="agent-quick-review">
+        <summary>Quick review & specialist handoff</summary>
+        <section className="product-intelligence">
+          <div className="product-panel-heading">
+            <h3>
+              <Sparkles size={16} /> {name}
+            </h3>
+            <span>One bounded model call</span>
           </div>
-        </div>
-      )}
-      {!entity && <small>Save a draft to enable this agent.</small>}
-      {dirty && (
-        <small>
-          Save your changes before asking for or applying a proposal.
-        </small>
-      )}
-    </section>
+          <p>
+            A source-aware proposal for this saved revision. You review the
+            changes.
+          </p>
+          <button
+            className="button"
+            disabled={busy || !entity || dirty}
+            onClick={async () => {
+              if (
+                !entity ||
+                !confirm(
+                  "Send this saved creator draft and selected lesson excerpts to your configured AI provider? This uses one bounded model call and may consume allowance or provider credits. No learner code is included.",
+                )
+              )
+                return;
+              const target = entity.id;
+              setBusy(true);
+              setError("");
+              try {
+                const result = await api<ProductAgentRun>(
+                  "expansion/agents/run",
+                  {
+                    domain,
+                    entityId: target,
+                    expectedRevision: entity.revision,
+                    approveProvider: true,
+                  },
+                );
+                if (current.current === target) setRun(result);
+              } catch (err) {
+                setError(
+                  err instanceof Error ? err.message : "The run failed.",
+                );
+              } finally {
+                setBusy(false);
+              }
+            }}
+          >
+            <Sparkles size={14} />
+            {busy ? "Developing the proposal…" : `Ask ${name}`}
+          </button>
+          {error && <p role="alert">{error}</p>}
+          {run?.state === "failed" && <p role="alert">{run.error}</p>}
+          {run?.answer && (
+            <div className="product-agent-proposal">
+              <h4>{run.answer.summary}</h4>
+              {run.answer.steps.map((s, i) => (
+                <article key={i}>
+                  <strong>{s.title}</strong>
+                  <p>{s.detail}</p>
+                  <small>
+                    {s.sourceIds
+                      .map(
+                        (id) =>
+                          run.sources.find((x) => x.id === id)?.title || id,
+                      )
+                      .join(" · ")}
+                  </small>
+                </article>
+              ))}
+              <details>
+                <summary>Editable draft text</summary>
+                <p className="product-preserve">{run.answer.draftText}</p>
+              </details>
+              {run.answer.limitations.map((l, i) => (
+                <p className="product-limit" key={i}>
+                  {l}
+                </p>
+              ))}
+              <ShareProposal
+                api={api}
+                runId={run.id}
+                from={domain}
+                disabled={dirty || entity?.revision !== run.revision}
+              />
+              <div className="product-actions">
+                {onApply && (
+                  <button
+                    className="button"
+                    disabled={dirty || entity?.revision !== run.revision}
+                    onClick={() => onApply(run.answer!.draftText)}
+                  >
+                    Use draft text
+                  </button>
+                )}
+                <button
+                  className="button"
+                  onClick={() => {
+                    const href = URL.createObjectURL(
+                      new Blob([JSON.stringify(run, null, 2)], {
+                        type: "application/json",
+                      }),
+                    );
+                    const a = document.createElement("a");
+                    a.href = href;
+                    a.download = `outclass-agent-${run.id}.json`;
+                    a.click();
+                    setTimeout(() => URL.revokeObjectURL(href), 1000);
+                  }}
+                >
+                  <Download size={14} />
+                  Export proposal & sources
+                </button>
+              </div>
+            </div>
+          )}
+          {!entity && <small>Save a draft to enable this agent.</small>}
+          {dirty && (
+            <small>
+              Save your changes before asking for or applying a proposal.
+            </small>
+          )}
+        </section>
+      </details>
+    </>
   );
 }
 export function CompilerPanel({
