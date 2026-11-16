@@ -400,7 +400,7 @@ const releaseUrl = new URL(
 );
 if (
   document.querySelector(
-    "#windows-download, #extension-download, #editor-download",
+    "#learn-download, #educator-download, #windows-download, #extension-download, #editor-download",
   )
 ) {
   fetch(releaseUrl)
@@ -409,7 +409,7 @@ if (
       return response.json();
     })
     .then((release) => {
-      for (const id of ["windows", "extension", "editor"]) {
+      for (const id of ["learn", "educator", "windows", "extension", "editor"]) {
         const link = document.getElementById(`${id}-download`);
         const asset = release[id];
         if (!link || !asset?.url) continue;

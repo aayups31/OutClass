@@ -45,7 +45,41 @@ if (!credential)
   throw Error("Sign in to GitHub CLI before publishing release assets.");
 const env = { ...process.env, GH_TOKEN: credential, GH_PROMPT_DISABLED: "1" };
 const args = process.argv.slice(2);
-if (args[0] === "status") {
+if (args[0] === "publish-apps") {
+  const { version } = JSON.parse(await readFile("package.json", "utf8"));
+  const commit = args[1];
+  if (!/^[a-f0-9]{40}$/.test(commit || ""))
+    throw Error("Supply the exact Windows build commit.");
+  const assets = [
+    `dist/releases/learn/OutClass-Learn-Setup-${version}.exe`,
+    `dist/releases/educator/OutClass-Educator-Setup-${version}.exe`,
+    "dist/releases/SHA256SUMS-apps.txt",
+  ];
+  const repo = "aayups31/OutClass";
+  const tag = `v${version}-apps`;
+  await command(
+    "gh",
+    [
+      "release",
+      "create",
+      tag,
+      ...assets,
+      "--repo",
+      repo,
+      "--target",
+      commit,
+      "--title",
+      `OutClass Learn & Educator ${version} · Windows preview`,
+      "--prerelease",
+      "--notes-file",
+      "docs/releases/desktop-apps.md",
+    ],
+    env,
+  );
+  console.log(
+    `Published the Windows installers at https://github.com/${repo}/releases/tag/${tag}`,
+  );
+} else if (args[0] === "status") {
   const repo = await command(
     "gh",
     [

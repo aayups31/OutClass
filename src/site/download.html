@@ -32,6 +32,8 @@
     <script src="assets/vendor/ScrollTrigger.min.js" defer=""></script>
     <script src="assets/site.js" defer=""></script>
     <link rel="stylesheet" href="assets/refinement.css" />
+    <link rel="stylesheet" href="assets/launch.css" />
+    <script src="assets/launch.js" defer></script>
   </head>
   <body class="subpage">
     <a class="skip-link" href="#main">Skip to content</a>
@@ -66,118 +68,77 @@
       </div>
     </header>
     <main id="main" tabindex="-1">
-      <section class="page-hero download-hero wrap">
-        <h1>Make room<br />for <span>what’s next.</span></h1>
-        <p>
-          Watch in your browser. Build on your computer.<br />Bring the two
-          together with OutClass.
-        </p>
-      </section>
-      <section class="download-grid wrap">
-        <article class="download-desktop">
-          <div class="download-app-brand">
+      <section class="launch-download wrap" aria-labelledby="download-title">
+        <h1 id="download-title">Choose your OutClass.</h1>
+        <p>Two Windows apps. Pick the workspace that fits.</p>
+        <div class="launch-download-grid">
+          <article class="launch-download-card download-learn">
+            <div>
+              <h2>OutClass Learn</h2>
+              <p>
+                For self-learners. Bring your lessons, code, and OffCourse
+                together.
+              </p>
+              <a
+                class="button primary"
+                id="learn-download"
+                href="https://github.com/aayups31/OutClass/releases/download/v0.8.0-apps/OutClass-Learn-Setup-0.8.0.exe"
+                >Download Learn <span aria-hidden="true">↗</span></a
+              >
+            </div>
             <img
-              class="brand-orbit"
-              src="assets/orbital-logo.webp"
-              width="54"
-              height="36"
-              alt=""
-            /><span>OutClass<small>THE LOCAL LEARNING WORKSPACE</small></span>
-          </div>
-          <h2>Your new<br />starting point.</h2>
-          <p>
-            Code, courses, OffCourse, and your evolving projects. Together in
-            the Windows app.
-          </p>
-          <a
-            id="windows-download"
-            class="button primary"
-            href="https://github.com/aayups31/OutClass/releases/download/v0.8.0/OutClass-Setup-0.8.0.exe"
-            ><svg class="icon" aria-hidden="true">
-              <use href="assets/icons.svg#windows"></use>
-            </svg>
-            Download for Windows
-            <svg class="icon" aria-hidden="true">
-              <use href="assets/icons.svg#arrow"></use></svg
-          ></a>
-          <p id="windows-status" class="download-note">
-            Windows x64 · OutClass v0.8.0 · 116 MB · Unsigned preview
-          </p>
-          <a
-            id="extension-download"
-            class="button secondary"
-            href="https://github.com/aayups31/OutClass/releases/download/v0.8.0/OutClass-Chrome-0.8.0.zip"
-            ><svg class="icon" aria-hidden="true">
-              <use href="assets/icons.svg#puzzle"></use>
-            </svg>
-            Get the browser extension
-            <svg class="icon" aria-hidden="true">
-              <use href="assets/icons.svg#arrow"></use></svg
-          ></a>
-          <p id="extension-status" class="download-note">
-            Preview ZIP · Load unpacked. Chrome Web Store listing pending
-            review.
-          </p>
-          <a class="text-link" href="setup.html"
-            >Follow the setup guide
-            <svg class="icon" aria-hidden="true">
-              <use href="assets/icons.svg#arrow"></use></svg
-          ></a>
-        </article>
-        <div class="download-details">
-          <article>
-            <h3>Keep your editor.</h3>
-            <p>
-              Work in VS Code or VSCodium with the OutClass editor companion.
-              The desktop app handles your courses, history, and AI connection.
-            </p>
-            <a
-              id="editor-download"
-              class="text-link"
-              href="https://github.com/aayups31/OutClass/releases/download/v0.8.0/OutClass-Editor-0.8.0.vsix"
-              >Download editor companion (.vsix)
-              <svg class="icon" aria-hidden="true">
-                <use href="assets/icons.svg#arrow"></use></svg
-            ></a>
+              src="assets/learn-workspace.webp"
+              width="1366"
+              height="768"
+              alt="OutClass Learn editor beside OffCourse"
+            />
           </article>
-          <article>
-            <h3>A preview, built in the open.</h3>
-            <p>
-              Windows x64 is available now. The installer is unsigned. Chrome
-              Web Store review is pending; the extension ZIP works with Load
-              unpacked.
-            </p>
-            <p>
-              Git is required for checkpoints. Install the runtimes your
-              projects need: Python, Node/npm, or a C/C++ compiler.
-            </p>
-            <a class="text-link" href="setup.html#faq"
-              >Compatibility &amp; questions
-              <svg class="icon" aria-hidden="true">
-                <use href="assets/icons.svg#arrow"></use></svg
-            ></a>
-          </article>
-          <article class="quiet-note">
-            <h3>Choose your AI connection.</h3>
-            <p>
-              Use your own OpenAI key or a compatible local model. Included AI
-              is owner-tested and is not yet open for public sign-ups. Local
-              coding and checkpoints work without AI.
-            </p>
+          <article class="launch-download-card download-educator">
+            <div>
+              <h2>OutClass Educator</h2>
+              <p>
+                For course creators. Academy, Creator Studio, GTM, and the
+                built-in Learn preview.
+              </p>
+              <a
+                class="button primary"
+                id="educator-download"
+                href="https://github.com/aayups31/OutClass/releases/download/v0.8.0-apps/OutClass-Educator-Setup-0.8.0.exe"
+                >Download Educator <span aria-hidden="true">↗</span></a
+              >
+            </div>
+            <img
+              src="assets/educator-academy.webp"
+              width="1440"
+              height="1000"
+              alt="Academy authoring and Project Forge in OutClass Educator"
+            />
           </article>
         </div>
-      </section>
-      <section class="subpage-cta wrap">
-        <h2>Your files.<br /><span>Your way forward.</span></h2>
-        <p>
-          Previously GitLearn. Your existing folders, history, and pairing stay
-          compatible.
+        <p class="launch-download-meta">
+          Windows x64 · v0.8.0 · Unsigned preview ·
+          <a
+            href="https://github.com/aayups31/OutClass/releases/tag/v0.8.0-apps"
+            >Release notes &amp; checksums</a
+          >
         </p>
-        <a class="text-link" href="privacy.html"
-          >How your data is handled
-          <svg class="icon" aria-hidden="true">
-            <use href="assets/icons.svg#arrow"></use></svg
-        ></a>
+        <nav class="launch-accessories" aria-label="Extensions and setup">
+          <a
+            id="extension-download"
+            href="https://github.com/aayups31/OutClass/releases/download/v0.8.0/OutClass-Chrome-0.8.0.zip"
+            >Udemy browser extension <span aria-hidden="true">↗</span></a
+          >
+          <a
+            id="editor-download"
+            href="https://github.com/aayups31/OutClass/releases/download/v0.8.0/OutClass-Editor-0.8.0.vsix"
+            >VS Code companion <span aria-hidden="true">↗</span></a
+          >
+          <a href="setup.html">Setup guide <span aria-hidden="true">↗</span></a>
+        </nav>
+        <p id="extension-status" class="launch-download-meta">
+          The Udemy and VS Code companions connect to Learn. Use Load unpacked
+          for the browser ZIP.
+        </p>
       </section>
     </main>
     <footer class="site-footer wrap">

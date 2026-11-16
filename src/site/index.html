@@ -35,9 +35,8 @@
     <script src="assets/vendor/ScrollTrigger.min.js" defer=""></script>
     <script src="assets/site.js" defer=""></script>
     <link rel="stylesheet" href="assets/refinement.css" />
-    <link rel="stylesheet" href="assets/agents.css" />
-    <script src="assets/agents.js" defer></script>
-    <link rel="stylesheet" href="assets/suite.css" />
+    <link rel="stylesheet" href="assets/launch.css" />
+    <script src="assets/launch.js" defer></script>
   </head>
   <body class="home-page">
     <a class="skip-link" href="#main">Skip to content</a>
@@ -59,7 +58,7 @@
         <span></span><span></span>
       </button>
       <nav id="site-navigation" aria-label="Main navigation">
-        <a href="product.html">Product</a><a href="agents.html">Agents</a
+        <a href="#product">The apps</a><a href="agents.html">Agents</a
         ><a href="setup.html">How it works</a><a href="./#pricing">Pricing</a>
       </nav>
       <div class="header-actions">
@@ -72,684 +71,171 @@
       </div>
     </header>
     <main id="main" tabindex="-1">
-      <section class="hero">
-        <div class="hero-aura" aria-hidden="true"></div>
-        <div class="hero-layout wrap">
-          <div class="hero-copy">
-            <h1>
-              <span class="headline-line"
-                ><span class="hero-word">OutClass</span></span
-              ><span class="headline-line"
-                ><span class="hero-word"
-                  >the lesson<span class="blue-dot">.</span></span
-                ></span
-              >
-            </h1>
-            <p class="hero-lede hero-enter">Break free from tutorial hell.</p>
-            <p class="hero-description hero-enter">
-              Your courses, code, and AI agents. A local workspace to turn what
-              you learn into what you can build.
-            </p>
-            <div class="hero-actions hero-enter">
-              <a class="button primary" href="download.html"
-                >Get OutClass
-                <svg class="icon" aria-hidden="true">
-                  <use href="assets/icons.svg#arrow"></use></svg></a
-              ><a class="text-link" href="#product"
-                >Explore the workspace
-                <svg class="icon" aria-hidden="true">
-                  <use href="assets/icons.svg#down"></use></svg
-              ></a>
-            </div>
-          </div>
-          <div class="hero-art-stage">
-            <div class="hero-orbit">
-              <img
-                src="assets/hero-tiles.webp"
-                width="1536"
-                height="1024"
-                fetchpriority="high"
-                alt="OutClass’s orbital emblem surrounded by floating glass tiles for code, learning, progress and GitHub."
-              /><svg class="icon orbital-github" aria-hidden="true">
-                <use href="assets/icons.svg#github"></use>
-              </svg>
-            </div>
+      <section class="launch-hero" aria-labelledby="launch-title">
+        <div class="launch-copy wrap">
+          <p class="launch-label">OutClass for Windows</p>
+          <h1 id="launch-title">OutClass the lesson.</h1>
+          <p>Build while you learn. Teach what people can build.</p>
+          <div class="launch-actions">
+            <a class="button primary" href="download.html"
+              >Get OutClass <span aria-hidden="true">↗</span></a
+            >
+            <a class="button launch-outline" href="#product"
+              >Explore the apps <span aria-hidden="true">↓</span></a
+            >
           </div>
         </div>
+        <figure class="launch-device">
+          <div class="launch-window">
+            <div class="launch-window-bar">
+              <span></span><span></span><span></span><b>OutClass Learn</b>
+            </div>
+            <img
+              src="assets/learn-workspace.webp"
+              width="1366"
+              height="768"
+              fetchpriority="high"
+              alt="OutClass Learn displays a JavaScript editor next to the OffCourse AI teacher."
+            />
+          </div>
+        </figure>
       </section>
-      <div class="showcase-surface">
-        <section id="product" class="product-proof wide">
-          <div class="product-heading" data-reveal="">
-            <h2>One place.<br /><span>A whole new level.</span></h2>
-            <p>Stay close to the lesson.<br />Go further with your own code.</p>
-          </div>
-          <div class="workspace-frame">
-            <div class="workspace-top">
-              <div class="window-dots" aria-hidden="true">
-                <i></i><i></i><i></i>
-              </div>
-              <span>OutClass — Python foundations</span
-              ><span class="workspace-local"
-                ><i class="status-dot"></i> On your computer</span
-              >
-            </div>
-            <div class="workspace-body">
-              <aside class="preview-sidebar">
-                <div class="preview-brand">
-                  <img
-                    src="assets/orbital-logo.webp"
-                    width="19"
-                    height="19"
-                    alt=""
-                  />OutClass <span>⌄</span>
-                </div>
-                <div class="preview-nav">◫ &nbsp; Overview</div>
-                <div class="preview-nav selected">
-                  ⌘ &nbsp; Code &amp; learn
-                </div>
-                <div class="preview-nav">↗ &nbsp; Learn by doing</div>
-                <div class="preview-nav">◷ &nbsp; Reviews</div>
-                <div class="preview-nav">⌥ &nbsp; Live work</div>
-                <p class="preview-label">MY COURSES</p>
-                <div class="preview-course"><i></i> Python foundations</div>
-                <div class="preview-course muted">
-                  <i></i> Building AI agents
-                </div>
-                <div class="preview-lesson">
-                  08 &nbsp; Working with collections
-                </div>
-                <div class="preview-progress"><span></span></div>
-                <small>A good moment to try it yourself.</small>
-                <div class="preview-bottom">
-                  ⚙ &nbsp; Settings <span>Local workspace</span>
-                </div>
-              </aside>
-              <div class="preview-editor">
-                <div class="editor-toolbar">
-                  <span
-                    >Python foundations
-                    <span class="muted">/</span> activity-report</span
-                  ><span>▶ &nbsp; Run</span>
-                </div>
-                <div class="file-tabs">
-                  <span>⌁ &nbsp; main.py <i></i></span><span>README.md</span>
-                </div>
-                <div class="code-area">
-                  <div class="line-numbers" aria-hidden="true">
-                    1<br />2<br />3<br />4<br />5<br />6<br />7<br />8<br />9<br />10<br />11<br />12
-                  </div>
-                  <pre><span class="code-muted"># A little less following along.</span>
-<span class="code-muted"># A little more figuring it out.</span>
 
-<span class="code-blue">def</span> <span class="code-yellow">summarize_activity</span>(events):
-    <span class="code-muted"># Your task: group events by user.</span>
-    <span class="code-muted"># Handle empty and invalid input.</span>
-    <span class="code-blue">pass</span>
+      <section
+        class="launch-story wrap"
+        id="product"
+        aria-label="Explore the OutClass apps"
+      >
+        <aside class="launch-chapters">
+          <h2>Two apps.<br />One learning workflow.</h2>
+          <nav aria-label="Explore the apps">
+            <a href="#learn-app" data-chapter="learn-app">OutClass Learn</a>
+            <a href="#educator-app" data-chapter="educator-app"
+              >OutClass Educator</a
+            >
+            <a href="#launch-tools" data-chapter="launch-tools"
+              >Creator Studio &amp; GTM</a
+            >
+          </nav>
+        </aside>
+        <div class="launch-scenes">
+          <article class="launch-scene" id="learn-app">
+            <div class="launch-scene-copy">
+              <p class="launch-label">OutClass Learn</p>
+              <h3>Break free from tutorial hell.</h3>
+              <p>
+                Code alongside the lesson. Get a hint from OffCourse, then try
+                the next step yourself.
+              </p>
+              <a class="launch-link" href="learn.html"
+                >Explore Learn <span aria-hidden="true">↗</span></a
+              >
+            </div>
+            <figure class="launch-frame launch-frame-learn">
+              <img
+                src="assets/learn-practice.webp"
+                width="1440"
+                height="1000"
+                loading="lazy"
+                alt="The Learn coding workspace with an active lesson, a code editor, a checkpoint button, and OffCourse."
+              />
+              <figcaption>
+                Lesson context, code, and OffCourse in one workspace.
+              </figcaption>
+            </figure>
+          </article>
+          <article class="launch-scene" id="educator-app">
+            <div class="launch-scene-copy">
+              <p class="launch-label">OutClass Educator</p>
+              <h3>Teach through real projects.</h3>
+              <p>
+                Organize your course in Academy. Draft a capstone with Project
+                Forge, then preview it in Learn.
+              </p>
+              <a class="launch-link" href="academy.html"
+                >Explore Academy <span aria-hidden="true">↗</span></a
+              >
+            </div>
+            <figure class="launch-frame launch-frame-academy">
+              <img
+                src="assets/educator-academy.webp"
+                width="1440"
+                height="1000"
+                loading="lazy"
+                alt="Academy shows the lesson outline, exercises and capstone editor, and the project design assistant."
+              />
+              <figcaption>
+                Academy · Exercise and capstone authoring.
+              </figcaption>
+            </figure>
+          </article>
+          <article class="launch-scene" id="launch-tools">
+            <div class="launch-scene-copy">
+              <p class="launch-label">OutClass Educator</p>
+              <h3>Show learners what they’ll build.</h3>
+              <p>
+                Make a course preview in Creator Studio. Review the post and its
+                media in GTM before publishing.
+              </p>
+              <div class="launch-scene-links">
+                <a class="launch-link" href="creator-studio.html"
+                  >Creator Studio <span aria-hidden="true">↗</span></a
+                >
+                <a class="launch-link" href="gtm.html"
+                  >GTM <span aria-hidden="true">↗</span></a
+                >
+              </div>
+            </div>
+            <figure class="launch-frame launch-frame-gtm">
+              <div class="launch-preview-crop">
+                <img
+                  src="assets/educator-gtm.webp"
+                  width="878"
+                  height="1493"
+                  loading="lazy"
+                  alt="GTM’s YouTube composer shows the video title and a preview of the selected media."
+                />
+              </div>
+              <figcaption>
+                GTM · YouTube preview with the selected course video.
+              </figcaption>
+            </figure>
+          </article>
+        </div>
+      </section>
 
-<span class="code-muted"># Try an example of your own.</span>
-events = [
-    {<span class="code-green">"user"</span>: <span class="code-green">"maya"</span>, <span class="code-green">"minutes"</span>: <span class="code-yellow">20</span>},
-]<span class="code-cursor" aria-hidden="true">▍</span></pre>
-                </div>
-                <div class="preview-terminal">
-                  <div>CONSOLE <span>Local Python</span></div>
-                  <p>
-                    <span class="code-blue">›</span> Your code. Your
-                    experiments. Your understanding.
-                  </p>
-                  <p class="code-muted">
-                    Write your implementation, then run the checks.
-                  </p>
-                </div>
-                <div class="editor-status">
-                  Python <span>UTF-8 &nbsp; · &nbsp; Local files</span>
-                </div>
-              </div>
-              <aside class="preview-teacher">
-                <div class="teacher-toolbar">OffCourse <span>✧</span></div>
-                <div class="teacher-mode">
-                  <span>Code help</span><span>Ask the course</span>
-                </div>
-                <div class="teacher-question">
-                  I get the example. How do I start this on my own?
-                </div>
-                <div class="teacher-answer">
-                  <img
-                    src="assets/orbital-logo.webp"
-                    width="20"
-                    height="20"
-                    alt=""
-                  />
-                  <p>
-                    Start with the smallest case: one user, one event. What
-                    should your result look like?
-                  </p>
-                  <p>
-                    Then think about what changes when the same user appears
-                    twice. Which structure from your lesson would help?
-                  </p>
-                  <div class="teacher-citation">
-                    ↳ &nbsp; Working with collections
-                    <small>Imported course passage · Example</small>
-                  </div>
-                </div>
-                <div class="teacher-context">
-                  IN CONTEXT <span>main.py</span
-                  ><span>Your practical brief</span>
-                </div>
-                <div class="teacher-input">Ask for a hint… <span>↑</span></div>
-              </aside>
-            </div>
-          </div>
-          <div class="proof-caption">
-            <p>Illustrative workspace · example content</p>
-          </div>
-          <div class="product-signals">
-            <div>
-              <svg class="icon" aria-hidden="true">
-                <use href="assets/icons.svg#monitor"></use>
-              </svg>
-              Built on your computer
-            </div>
-            <div>
-              <svg class="icon" aria-hidden="true">
-                <use href="assets/icons.svg#code"></use>
-              </svg>
-              OutClass or your own editor
-            </div>
-            <div>
-              <svg class="icon" aria-hidden="true">
-                <use href="assets/icons.svg#github"></use>
-              </svg>
-              GitHub when you’re ready
-            </div>
-            <div>
-              <svg class="icon" aria-hidden="true">
-                <use href="assets/icons.svg#spark"></use>
-              </svg>
-              Guidance, not shortcuts
-            </div>
-          </div>
-        </section>
-        <section class="journey-section" aria-labelledby="journey-title">
-          <div class="wrap journey-heading">
-            <div data-reveal="">
-              <h2 id="journey-title">
-                Watch. Try. Build.<br /><span>Then surprise yourself.</span>
-              </h2>
-            </div>
-            <div class="carousel-controls">
-              <span class="carousel-count" aria-live="polite">01 / 03</span
-              ><button
-                class="round-button"
-                data-carousel-prev=""
-                aria-label="Previous learning step"
-                aria-controls="journey-track"
-              >
-                <svg class="icon" aria-hidden="true">
-                  <use href="assets/icons.svg#left"></use>
-                </svg></button
-              ><button
-                class="round-button"
-                data-carousel-next=""
-                aria-label="Next learning step"
-                aria-controls="journey-track"
-              >
-                <svg class="icon" aria-hidden="true">
-                  <use href="assets/icons.svg#right"></use>
-                </svg>
-              </button>
-            </div>
-          </div>
-          <div
-            class="journey-track"
-            id="journey-track"
-            tabindex="0"
-            role="region"
-            aria-label="Learning journey. Scroll horizontally for three steps."
-          >
-            <article class="journey-card">
-              <div class="practice-visual">
-                <div class="lesson-track">
-                  <span class="complete">✓</span><i></i
-                  ><span class="complete">✓</span><i></i
-                  ><span class="current">08</span><i></i><span>09</span><i></i
-                  ><span>10</span>
-                </div>
-                <div class="practice-invite">
-                  <h3>
-                    You’ve learned collections.<br />Make them do something.
-                  </h3>
-                  <p>Build a small activity report.</p>
-                  <div>
-                    <span>15–20 min</span><span>Python</span
-                    ><strong>Try this next ↗</strong>
-                  </div>
-                </div>
-              </div>
-              <div class="card-copy">
-                <h3>Don’t wait for the final lesson.</h3>
-                <p>
-                  Turn a new concept into a small, real task while it’s still
-                  fresh. Take a hint. Test your thinking.
-                </p>
-              </div>
-            </article>
-            <article class="journey-card">
-              <div class="project-visual">
-                <div class="mini-file">
-                  <svg class="icon" aria-hidden="true">
-                    <use href="assets/icons.svg#folder"></use>
-                  </svg>
-                  activity-report <span>YOUR COURSE PROJECT</span>
-                </div>
-                <div class="milestone">
-                  <i>✓</i>
-                  <div>
-                    Make the first version work<small
-                      >A real result from your own code.</small
-                    >
-                  </div>
-                  <span>01</span>
-                </div>
-                <div class="milestone">
-                  <i>✓</i>
-                  <div>
-                    Handle the unexpected<small
-                      >Empty input. Edge cases. Better tests.</small
-                    >
-                  </div>
-                  <span>02</span>
-                </div>
-                <div class="milestone active">
-                  <i>↗</i>
-                  <div>
-                    Try a different requirement<small
-                      >Can you use the idea in a new way?</small
-                    >
-                  </div>
-                  <span>03</span>
-                </div>
-                <div class="project-branch">
-                  <span></span> A project that grows as you do.
-                </div>
-              </div>
-              <div class="card-copy">
-                <h3>Outgrow the example.</h3>
-                <p>
-                  Keep one evolving project. Change the requirements, learn to
-                  debug, and save evidence of what clicked.
-                </p>
-              </div>
-            </article>
-            <article class="journey-card">
-              <div class="contribution-visual">
-                <div class="issue-repo">
-                  <svg class="icon" aria-hidden="true">
-                    <use href="assets/icons.svg#github"></use>
-                  </svg>
-                  YOUR FIRST CONTRIBUTION <span>Example brief</span>
-                </div>
-                <h3>Handle an empty activity feed</h3>
-                <div class="issue-tags">
-                  <span>Python</span><span>Tests</span
-                  ><span>Investigation</span>
-                </div>
-                <p class="match-note">
-                  Build on the collections and edge cases you’ve practiced.
-                </p>
-                <div class="contribution-steps">
-                  <span>1 <b>Reproduce</b></span
-                  ><i></i><span>2 <b>Investigate</b></span
-                  ><i></i><span>3 <b>Verify</b></span>
-                </div>
-              </div>
-              <div class="card-copy">
-                <h3>Your skills deserve real work.</h3>
-                <p>
-                  Explore public issues that fit your practice. Get help
-                  investigating and preparing a PR. You make the changes.
-                </p>
-              </div>
-            </article>
-          </div>
-          <div class="wrap journey-footer">
-            <a class="text-link" href="product.html"
-              >The full picture
-              <svg class="icon" aria-hidden="true">
-                <use href="assets/icons.svg#arrow"></use></svg
-            ></a>
-          </div>
-        </section>
-        <section class="teacher-section wrap">
-          <div class="teacher-copy" data-reveal="">
-            <h2>A little guidance.<br /><span>A lot more you.</span></h2>
+      <section
+        id="pricing"
+        class="launch-pricing wrap"
+        aria-labelledby="launch-pricing-title"
+      >
+        <h2 id="launch-pricing-title">Start with a free workspace.</h2>
+        <div class="launch-plans">
+          <article>
+            <h3>Desktop preview</h3>
+            <p class="launch-price">Free</p>
             <p>
-              A teacher that knows the lesson, sees your attempt, and helps you
-              find the next step.
+              Local courses, code, and projects. Connect your own AI key or a
+              compatible local model.
             </p>
-            <ul class="teacher-principles">
-              <li>
-                <svg class="icon" aria-hidden="true">
-                  <use href="assets/icons.svg#spark"></use>
-                </svg>
-                Hints that grow with your understanding.
-              </li>
-              <li>
-                <svg class="icon" aria-hidden="true">
-                  <use href="assets/icons.svg#book"></use>
-                </svg>
-                Answers grounded in sources you import.
-              </li>
-              <li>
-                <svg class="icon" aria-hidden="true">
-                  <use href="assets/icons.svg#code"></use>
-                </svg>
-                Your code and recorded runs in context.
-              </li>
-            </ul>
-            <a class="text-link" href="agents.html#offcourse"
-              >Get to know OffCourse
-              <svg class="icon" aria-hidden="true">
-                <use href="assets/icons.svg#arrow"></use></svg
-            ></a>
-          </div>
-          <div class="assistant-demo" data-reveal="">
-            <div class="demo-label"><span>Illustrative conversation</span></div>
-            <div
-              class="demo-tabs"
-              role="tablist"
-              aria-label="Assistant example"
+            <a class="launch-link" href="download.html"
+              >Download for Windows <span aria-hidden="true">↗</span></a
             >
-              <button
-                id="code-tab"
-                role="tab"
-                aria-controls="code-example"
-                aria-selected="true"
-              >
-                Code help</button
-              ><button
-                id="course-tab"
-                role="tab"
-                aria-controls="course-example"
-                aria-selected="false"
-                tabindex="-1"
-              >
-                Ask the course
-              </button>
-            </div>
-            <div id="code-example" role="tabpanel" aria-labelledby="code-tab">
-              <p class="demo-question">
-                My report loses the earlier events. Where should I look?
-              </p>
-              <p>
-                Look at what happens when a user appears a second time. Are you
-                replacing their total or adding to it?
-              </p>
-              <p>
-                Try two events for one user on paper first. What should the
-                intermediate result be?
-              </p>
-              <div class="demo-source">
-                <span>↳</span>
-                <div>
-                  <strong>main.py</strong
-                  ><small>Your working code · Example context</small>
-                </div>
-                <span class="source-pill">CODE CONTEXT</span>
-              </div>
-            </div>
-            <div
-              id="course-example"
-              role="tabpanel"
-              aria-labelledby="course-tab"
-              hidden=""
-            >
-              <p class="demo-question">
-                When would I use a dictionary instead of a list?
-              </p>
-              <p>
-                A dictionary helps when each value belongs to a named key. In
-                this lesson, the key identifies a user so you can find and
-                update their total. <span class="citation">[1]</span>
-              </p>
-              <div class="demo-source">
-                <span>↳</span>
-                <div>
-                  <strong>Working with collections</strong
-                  ><small>Imported transcript · Example passage</small>
-                </div>
-                <span class="source-pill">SOURCE 01</span>
-              </div>
-              <p class="demo-detail">
-                In the app, open a citation to read the passage and check the
-                explanation.
-              </p>
-            </div>
-          </div>
-        </section>
-        <section class="agent-preview wrap">
-          <div class="agent-preview-intro" data-reveal>
-            <div>
-              <h2>
-                A better question.<br /><span>A bigger possibility.</span>
-              </h2>
-              <p>
-                Get unstuck with OffCourse. Turn what you learn into something
-                of your own with Architect.
-              </p>
-            </div>
-            <a class="text-link" href="agents.html"
-              >Explore your agents <span>↗</span></a
-            >
-          </div>
-          <div class="agent-film" data-agent-film>
-            <div class="film-top">
-              <span class="film-brand"
-                ><span class="film-mark">✧</span> OutClass
-                <span class="film-divider">/</span> Agents</span
-              ><span class="film-example">Interactive preview</span>
-            </div>
-            <div
-              class="film-selector"
-              role="group"
-              aria-label="Choose an agent preview"
-            >
-              <button
-                class="is-active"
-                data-scene="teacher"
-                aria-pressed="true"
-              >
-                ✧ <span>OffCourse<small>Understand. Apply.</small></span>
-              </button>
-              <button data-scene="architect" aria-pressed="false">
-                ⌘ <span>Architect<small>Imagine. Build.</small></span>
-              </button>
-            </div>
-            <div class="film-scene" data-scene-panel="teacher">
-              <div class="film-source">
-                <div class="film-file">
-                  activity.py <span>Course project</span>
-                </div>
-                <pre><span class="code-muted"># Collect each student's activity</span>
-<span class="code-violet">for</span> event <span class="code-violet">in</span> events:
-    user = event[<span class="code-green">"user"</span>]
-    <mark>totals[user] = event["minutes"]</mark></pre>
-                <div class="film-run">
-                  <span class="run-dot"></span> Expected 45 minutes
-                  <span>Received 20</span>
-                </div>
-              </div>
-              <div class="film-answer">
-                <div class="film-agent">
-                  <span class="film-mark">✧</span><strong>OffCourse</strong
-                  ><span>Lesson + your attempt</span>
-                </div>
-                <h3>You found the symptom.<br />Let’s find the reason.</h3>
-                <p>
-                  When the same student appears twice, what happens to the value
-                  already in <code>totals</code>?
-                </p>
-                <div class="film-hint">
-                  <span>Try this</span>Trace the first two events. Predict the
-                  total before you run it.
-                </div>
-                <div class="film-reference">
-                  ↗ Collections · Imported lesson <span>Example</span>
-                </div>
-              </div>
-            </div>
-            <div class="film-scene" data-scene-panel="architect" hidden>
-              <div class="film-source idea-source">
-                <div class="film-file">
-                  Idea notebook <span>Selected context</span>
-                </div>
-                <div class="film-note">
-                  <span>YOUR IDEA</span>
-                  <h3>What if finding a campus event was effortless?</h3>
-                  <p>“I keep hearing about things after they happen.”</p>
-                </div>
-                <div class="film-run">
-                  <span class="run-dot blue"></span> Connected learning
-                  <span>APIs · Data · UI</span>
-                </div>
-              </div>
-              <div class="film-answer">
-                <div class="film-agent">
-                  <span class="film-mark">⌘</span><strong>Architect</strong
-                  ><span>Idea + shared learning</span>
-                </div>
-                <h3>Start with one problem.<br />Build one useful thing.</h3>
-                <p>
-                  Who misses out most often? Talk to three students before
-                  deciding what to build.
-                </p>
-                <div class="film-plan">
-                  <span>Understand the need</span><i>↓</i
-                  ><span>Prototype one event feed</span><i>↓</i
-                  ><span>Test it with a student</span>
-                </div>
-              </div>
-            </div>
-            <div class="film-bottom">
-              <span>Illustrative workflow · You write the code.</span
-              ><button class="film-replay" type="button">
-                Replay animation <span>↻</span>
-              </button>
-            </div>
-          </div>
-        </section>
-        <section class="suite-portfolio wrap">
-          <div class="suite-portfolio-heading">
-            <h2>Learn. Create.<br /><span>Build what comes next.</span></h2>
-            <p>Four connected products. One practical learning foundation.</p>
-          </div>
-          <div class="suite-product-grid">
-            <a href="learn.html"
-              ><span>Available · Windows preview</span>
-              <h3>Learn ↗</h3>
-              <p>
-                The local workspace for your courses, code, teacher, and ideas.
-              </p></a
-            ><a href="academy.html"
-              ><span>In development · local authoring in source</span>
-              <h3>Academy ↗</h3>
-              <p>Design courses around what a learner can actually build.</p></a
-            ><a href="creator-studio.html"
-              ><span>In development · writing briefs in source</span>
-              <h3>Creator Studio ↗</h3>
-              <p>Turn your teaching into source-grounded creative assets.</p></a
-            ><a href="gtm.html"
-              ><span>In development · campaign planning in source</span>
-              <h3>GTM ↗</h3>
-              <p>
-                Connect positioning, creative, distribution, and real
-                enrollment.
-              </p></a
-            >
-          </div>
-        </section>
-        <section
-          id="pricing"
-          class="pricing-section wrap"
-          aria-labelledby="pricing-heading"
-        >
-          <div class="pricing-heading">
-            <h2 id="pricing-heading">
-              Start building.<br /><span>Grow from there.</span>
-            </h2>
+          </article>
+          <article>
+            <h3>OutClass Plus</h3>
+            <p class="launch-price">
+              C$12 <small>/ month · test pricing</small>
+            </p>
             <p>
-              Your workspace is free. Choose how you connect your AI guides.
+              Included AI for approved test accounts. Checkout uses test mode.
             </p>
-          </div>
-          <div class="pricing-grid">
-            <article class="pricing-plan">
-              <div>
-                <h3>OutClass</h3>
-                <p>Your local learning workspace.</p>
-              </div>
-              <div class="pricing-price">Free<span>Desktop preview</span></div>
-              <a class="button" href="download.html">Download OutClass ↗</a>
-              <ul>
-                <li>Courses, code editor, and local projects</li>
-                <li>Checkpoints and version control</li>
-                <li>Udemy browser companion</li>
-                <li>Connect your own OpenAI key or compatible local model</li>
-              </ul>
-              <p class="pricing-footnote">
-                Your AI provider may charge separately. Local models require
-                your own setup.
-              </p>
-            </article>
-            <article class="pricing-plan pricing-plus">
-              <div>
-                <h3>
-                  OutClass Plus <span class="pricing-badge">Test preview</span>
-                </h3>
-                <p>Included AI for your next step.</p>
-              </div>
-              <div class="pricing-price">
-                C$12<span>CAD / month · test pricing</span>
-              </div>
-              <a class="button primary" href="account.html"
-                >Explore included AI ↗</a
-              >
-              <ul>
-                <li>Everything in the free workspace</li>
-                <li>600 bounded AI answers per calendar month</li>
-                <li>OffCourse for course and coding guidance</li>
-                <li>Architect for ideas and project decisions</li>
-              </ul>
-              <p class="pricing-footnote">
-                Free test accounts start with 20 included answers per calendar
-                month. Included AI is currently limited to approved test
-                accounts.
-              </p>
-            </article>
-          </div>
-          <p class="pricing-disclosure">
-            Included AI and subscriptions are in test preview. Stripe checkout
-            uses test mode; no real payment is collected. Public access and
-            final launch pricing are not yet available.
-          </p>
-        </section>
-        <section id="download" class="final-cta wrap" data-reveal="">
-          <h2>
-            Stop collecting courses.<br /><span>Start becoming capable.</span>
-          </h2>
-          <div class="hero-actions">
-            <a class="button primary" href="download.html"
-              >Get OutClass
-              <svg class="icon" aria-hidden="true">
-                <use href="assets/icons.svg#arrow"></use></svg></a
-            ><a class="text-link" href="setup.html"
-              >How to get started
-              <svg class="icon" aria-hidden="true">
-                <use href="assets/icons.svg#right"></use></svg
-            ></a>
-          </div>
-        </section>
-      </div>
+            <a class="launch-link" href="account.html"
+              >Explore included AI <span aria-hidden="true">↗</span></a
+            >
+          </article>
+        </div>
+      </section>
     </main>
     <footer class="site-footer wrap">
       <div class="footer-top">

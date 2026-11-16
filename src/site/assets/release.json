@@ -13,5 +13,13 @@
   "editor": {
     "url": "https://github.com/aayups31/OutClass/releases/download/v0.8.0/OutClass-Editor-0.8.0.vsix",
     "size": "9 KB"
+  },
+  "learn": {
+    "url": "https://github.com/aayups31/OutClass/releases/download/v0.8.0-apps/OutClass-Learn-Setup-0.8.0.exe",
+    "size": "116 MB"
+  },
+  "educator": {
+    "url": "https://github.com/aayups31/OutClass/releases/download/v0.8.0-apps/OutClass-Educator-Setup-0.8.0.exe",
+    "size": "116 MB"
   }
 }
