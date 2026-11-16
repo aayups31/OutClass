@@ -198,6 +198,27 @@ it("repairs invalid citations once, records the findings and obeys the approved 
   expect(failed.calls).toBe(1);
   expect(expansion.state().courses[0].revision).toBe(1);
 });
+it("repairs missing lesson citations and rejects duplicate hints before instructor review", async () => {
+  const c = course();
+  const indirect = lessonAnswer();
+  indirect.artifacts[0].sourceIds = [`brief:${c.id}`];
+  const duplicate = lessonAnswer();
+  duplicate.artifacts[0].hints = [
+    "Check the first record!",
+    "check the first record.",
+  ];
+  const model = vi
+    .spyOn(app.ai, "structured")
+    .mockResolvedValueOnce(indirect)
+    .mockResolvedValueOnce(duplicate);
+  const row = await work.wait(work.start(request("academy", c.id)).id);
+  expect(row.phase).toBe("failed");
+  expect(model.mock.calls[1][0].context).toContain(
+    "Cite the selected lesson itself",
+  );
+  expect(row.error).toContain("distinct, non-empty progressive hints");
+  expect(expansion.state().courses[0].revision).toBe(1);
+});
 it("blocks source changes during generation and stale application without replacing instructor work", async () => {
   const c = course();
   let finish!: (v: unknown) => void;

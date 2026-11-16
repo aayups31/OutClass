@@ -146,15 +146,18 @@ export class AgentWorkService {
         "Choose owned source footage for the Creative Director.",
       );
     const sources = base.sources.filter((s) => !s.id.startsWith("lesson:"));
+    const evidence = lessonEvidence(
+      lesson.content,
+      `${lesson.title} ${lesson.objective} ${lesson.practice} ${input.goal || ""}`,
+    );
     sources.push({
       id: `lesson:${input.lessonIndex}`,
       title: lesson.title,
       text: JSON.stringify({
         objective: lesson.objective,
         practice: lesson.practice,
-        content: lessonEvidence(lesson.content, input.goal || lesson.objective)
-          .text,
-        contentComplete: lesson.content.length <= 16000,
+        content: evidence.text,
+        contentComplete: evidence.complete,
         currentAssignment: lesson.learn
           ? {
               ...lesson.learn,
@@ -205,20 +208,27 @@ export class AgentWorkService {
         title: asset.name,
         text: JSON.stringify(asset),
       });
+    const learningProject = course.learningProject
+      ? {
+          title: course.learningProject.title,
+          problem: course.learningProject.problem,
+          deliverable: course.learningProject.deliverable,
+          milestone:
+            course.learningProject.milestones.find(
+              (m) => m.lessonIndex === input.lessonIndex,
+            ) || null,
+        }
+      : null;
+    if (input.domain === "academy" && learningProject)
+      sources.push({
+        id: "project:course",
+        title: learningProject.title,
+        text: JSON.stringify(learningProject),
+      });
     const context = {
       domain: input.domain,
       selectedLesson: input.lessonIndex,
-      learningProject: course.learningProject
-        ? {
-            title: course.learningProject.title,
-            problem: course.learningProject.problem,
-            deliverable: course.learningProject.deliverable,
-            milestone:
-              course.learningProject.milestones.find(
-                (m) => m.lessonIndex === input.lessonIndex,
-              ) || null,
-          }
-        : null,
+      learningProject,
       allowedPrerequisiteLessons: Array.from(
         { length: input.lessonIndex },
         (_, index) => index,
@@ -356,6 +366,30 @@ export class AgentWorkService {
           throw new UserError(
             `lessonIndex must equal the zero-based selectedLesson ${input.lessonIndex}.`,
           );
+        if (!a.sourceIds.includes(`lesson:${input.lessonIndex}`))
+          throw new UserError(
+            "Cite the selected lesson itself. Course and project references can supplement it.",
+          );
+        if (!a.reflection.trim() || !a.transferChallenge.trim())
+          throw new UserError(
+            "Provide both an evidence reflection and a changed-requirement challenge.",
+          );
+        for (const [label, entries] of [
+          ["acceptance criteria", a.acceptanceCriteria],
+          ["progressive hints", a.hints],
+        ] as const) {
+          const normalized = entries.map((entry) =>
+            entry
+              .toLowerCase()
+              .replace(/[^\p{L}\p{N}]+/gu, " ")
+              .trim(),
+          );
+          if (
+            normalized.some((entry) => !entry) ||
+            new Set(normalized).size !== entries.length
+          )
+            throw new UserError(`Write distinct, non-empty ${label}.`);
+        }
         if (a.prerequisiteLessons.some((p) => p >= a.lessonIndex))
           throw new UserError(
             input.lessonIndex === 0
