@@ -40,14 +40,25 @@ it.skipIf(process.env.OUTCLASS_DATABASE_TEST !== "1")(
         audience: "Test learners",
         outcome: "Verify a free enrollment",
         rightsConfirmed: true,
-        lessons: [
-          {
-            title: "Apply it",
-            objective: "Build a total",
-            practice: "Test empty input",
-            content: "A dictionary can accumulate a total.",
-          },
-        ],
+        lessons: Array.from({ length: 35 }, (_, index) => ({
+          title: `Apply it · lesson ${index + 1}`,
+          objective: "Build a total",
+          practice: "Test empty input",
+          content: "A dictionary can accumulate a total.",
+        })),
+        learningProject: {
+          title: "Activity report",
+          problem: "An organizer needs total minutes per person",
+          deliverable: "A report that handles repeated and empty records",
+          milestones: [
+            {
+              lessonIndex: 34,
+              title: "Handle an empty week",
+              brief: "Return an empty report for an empty input.",
+              acceptanceCriteria: ["No rows produce an empty report"],
+            },
+          ],
+        },
       },
       input = {
         releaseId: id,
@@ -67,19 +78,19 @@ it.skipIf(process.env.OUTCLASS_DATABASE_TEST !== "1")(
         }),
       ).rejects.toThrow(/new version/);
       expect((await service.catalog()).some((c) => c.id === id)).toBe(true);
-      await expect(service.grant(other, id, 0)).rejects.toThrow(/Enroll/);
+      await expect(service.grant(other, id, 34)).rejects.toThrow(/Enroll/);
       await service.enroll(learner, id);
       await service.enroll(learner, id);
       expect(
         (await service.mine(author)).find((c) => c.id === id).enrollments,
       ).toBe(1);
-      const grant = await service.grant(learner, id, 0);
+      const grant = await service.grant(learner, id, 34);
       await expect(service.redeem(other, grant.grant)).rejects.toThrow(
         /another account/,
       );
-      expect((await service.redeem(learner, grant.grant)).course.title).toBe(
-        course.title,
-      );
+      const launch = await service.redeem(learner, grant.grant);
+      expect(launch.lessonIndex).toBe(34);
+      expect(launch.course).toEqual(course);
       await expect(service.redeem(learner, grant.grant)).rejects.toThrow(
         /consumed/,
       );

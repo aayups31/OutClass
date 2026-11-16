@@ -28,7 +28,7 @@ CREATE TABLE outclass_platform.enrollments (
 CREATE INDEX academy_enrollment_course_idx ON outclass_platform.enrollments(course_id);
 CREATE TABLE outclass_platform.launch_grants (
  token_hash text PRIMARY KEY,user_id uuid NOT NULL,course_id uuid NOT NULL REFERENCES outclass_platform.courses(id),
- lesson_index integer NOT NULL CHECK(lesson_index>=0 AND lesson_index<30),
+ lesson_index integer NOT NULL CHECK(lesson_index>=0 AND lesson_index<200),
  expires_at timestamptz NOT NULL, consumed_at timestamptz,
  created_at timestamptz NOT NULL DEFAULT now()
 );
