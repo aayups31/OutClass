@@ -76,11 +76,15 @@ export function LearnPackageEditor({
         <legend>Prerequisite lessons</legend>
         {lessonTitles.map(
           (title, i) =>
-            i !== index && (
+            (i < index || value.prerequisiteLessons.includes(i)) && (
               <label className="product-checkbox" key={i}>
                 <input
                   type="checkbox"
                   checked={value.prerequisiteLessons.includes(i)}
+                  disabled={
+                    !value.prerequisiteLessons.includes(i) &&
+                    value.prerequisiteLessons.length >= 12
+                  }
                   onChange={(e) =>
                     onChange({
                       ...value,
@@ -280,7 +284,26 @@ export function LearnAssignment({
           Instructor preview · a separate workspace and local review history.
         </p>
       )}
-      <p>{value.brief}</p>
+      <p className="learn-practice-brief">{value.brief}</p>
+      {value.project && (
+        <section className="learn-project-connection">
+          <small>Your evolving project</small>
+          <h4>{value.project.title}</h4>
+          <p>{value.project.problem}</p>
+          {value.project.milestone && (
+            <>
+              <strong>This increment: {value.project.milestone.title}</strong>
+              <p>{value.project.milestone.brief}</p>
+              <ul>
+                {value.project.milestone.acceptanceCriteria.map((c, i) => (
+                  <li key={i}>{c}</li>
+                ))}
+              </ul>
+            </>
+          )}
+          <small>Final deliverable: {value.project.deliverable}</small>
+        </section>
+      )}
       {value.prerequisites.length > 0 && (
         <p>
           Recommended first:{" "}

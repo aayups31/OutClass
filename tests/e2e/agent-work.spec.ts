@@ -77,7 +77,7 @@ test.beforeAll(async () => {
               lessonIndex: 0,
               objective: "Demonstrate grouping records by person",
               practice:
-                "Group repeated people and validate the empty collection.",
+                "Group repeated people and validate the empty collection.\nExample input: Ada 4, Ada 3\nExpected result: Ada 7",
               minutes: 20,
               prerequisiteLessons: [],
               acceptanceCriteria: [
@@ -180,9 +180,9 @@ test("the four specialists produce, review, deliver and restore actual product a
   await page.emulateMedia({ colorScheme: "dark" });
   await page.goto(base + "/?view=academy");
   await page
-    .locator(".product-drafts")
-    .getByRole("button", { name: /Python activity reports/ })
-    .click();
+    .getByLabel("Academy course", { exact: true })
+    .selectOption({ label: "Python activity reports" });
+  await page.getByRole("button", { name: "Architect", exact: true }).click();
   const academy = page.getByRole("region", {
     name: "Academy Architect task workspace",
   });
@@ -192,6 +192,10 @@ test("the four specialists produce, review, deliver and restore actual product a
   ).toBeVisible();
   await expect(academy).toContainText(
     "An empty collection gives an empty report.",
+  );
+  await academy.getByText(/Compare with saved lesson/).click();
+  await expect(academy.locator(".academy-assignment-diff")).toContainText(
+    "Proposed",
   );
   await academy
     .getByRole("button", { name: "Apply assignment to course" })
@@ -204,9 +208,9 @@ test("the four specialists produce, review, deliver and restore actual product a
   });
   await page.reload();
   await page
-    .locator(".product-drafts")
-    .getByRole("button", { name: /Python activity reports/ })
-    .click();
+    .getByLabel("Academy course", { exact: true })
+    .selectOption({ label: "Python activity reports" });
+  await page.getByRole("button", { name: "Architect", exact: true }).click();
   await expect(academy.getByText("Delivered", { exact: true })).toBeVisible();
   await page
     .getByRole("button", { name: "Creator Studio", exact: true })

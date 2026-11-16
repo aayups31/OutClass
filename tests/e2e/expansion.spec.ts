@@ -38,18 +38,32 @@ test("author a course, launch Learn, approve grounded copy and prepare a manual 
   expect((await request.get(base + "/api/expansion/state")).status()).toBe(401);
   await page.goto(base + "/?view=academy");
   await page
-    .getByLabel("Course title", { exact: true })
-    .fill("Practical Python activities");
+    .getByLabel("Import course outline", { exact: true })
+    .setInputFiles({
+      name: "activity.md",
+      mimeType: "text/markdown",
+      buffer: Buffer.from(
+        "# Practical Python activities\nAudience: Beginners who know loops\nOutcome: A correct activity report\n\n## Accumulate totals\nObjective: Group minutes by student\nPractice: Handle empty input and repeated students\nA dictionary can retain each student's running total.",
+      ),
+    });
+  await expect(page.getByRole("dialog")).toBeVisible();
+  expect(store.get<any>("expansion:v1")?.courses ?? []).toHaveLength(0);
+  await page.getByRole("button", { name: "Use as new course" }).click();
+  await page.reload();
   await page
-    .getByLabel("Who is it for?", { exact: true })
-    .fill("Beginners who know loops");
+    .getByRole("button", { name: "Recover draft", exact: true })
+    .click();
+  await expect(page.getByLabel("Course title", { exact: true })).toHaveValue(
+    "Practical Python activities",
+  );
   await page
-    .getByLabel("What will they build?", { exact: true })
-    .fill("A correct activity report");
-  await page.getByRole("button", { name: "Add lesson", exact: true }).click();
+    .getByRole("button", { name: "Course overview", exact: true })
+    .click();
+  await page.getByLabel("I own or have permission").check();
   await page
-    .getByLabel("Lesson title 1", { exact: true })
-    .fill("Accumulate totals");
+    .getByRole("navigation", { name: "Course lessons" })
+    .getByRole("button", { name: /Accumulate totals/ })
+    .click();
   await page
     .getByLabel("Measurable objective 1", { exact: true })
     .fill("Group minutes by student");
@@ -59,7 +73,9 @@ test("author a course, launch Learn, approve grounded copy and prepare a manual 
   await page
     .getByLabel("Lesson content 1", { exact: true })
     .fill("A dictionary can retain each student's running total.");
-  await page.getByLabel("I own or have permission").check();
+  await page
+    .getByRole("button", { name: "Practice & review", exact: true })
+    .click();
   await page
     .getByRole("button", {
       name: "Add Learn experience to lesson 1",
@@ -78,15 +94,20 @@ test("author a course, launch Learn, approve grounded copy and prepare a manual 
   await page
     .getByRole("button", { name: "Save course draft", exact: true })
     .click();
-  await expect(page.locator(".product-message[role=status]")).toContainText(
-    "Draft saved",
+  await expect(page.locator(".academy-message[role=status]")).toContainText(
+    "Saved on this device",
   );
   await page
-    .getByRole("button", { name: "Validate structure", exact: true })
+    .getByRole("button", { name: "Review & release", exact: true })
     .click();
-  await expect(page.locator(".product-message[role=status]")).toContainText(
-    "not been executed",
-  );
+  await expect(page.getByLabel("Course coverage")).toContainText("1/1");
+  for (const finding of await page
+    .locator(".academy-finding.review input")
+    .all())
+    await finding.check();
+  await page
+    .getByRole("button", { name: "Complete instructor review", exact: true })
+    .click();
   page.on("dialog", (d) => d.accept());
   await page
     .getByRole("button", {
@@ -101,7 +122,7 @@ test("author a course, launch Learn, approve grounded copy and prepare a manual 
     .getByRole("button", { name: "Approve local release", exact: true })
     .click();
   await page
-    .getByRole("button", { name: "Enroll locally · Free", exact: true })
+    .getByRole("button", { name: "Enroll on this device", exact: true })
     .click();
   await page
     .getByRole("button", { name: /Open Accumulate totals in Learn/ })
@@ -183,15 +204,13 @@ test("author a course, launch Learn, approve grounded copy and prepare a manual 
     timeout: 15000,
   });
   await page.locator(".media-transcript-panel > summary").click();
-  await page
-    .getByLabel("Owned footage transcript")
-    .setInputFiles({
-      name: "lesson.srt",
-      mimeType: "text/plain",
-      buffer: Buffer.from(
-        "1\n00:00:01,000 --> 00:00:03,000\nGroup repeated students in a dictionary.\n\n2\n00:00:04,000 --> 00:00:06,000\nTrace the accumulated total.\n",
-      ),
-    });
+  await page.getByLabel("Owned footage transcript").setInputFiles({
+    name: "lesson.srt",
+    mimeType: "text/plain",
+    buffer: Buffer.from(
+      "1\n00:00:01,000 --> 00:00:03,000\nGroup repeated students in a dictionary.\n\n2\n00:00:04,000 --> 00:00:06,000\nTrace the accumulated total.\n",
+    ),
+  });
   await page.getByLabel("I have permission to use this transcript").check();
   await page
     .getByRole("button", { name: "Index transcript locally", exact: true })

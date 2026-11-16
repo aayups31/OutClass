@@ -50,18 +50,31 @@ const deliveryNames = {
   growth: "Prepare channel campaigns",
   analytics: "Save evidence brief",
 };
+const academyTasks = [
+  ["Design an assignment", goals.academy],
+  [
+    "Strengthen an assignment",
+    "Use the saved assignment as a baseline. In the summary identify the most consequential gap and cite the lesson. Preserve effective requirements and replace weak criteria with observable checks. Add debugging hints and an evidence-based reflection.",
+  ],
+  [
+    "Connect to the project",
+    "Design or revise the assignment so its output advances the selected lesson’s saved project increment. Explain the connection and how learners can check it. If no increment is defined, flag that gap and propose a small practice task using only the lesson.",
+  ],
+];
 export function AgentWorkPanel({
   domain,
   entity,
   dirty,
   api,
   onApplied,
+  preferredLesson,
 }: {
   domain: AgentWorkRequest["domain"];
   entity?: { id: string; revision: number };
   dirty: boolean;
   api: API;
   onApplied?: () => Promise<void>;
+  preferredLesson?: number;
 }) {
   const [context, setContext] = useState<Context>(),
     [job, setJob] = useState<AgentWork>(),
@@ -92,6 +105,21 @@ export function AgentWorkPanel({
   target.current = entity?.id;
   const selected = useRef(job?.id);
   selected.current = job?.id;
+  const preferred = useRef(preferredLesson);
+  preferred.current = preferredLesson;
+  const historyRef = useRef(history);
+  historyRef.current = history;
+  useEffect(() => {
+    if (preferredLesson === undefined) return;
+    setLesson(preferredLesson);
+    setJob(
+      historyRef.current.findLast(
+        (row) => row.request.lessonIndex === preferredLesson,
+      ),
+    );
+    setError("");
+    setShareNotice("");
+  }, [preferredLesson]);
   useEffect(() => {
     let live = true;
     setContext(undefined);
@@ -112,13 +140,19 @@ export function AgentWorkPanel({
         .then(([c, rows]) => {
           if (!live) return;
           setContext(c);
-          setLesson(c.pinnedLesson ?? 0);
+          setLesson(c.pinnedLesson ?? preferred.current ?? 0);
           const own = rows.filter(
             (r) =>
               r.request.entityId === entity.id && r.request.domain === domain,
           );
           setHistory(own);
-          setJob(own.at(-1));
+          setJob(
+            own.findLast(
+              (r) =>
+                preferred.current === undefined ||
+                preferred.current === r.request.lessonIndex,
+            ),
+          );
         })
         .catch((e) => {
           if (live) setError(e.message);
@@ -153,6 +187,10 @@ export function AgentWorkPanel({
     };
   }, [job?.id, job?.phase, api]);
   const stale = !!job && job.request.expectedRevision !== entity?.revision;
+  const otherLesson =
+    !!job &&
+    preferredLesson !== undefined &&
+    job.request.lessonIndex !== preferredLesson;
   async function start() {
     if (!entity || !context) return;
     const entityId = entity.id,
@@ -173,7 +211,11 @@ export function AgentWorkPanel({
         approveProvider: true,
       });
       if (target.current === entityId) {
-        setJob(result);
+        if (
+          preferred.current === undefined ||
+          preferred.current === result.request.lessonIndex
+        )
+          setJob(result);
         setHistory((rows) => [...rows, result]);
       }
     } catch (e) {
@@ -182,8 +224,12 @@ export function AgentWorkPanel({
       // Reattach after a lost start response instead of submitting another paid run.
       const rows = await api<AgentWork[]>("expansion/work").catch(() => []);
       const accepted = rows.find((r) => r.request.requestId === requestId);
-      if (accepted) {
-        setJob(accepted);
+      if (accepted && target.current === entityId) {
+        if (
+          preferred.current === undefined ||
+          preferred.current === accepted.request.lessonIndex
+        )
+          setJob(accepted);
         setHistory(
           rows.filter(
             (r) =>
@@ -197,7 +243,7 @@ export function AgentWorkPanel({
     }
   }
   async function apply() {
-    if (!job || !entity) return;
+    if (!job || !entity || otherLesson) return;
     const entityId = entity.id;
     setBusy(true);
     setError("");
@@ -237,7 +283,7 @@ export function AgentWorkPanel({
               : "Give a task. Review the work. Keep moving."}
           </p>
         </div>
-        {history.length > 1 && (
+        {(history.length > 1 || (history.length === 1 && !job)) && (
           <select
             aria-label={`${roles[domain]} task history`}
             value={job?.id || ""}
@@ -245,8 +291,11 @@ export function AgentWorkPanel({
               setJob(history.find((r) => r.id === e.target.value))
             }
           >
+            <option value="">Choose a past task</option>
             {[...history].reverse().map((r) => (
               <option key={r.id} value={r.id}>
+                {domain === "academy" &&
+                  `Lesson ${r.request.lessonIndex + 1} · `}
                 {new Date(r.createdAt).toLocaleString()} · {r.phase}
               </option>
             ))}
@@ -259,6 +308,31 @@ export function AgentWorkPanel({
         </p>
       ) : (
         <>
+          {domain === "academy" && (
+            <label>
+              Assignment task
+              <select
+                aria-label="Assignment task"
+                disabled={busy || working(job?.phase)}
+                value={
+                  academyTasks.find(([, task]) => task === goal)?.[0] || ""
+                }
+                onChange={(e) => {
+                  const task = academyTasks.find(
+                    ([name]) => name === e.target.value,
+                  );
+                  if (task) setGoal(task[1]);
+                }}
+              >
+                <option value="" disabled>
+                  Custom instructions
+                </option>
+                {academyTasks.map(([name]) => (
+                  <option key={name}>{name}</option>
+                ))}
+              </select>
+            </label>
+          )}
           <label className="agent-work-goal">
             Task
             <textarea
@@ -276,6 +350,7 @@ export function AgentWorkPanel({
               disabled={
                 !context ||
                 context.pinnedLesson !== null ||
+                preferredLesson !== undefined ||
                 working(job?.phase) ||
                 busy
               }
@@ -455,6 +530,7 @@ export function AgentWorkPanel({
                   <Artifact key={i} artifact={a} />
                 ))}
               </div>
+              {domain === "academy" && <AssignmentChanges job={job} />}
               <details className="agent-work-evidence">
                 <summary>Sources & limitations · {job.sources.length}</summary>
                 {job.answer.limitations.map((l, i) => (
@@ -472,13 +548,19 @@ export function AgentWorkPanel({
                   <button
                     className="button primary"
                     onClick={() => void apply()}
-                    disabled={dirty || stale || busy}
+                    disabled={dirty || stale || busy || otherLesson}
                   >
                     <Check size={14} />
                     {deliveryNames[domain]}
                   </button>
                   <small>Applies this reviewed result to local drafts.</small>
                 </div>
+              )}
+              {otherLesson && job.phase === "ready" && (
+                <p className="agent-work-state">
+                  Select lesson {job.request.lessonIndex + 1} in the course
+                  outline to apply this assignment.
+                </p>
               )}
               {stale && job.phase === "ready" && (
                 <p className="agent-work-state">
@@ -566,6 +648,67 @@ export function AgentWorkPanel({
     </section>
   );
 }
+function AssignmentChanges({ job }: { job: AgentWork }) {
+  const proposed = job.answer?.artifacts[0];
+  const source = job.sources.find(
+    (s) => s.id === `lesson:${job.request.lessonIndex}`,
+  );
+  if (proposed?.kind !== "lesson_package" || !source) return null;
+  let saved: {
+    objective: string;
+    practice: string;
+    currentAssignment: Partial<typeof proposed> | null;
+  };
+  try {
+    saved = JSON.parse(source.text);
+  } catch {
+    return null;
+  }
+  const before = {
+    ...saved.currentAssignment,
+    objective: saved.objective,
+    practice: saved.practice,
+  };
+  const fields = [
+    ["objective", "Objective"],
+    ["practice", "Practice brief"],
+    ["minutes", "Minutes"],
+    ["prerequisiteLessons", "Prerequisite lessons"],
+    ["acceptanceCriteria", "Acceptance criteria"],
+    ["hints", "Progressive hints"],
+    ["reflection", "Reflection"],
+    ["transferChallenge", "Transfer challenge"],
+  ] as const;
+  const display = (key: (typeof fields)[number][0], value: unknown) =>
+    Array.isArray(value)
+      ? value
+          .map((item) =>
+            key === "prerequisiteLessons" ? `Lesson ${item + 1}` : item,
+          )
+          .join("\n") || "None"
+      : String(value || "None");
+  const changes = fields.filter(
+    ([key]) => JSON.stringify(before[key]) !== JSON.stringify(proposed[key]),
+  );
+  return (
+    <details className="agent-work-evidence academy-assignment-diff">
+      <summary>Compare with saved lesson · {changes.length} changes</summary>
+      {changes.map(([key, label]) => (
+        <dl key={key}>
+          <dt>{label}</dt>
+          <dd>
+            <small>Saved</small>
+            <p>{display(key, before[key])}</p>
+          </dd>
+          <dd>
+            <small>Proposed</small>
+            <p>{display(key, proposed[key])}</p>
+          </dd>
+        </dl>
+      ))}
+    </details>
+  );
+}
 function Artifact({
   artifact: a,
 }: {
@@ -580,7 +723,7 @@ function Artifact({
       {a.kind === "lesson_package" ? (
         <div>
           <p>{a.objective}</p>
-          <p>{a.practice}</p>
+          <p className="learn-practice-brief">{a.practice}</p>
           <small>
             {a.minutes} minutes · Lesson {a.lessonIndex + 1}
           </small>

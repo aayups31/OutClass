@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
 import {
-  BookOpen,
   Film,
   Megaphone,
   Plus,
@@ -9,31 +8,21 @@ import {
   Download,
 } from "lucide-react";
 import type {
-  AcademyDraft,
   CreativeDraft,
   CampaignDraft,
   ExpansionState,
-  Revision,
   Creative,
   Campaign,
 } from "../expansion-contract";
 import "./products.css";
 import { CreatorDesign } from "./creator-design";
-import { HostedAcademyPanel } from "./academy-hosted";
-import { LearnPackageEditor } from "./learn-package";
 import { HandoffInbox } from "./agent-handoffs";
 import { GTMStudioPanel } from "./gtm-studio";
 import { GTMOperations } from "./gtm-operations";
 import { CreatorMedia } from "./creator-media";
-import { AgentPanel, CompilerPanel } from "./product-intelligence";
+import { AgentPanel } from "./product-intelligence";
+import { AcademyWorkbench } from "./academy-workbench";
 type API = <T>(route: string, body?: unknown) => Promise<T>;
-const courseValues = (c: AcademyDraft): AcademyDraft => ({
-  title: c.title,
-  audience: c.audience,
-  outcome: c.outcome,
-  rightsConfirmed: c.rightsConfirmed,
-  lessons: c.lessons,
-});
 const creativeValues = (c: CreativeDraft): CreativeDraft => ({
   title: c.title,
   releaseId: c.releaseId,
@@ -53,13 +42,6 @@ const campaignValues = (c: CampaignDraft): CampaignDraft => ({
   budgetMinor: c.budgetMinor,
   currency: c.currency,
 });
-const emptyCourse: AcademyDraft = {
-  title: "",
-  audience: "",
-  outcome: "",
-  rightsConfirmed: false,
-  lessons: [],
-};
 function exportFile(name: string, value: unknown) {
   const href = URL.createObjectURL(
     new Blob([JSON.stringify(value, null, 2)], { type: "application/json" }),
@@ -70,23 +52,39 @@ function exportFile(name: string, value: unknown) {
   link.click();
   setTimeout(() => URL.revokeObjectURL(href), 1000);
 }
-export function ProductWorkspace({
-  mode,
-  api,
-  onCode,
-  onDirty,
-}: {
+export function ProductWorkspace(props: {
   mode: "academy" | "creator" | "gtm";
   api: API;
   onCode: (id: string) => void;
+  onDirty: (dirty: boolean) => void;
+}) {
+  return props.mode === "academy" ? (
+    <AcademyWorkbench
+      api={props.api}
+      onCode={props.onCode}
+      onDirty={props.onDirty}
+    />
+  ) : (
+    <StudioWorkspace
+      mode={props.mode}
+      api={props.api}
+      onDirty={props.onDirty}
+    />
+  );
+}
+function StudioWorkspace({
+  mode,
+  api,
+  onDirty,
+}: {
+  mode: "creator" | "gtm";
+  api: API;
   onDirty: (dirty: boolean) => void;
 }) {
   const [data, setData] = useState<ExpansionState>();
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
-  const [course, setCourse] = useState<AcademyDraft>(emptyCourse);
-  const [selected, setSelected] = useState<Revision<AcademyDraft>>();
   const [creative, setCreative] = useState<CreativeDraft>({
     title: "",
     releaseId: "",
@@ -132,13 +130,6 @@ export function ProductWorkspace({
         "The agent saved a new revision. Your unsaved edits are preserved; reload before saving them.",
       );
       return;
-    }
-    if (selected) {
-      const next = result.courses.find((c) => c.id === selected.id);
-      if (next) {
-        setSelected(next);
-        setCourse(courseValues(next));
-      }
     }
     if (selectedCreative) {
       const next = result.creatives.find((c) => c.id === selectedCreative.id);
@@ -213,9 +204,8 @@ export function ProductWorkspace({
   }
   const source = data?.releases.find((r) => r.id === creative.releaseId);
   const currentLesson = source?.lessons[creative.lessonIndex];
-  const names = { academy: "Academy", creator: "Creator Studio", gtm: "GTM" };
+  const names = { creator: "Creator Studio", gtm: "GTM" };
   const intros = {
-    academy: "Turn expertise into something a learner can do.",
     creator: "Build your story from real teaching.",
     gtm: "Plan a launch. Keep the evidence clear.",
   };
@@ -236,13 +226,7 @@ export function ProductWorkspace({
           <p>{intros[mode]}</p>
         </div>
         <span className="product-emblem">
-          {mode === "academy" ? (
-            <BookOpen />
-          ) : mode === "creator" ? (
-            <Film />
-          ) : (
-            <Megaphone />
-          )}
+          {mode === "creator" ? <Film /> : <Megaphone />}
         </span>
       </div>
       {error && (
@@ -303,399 +287,8 @@ export function ProductWorkspace({
         )}
         <HandoffInbox
           api={api}
-          domain={
-            mode === "gtm"
-              ? "growth"
-              : mode === "creator"
-                ? "creative"
-                : "academy"
-          }
+          domain={mode === "gtm" ? "growth" : "creative"}
         />
-        {mode === "academy" && (
-          <>
-            <div className="product-columns">
-              <aside className="product-drafts">
-                <h2>Course drafts</h2>
-                <button
-                  className="button"
-                  onClick={() => {
-                    if (canSwitch()) {
-                      setCourse(emptyCourse);
-                      setSelected(undefined);
-                      clean();
-                    }
-                  }}
-                >
-                  <Plus size={15} />
-                  New course
-                </button>
-                {data.courses.map((c) => (
-                  <button
-                    key={c.id}
-                    className={
-                      selected?.id === c.id
-                        ? "product-item selected"
-                        : "product-item"
-                    }
-                    onClick={() => {
-                      if (canSwitch()) {
-                        setCourse(courseValues(c));
-                        setSelected(c);
-                        clean();
-                      }
-                    }}
-                  >
-                    {c.title}
-                    <small>
-                      Revision {c.revision} · {c.lessons.length} lessons
-                    </small>
-                  </button>
-                ))}
-                {!data.courses.length && (
-                  <p>Create your first course. Drafts stay on this device.</p>
-                )}
-              </aside>
-              <section className="product-editor">
-                <AgentPanel
-                  onWorkApplied={workApplied}
-                  domain="academy"
-                  entity={selected}
-                  dirty={dirty || mediaDirty || promotionDirty || composerDirty}
-                  api={api}
-                />
-
-                <div className="product-panel-heading">
-                  <h2>Course builder</h2>
-                  <span>
-                    {dirty
-                      ? "Unsaved changes"
-                      : selected
-                        ? `Saved · v${selected.revision}`
-                        : "New draft"}
-                  </span>
-                </div>
-                <label>
-                  Course title
-                  <input
-                    maxLength={200}
-                    value={course.title}
-                    placeholder="Python for practical automation"
-                    onChange={(e) => {
-                      setCourse({ ...course, title: e.target.value });
-                      changed();
-                    }}
-                  />
-                </label>
-                <div className="product-input-row">
-                  <label>
-                    Who is it for?
-                    <textarea
-                      value={course.audience}
-                      maxLength={1000}
-                      placeholder="Experience, prerequisites and time available"
-                      onChange={(e) => {
-                        setCourse({ ...course, audience: e.target.value });
-                        changed();
-                      }}
-                    />
-                  </label>
-                  <label>
-                    What will they build?
-                    <textarea
-                      value={course.outcome}
-                      maxLength={2000}
-                      placeholder="A measurable result from their own work"
-                      onChange={(e) => {
-                        setCourse({ ...course, outcome: e.target.value });
-                        changed();
-                      }}
-                    />
-                  </label>
-                </div>
-                {course.lessons.map((lesson, i) => (
-                  <section className="product-lesson" key={i}>
-                    <div className="product-panel-heading">
-                      <h3>Lesson {i + 1}</h3>
-                      <button
-                        className="button small"
-                        onClick={() => {
-                          setCourse({
-                            ...course,
-                            lessons: course.lessons
-                              .filter((_, index) => index !== i)
-                              .map((l) =>
-                                l.learn
-                                  ? {
-                                      ...l,
-                                      learn: {
-                                        ...l.learn,
-                                        prerequisiteLessons:
-                                          l.learn.prerequisiteLessons
-                                            .filter((n) => n !== i)
-                                            .map((n) => (n > i ? n - 1 : n)),
-                                      },
-                                    }
-                                  : l,
-                              ),
-                          });
-                          changed();
-                        }}
-                      >
-                        Remove lesson {i + 1}
-                      </button>
-                    </div>
-                    {(
-                      [
-                        ["title", "Lesson title", 200],
-                        ["objective", "Measurable objective", 1000],
-                        ["practice", "Hands-on practice brief", 2000],
-                        ["content", "Lesson content", 8000],
-                      ] as const
-                    ).map(([field, label, max]) => (
-                      <label key={field}>
-                        {label}
-                        {field === "title" ? (
-                          <input
-                            aria-label={`${label} ${i + 1}`}
-                            maxLength={max}
-                            value={lesson[field]}
-                            onChange={(e) => {
-                              setCourse({
-                                ...course,
-                                lessons: course.lessons.map((l, index) =>
-                                  index === i
-                                    ? { ...l, [field]: e.target.value }
-                                    : l,
-                                ),
-                              });
-                              changed();
-                            }}
-                          />
-                        ) : (
-                          <textarea
-                            aria-label={`${label} ${i + 1}`}
-                            maxLength={max}
-                            rows={field === "content" ? 5 : 2}
-                            value={lesson[field]}
-                            onChange={(e) => {
-                              setCourse({
-                                ...course,
-                                lessons: course.lessons.map((l, index) =>
-                                  index === i
-                                    ? { ...l, [field]: e.target.value }
-                                    : l,
-                                ),
-                              });
-                              changed();
-                            }}
-                          />
-                        )}
-                      </label>
-                    ))}
-                    <LearnPackageEditor
-                      index={i}
-                      value={lesson.learn}
-                      lessonTitles={course.lessons.map((l) => l.title)}
-                      onChange={(learn) => {
-                        setCourse({
-                          ...course,
-                          lessons: course.lessons.map((l, n) =>
-                            n === i ? { ...l, learn } : l,
-                          ),
-                        });
-                        changed();
-                      }}
-                    />
-                  </section>
-                ))}
-                <button
-                  className="button"
-                  disabled={course.lessons.length >= 30}
-                  onClick={() => {
-                    setCourse({
-                      ...course,
-                      lessons: [
-                        ...course.lessons,
-                        { title: "", objective: "", practice: "", content: "" },
-                      ],
-                    });
-                    changed();
-                  }}
-                >
-                  <Plus size={15} />
-                  Add lesson
-                </button>
-                <label className="product-checkbox">
-                  <input
-                    type="checkbox"
-                    checked={course.rightsConfirmed}
-                    onChange={(e) => {
-                      setCourse({
-                        ...course,
-                        rightsConfirmed: e.target.checked,
-                      });
-                      changed();
-                    }}
-                  />
-                  I own or have permission to use this material.
-                </label>
-                <div className="product-actions">
-                  <button
-                    className="button primary"
-                    disabled={!course.title.trim()}
-                    onClick={() =>
-                      void action(async () => {
-                        const saved = await api<Revision<AcademyDraft>>(
-                          "expansion/courses/save",
-                          {
-                            ...course,
-                            id: selected?.id,
-                            expectedRevision: selected?.revision || 0,
-                          },
-                        );
-                        setSelected(saved);
-                        setCourse(courseValues(saved));
-                        clean();
-                      }, "Draft saved on this device.")
-                    }
-                  >
-                    Save course draft
-                  </button>
-                  <button
-                    className="button"
-                    disabled={!selected || dirty}
-                    onClick={() =>
-                      void action(async () => {
-                        const report = await api<{
-                          valid: boolean;
-                          issues: string[];
-                          scope: string;
-                        }>(`expansion/courses/${selected!.id}/validate`, {});
-                        setNotice(
-                          report.valid ? report.scope : report.issues.join(" "),
-                        );
-                      })
-                    }
-                  >
-                    Validate structure
-                  </button>
-                  <button
-                    className="button"
-                    disabled={!selected || dirty}
-                    onClick={() => {
-                      if (
-                        confirm(
-                          "Approve this exact revision for your local catalog? This does not publish to the internet, and code is not technically verified.",
-                        )
-                      )
-                        void action(
-                          () =>
-                            api(`expansion/courses/${selected!.id}/release`, {
-                              expectedRevision: selected!.revision,
-                              approve: true,
-                            }),
-                          "Released to your local catalog.",
-                        );
-                    }}
-                  >
-                    Approve local release
-                  </button>
-                </div>
-                <CompilerPanel course={selected} dirty={dirty} api={api} />
-
-                <p className="product-limit">
-                  Structure checks validate required course content. The
-                  laboratory executes the supported Python template separately.
-                </p>
-              </section>
-            </div>
-            <HostedAcademyPanel
-              api={api}
-              releases={data.releases}
-              onCode={onCode}
-            />
-            <section className="product-catalog">
-              <h2>Your local catalog</h2>
-              <p>
-                Immutable course versions. Enroll on this device and open the
-                actual Learn workspace.
-              </p>
-              <div className="product-release-grid">
-                {data.releases.map((r) => (
-                  <article key={r.id}>
-                    <span className="product-local">
-                      Local release · v{r.revision}
-                    </span>
-                    <h3>{r.title}</h3>
-                    <p>{r.outcome}</p>
-                    {data.courses.some((c) => c.id === r.courseId) && (
-                      <button
-                        className="button"
-                        onClick={() =>
-                          void action(async () => {
-                            const result = await api<{ courseId: string }>(
-                              `expansion/releases/${r.id}/preview`,
-                              { lessonIndex: 0 },
-                            );
-                            onCode(result.courseId);
-                          })
-                        }
-                      >
-                        Preview as a learner
-                      </button>
-                    )}
-                    {data.enrollments.some((e) => e.releaseId === r.id) ? (
-                      r.lessons.map((l, i) => (
-                        <button
-                          key={i}
-                          className="button"
-                          onClick={() =>
-                            void action(async () => {
-                              const result = await api<{ courseId: string }>(
-                                `expansion/releases/${r.id}/launch`,
-                                { lessonIndex: i },
-                              );
-                              onCode(result.courseId);
-                            })
-                          }
-                        >
-                          Open {l.title} in Learn <ArrowUpRight size={14} />
-                        </button>
-                      ))
-                    ) : (
-                      <button
-                        className="button primary"
-                        onClick={() =>
-                          void action(
-                            () => api(`expansion/releases/${r.id}/enroll`, {}),
-                            "Enrolled on this device. No payment or upload.",
-                          )
-                        }
-                      >
-                        Enroll locally · Free
-                      </button>
-                    )}
-                    <button
-                      className="button small"
-                      onClick={() =>
-                        exportFile(`outclass-course-${r.id}.json`, r)
-                      }
-                    >
-                      <Download size={14} />
-                      Export course manifest
-                    </button>
-                  </article>
-                ))}
-              </div>
-              {!data.releases.length && (
-                <p>
-                  No local releases yet. Save, validate and approve a course
-                  above.
-                </p>
-              )}
-            </section>
-          </>
-        )}
         {mode === "creator" && (
           <div className="product-columns">
             <aside className="product-drafts">

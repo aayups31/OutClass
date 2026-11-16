@@ -1,3 +1,19 @@
+.learn-project-connection {
+  border-left: 2px solid var(--accent);
+  padding: 12px 16px;
+  margin: 20px 0;
+  background: var(--soft);
+  font-size: 12px;
+  line-height: 1.8;
+}
+.learn-project-connection h4 {
+  font-size: 14px;
+  margin: 7px 0;
+}
+.learn-project-connection small {
+  color: var(--muted);
+  font-size: 10px;
+}
 .learn-package-editor {
   margin: 22px 0;
   padding: 20px;
@@ -46,4 +62,8 @@
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
+}
+.learn-practice-brief {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }

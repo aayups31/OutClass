@@ -12,6 +12,7 @@ export function AgentPanel({
   api,
   onApply,
   onWorkApplied,
+  lessonIndex,
 }: {
   domain: "academy" | "creative" | "growth" | "analytics";
   entity?: { id: string; revision: number };
@@ -19,6 +20,7 @@ export function AgentPanel({
   api: API;
   onApply?: (text: string) => void;
   onWorkApplied?: () => Promise<void>;
+  lessonIndex?: number;
 }) {
   const [run, setRun] = useState<ProductAgentRun>();
   const [busy, setBusy] = useState(false);
@@ -60,6 +62,7 @@ export function AgentPanel({
         dirty={dirty}
         api={api}
         onApplied={onWorkApplied}
+        preferredLesson={lessonIndex}
       />
       <details className="agent-quick-review">
         <summary>Quick review & specialist handoff</summary>

@@ -11,6 +11,9 @@ Academy strengthens instructor-owned courses and delivers their practical work i
 - The guided release endpoint requires a review receipt matching the exact course revision and audit hash. A subsequent edit invalidates the receipt. Existing low-level expansion APIs retain compatibility; they do not imply completion of this guided review.
 - Project courses open in one evolving project folder, with isolated instructor preview identities. Immutable milestone context reaches the Learn assignment and OffCourse. Starter files are created only if absent. Preview self-review is never labelled independent learner evidence.
 - Academy tasks receive the selected project increment and bounded literal excerpts of long lessons. Stored source text remains intact, and partial context is labelled explicitly.
+- The desktop workbench offers course outline import, one lesson at a time, a project editor, and a separate release review. Unsaved changes can be recovered from the local app after reloading. A stale recovery opens as a separate draft.
+- The Architect can design a new assignment, strengthen an existing one, or connect it to a project increment. Instructors see the source citations and a before-and-after comparison before applying to the saved revision. The practice brief includes a concrete input and expected result for the learner to try.
+- Starting a later lesson from Learn seeds that lesson’s assignment and project roadmap in the same project folder without replacing existing files. Full teaching material stays in the course library. The session note starts with a short objective and practice brief.
 
 ## Quality bar
 
