@@ -2,6 +2,8 @@ import { z } from "zod";
 import {
   agentWorkAnswer,
   agentWorkInstructions,
+  projectForgeAnswer,
+  projectForgeInstructions,
 } from "./agent-work-contract.js";
 import {
   promotionAnswer,
@@ -53,6 +55,7 @@ export const hostedRequest = z.object({
     "analytics",
     "promotion",
     "work",
+    "project_forge",
   ]),
   context: z.string().min(1).max(90000),
   history: z
@@ -73,6 +76,7 @@ export type AIUsage = {
 };
 export function answerSchema(task: z.infer<typeof hostedRequest>["task"]) {
   if (task === "work") return agentWorkAnswer;
+  if (task === "project_forge") return projectForgeAnswer;
   if (task === "promotion") return promotionAnswer;
   return task === "teacher"
     ? teacherAnswer
@@ -86,6 +90,7 @@ export function answerInstructions(
   task: z.infer<typeof hostedRequest>["task"],
 ) {
   if (task === "work") return agentWorkInstructions;
+  if (task === "project_forge") return projectForgeInstructions;
   if (task === "promotion") return promotionInstructions;
   return task === "teacher"
     ? teacherInstructions

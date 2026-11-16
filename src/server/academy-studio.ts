@@ -69,6 +69,7 @@ export function importAcademy(raw: unknown) {
       lessons: [],
     };
     let lesson: AcademyDraft["lessons"][number] | undefined;
+    let chapter: string | undefined;
     let fence = false;
     for (const line of input.text
       .replace(/^\uFEFF/, "")
@@ -81,15 +82,24 @@ export function importAcademy(raw: unknown) {
           result.title = title[1].trim();
           continue;
         }
-        const heading = /^##\s+(?:Lesson\s*(?:\d+)?\s*[:.—-]\s*)?(.+)$/i.exec(
-          line,
-        );
+        const section = /^##\s+(?:Chapter|Section):\s*(.+)$/i.exec(line);
+        if (section) {
+          chapter = section[1].trim();
+          lesson = undefined;
+          continue;
+        }
+        const heading = (
+          chapter
+            ? /^###\s+(?:Lesson\s*(?:\d+)?\s*[:.—-]\s*)?(.+)$/i
+            : /^##\s+(?:Lesson\s*(?:\d+)?\s*[:.—-]\s*)?(.+)$/i
+        ).exec(line);
         if (heading) {
           lesson = {
             title: heading[1].trim(),
             objective: "",
             practice: "",
             content: "",
+            ...(chapter ? { chapter } : {}),
           };
           result.lessons.push(lesson);
           continue;
@@ -211,7 +221,7 @@ export function auditAcademy(course: Revision<AcademyDraft>): AcademyAudit {
     minutes = 0;
   course.lessons.forEach((l, i) => {
     for (const field of ["title", "objective", "practice", "content"] as const)
-      if (!l[field].trim())
+      if (!l[field].trim() && (field !== "content" || !l.resources?.length))
         add(
           `${i}:${field}`,
           "blocker",

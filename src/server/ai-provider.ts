@@ -292,7 +292,8 @@ export class AIProvider {
       | "growth"
       | "analytics"
       | "promotion"
-      | "work";
+      | "work"
+      | "project_forge";
     schema: T;
     name: string;
     instructions: string;
@@ -302,6 +303,14 @@ export class AIProvider {
     const { task, schema, name, instructions, context, history = [] } = options;
     assertClean(context + JSON.stringify(history), "AI context");
     const c = this.config();
+    const outputTokens =
+      task === "project_forge"
+        ? 5000
+        : task === "work"
+          ? 3500
+          : task === "checkpoint"
+            ? 250
+            : 1800;
     if (!this.ready())
       throw new UserError("Choose an AI connection in Settings first.");
     try {
@@ -322,7 +331,7 @@ export class AIProvider {
         });
         const response = await client.chat.completions.create({
           model: c.localModel,
-          max_tokens: task === "work" ? 3500 : 1800,
+          max_tokens: outputTokens,
           response_format: { type: "json_object" },
           messages: [
             {
@@ -346,8 +355,7 @@ export class AIProvider {
             process.env.OPENAI_MODEL ||
             "gpt-4o-mini",
           store: false,
-          max_output_tokens:
-            task === "checkpoint" ? 250 : task === "work" ? 3500 : 1800,
+          max_output_tokens: outputTokens,
           instructions,
           input: [...history, { role: "user", content: context }],
           text: { format: zodTextFormat(schema, name) },

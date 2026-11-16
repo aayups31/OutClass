@@ -5,10 +5,16 @@ import {
   agentWorkAnswer,
   agentWorkInstructions,
   agentWorkRequest,
+  projectForgeAnswer,
+  projectForgeInstructions,
   type AgentWorkAnswer,
   type AgentWorkRequest,
 } from "../agent-work-contract.js";
-import { learnPackageIssues } from "../learn-package-contract.js";
+import {
+  learnPackage,
+  learnPackageIssues,
+  type LearnPackage,
+} from "../learn-package-contract.js";
 import { promotionPost } from "../promotion-contract.js";
 import type { Application } from "./application.js";
 import type { Expansion } from "./expansion.js";
@@ -28,6 +34,33 @@ import { lessonEvidence } from "../academy-design.js";
 const key = "suite:work:v1";
 const digest = (value: unknown) =>
   createHash("sha256").update(JSON.stringify(value)).digest("hex");
+type AcademyArtifact = Extract<
+  AgentWorkAnswer["artifacts"][number],
+  { kind: "lesson_package" | "lesson_scaffold" }
+>;
+function assignmentFromArtifact(
+  artifact: AcademyArtifact,
+  original?: LearnPackage,
+) {
+  return learnPackage.parse({
+    ...(original?.kind || original?.title
+      ? { kind: original.kind, title: original.title }
+      : {}),
+    ...(artifact.kind === "lesson_scaffold"
+      ? { kind: artifact.activityType, title: artifact.title }
+      : {}),
+    minutes: artifact.minutes,
+    prerequisiteLessons: artifact.prerequisiteLessons,
+    acceptanceCriteria: artifact.acceptanceCriteria,
+    hints: artifact.hints,
+    reflection: artifact.reflection,
+    transferChallenge: artifact.transferChallenge,
+    starterFiles: [
+      ...(original?.starterFiles || []),
+      ...(artifact.kind === "lesson_scaffold" ? artifact.starterFiles : []),
+    ],
+  });
+}
 type Phase =
   | "queued"
   | "drafting"
@@ -156,6 +189,13 @@ export class AgentWorkService {
       text: JSON.stringify({
         objective: lesson.objective,
         practice: lesson.practice,
+        ...(lesson.chapter ? { chapter: lesson.chapter } : {}),
+        ...(lesson.resources?.length
+          ? {
+              resourceNames: lesson.resources.map((resource) => resource.name),
+              resourceContentsAvailable: false,
+            }
+          : {}),
         content: evidence.text,
         contentComplete: evidence.complete,
         currentAssignment: lesson.learn
@@ -271,6 +311,8 @@ export class AgentWorkService {
   }
   start(raw: unknown) {
     const input = agentWorkRequest.parse(raw);
+    if (input.scaffold && input.domain !== "academy")
+      throw new UserError("Project Forge works with Academy lessons.");
     assertClean(JSON.stringify(input), "agent task");
     const previous = this.list().find(
       (r) => r.request.requestId === input.requestId,
@@ -338,7 +380,7 @@ export class AgentWorkService {
         409,
       );
     const expected = {
-      academy: "lesson_package",
+      academy: input.scaffold ? "lesson_scaffold" : "lesson_package",
       creative: "production_script",
       growth: "channel_post",
       analytics: "analysis_brief",
@@ -361,7 +403,7 @@ export class AgentWorkService {
     };
     for (const a of answer.artifacts) {
       cite(a.sourceIds);
-      if (a.kind === "lesson_package") {
+      if (a.kind === "lesson_package" || a.kind === "lesson_scaffold") {
         if (a.lessonIndex !== input.lessonIndex)
           throw new UserError(
             `lessonIndex must equal the zero-based selectedLesson ${input.lessonIndex}.`,
@@ -406,11 +448,37 @@ export class AgentWorkService {
               ? "For selectedLesson 0, prerequisiteLessons MUST be []. The first lesson cannot depend on itself."
               : `prerequisiteLessons may contain only indices 0–${input.lessonIndex - 1}, never the selected lesson ${input.lessonIndex}.`,
           );
+        if (a.kind === "lesson_scaffold") {
+          if (a.activityType !== input.scaffold)
+            throw new UserError(
+              "Match the requested exercise or capstone type.",
+            );
+          if (
+            !a.starterFiles.some(
+              (file) =>
+                /(?:^|\/)README\.md$/i.test(file.path) &&
+                file.content.trim().length >= 60,
+            )
+          )
+            throw new UserError(
+              "Include a README.md with setup, build steps, run and verification instructions.",
+            );
+          if (
+            !a.starterFiles.some(
+              (file) =>
+                !/\.(?:md|txt)$/i.test(file.path) &&
+                /\bTODO\b/i.test(file.content),
+            )
+          )
+            throw new UserError(
+              "Include a source file with TODO comments for the learner.",
+            );
+        }
         const lessons = structuredClone(snapshot.course.lessons);
-        lessons[a.lessonIndex].learn = {
-          ...a,
-          starterFiles: lessons[a.lessonIndex].learn?.starterFiles || [],
-        };
+        lessons[a.lessonIndex].learn = assignmentFromArtifact(
+          a,
+          lessons[a.lessonIndex].learn,
+        );
         const issues = learnPackageIssues(lessons);
         if (issues.length) throw new UserError(issues.join(" "));
       }
@@ -515,6 +583,7 @@ export class AgentWorkService {
         );
         const payload = {
           ...snapshot.context,
+          ...(row.request.scaffold ? { scaffold: row.request.scaffold } : {}),
           goal: row.request.goal,
           requestedProviders: row.request.providers,
           validationFindings: row.validation,
@@ -522,11 +591,14 @@ export class AgentWorkService {
         };
         if (JSON.stringify(payload).length > 85000)
           payload.previousAttempt = null;
+        const forge = !!row.request.scaffold;
         const answer = await this.app.ai.structured({
-          task: "work",
-          schema: agentWorkAnswer,
-          name: "outclass_agent_work",
-          instructions: agentWorkInstructions,
+          task: forge ? "project_forge" : "work",
+          schema: forge ? projectForgeAnswer : agentWorkAnswer,
+          name: forge ? "outclass_project_forge" : "outclass_agent_work",
+          instructions: forge
+            ? projectForgeInstructions
+            : agentWorkInstructions,
           context: JSON.stringify(payload),
         });
         if (this.stopped || this.get(id).phase === "canceled") return;
@@ -694,25 +766,16 @@ export class AgentWorkService {
     );
     try {
       const artifact = row.answer.artifacts[0];
-      if (artifact.kind === "lesson_package") {
+      if (
+        artifact.kind === "lesson_package" ||
+        artifact.kind === "lesson_scaffold"
+      ) {
         this.app.store.transaction(() => {
           const course = structuredClone(snapshot.course),
             lesson = course.lessons[artifact.lessonIndex];
           lesson.objective = artifact.objective;
           lesson.practice = artifact.practice;
-          const {
-            kind: _kind,
-            title: _title,
-            sourceIds: _sources,
-            lessonIndex: _index,
-            objective: _objective,
-            practice: _practice,
-            ...learn
-          } = artifact;
-          lesson.learn = {
-            ...learn,
-            starterFiles: lesson.learn?.starterFiles || [],
-          };
+          lesson.learn = assignmentFromArtifact(artifact, lesson.learn);
           const next = this.expansion.saveCourse({
             id: row.request.entityId,
             expectedRevision: row.request.expectedRevision,

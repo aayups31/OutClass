@@ -13,6 +13,11 @@ type Progress = {
 type Binding = { release: CourseRelease; preview: boolean };
 export class LearnDelivery {
   constructor(private app: Application) {}
+  resources(courseId: string, lessonId: string) {
+    const binding = this.app.store.get<Binding>(`academy:delivery:${courseId}`);
+    const index = Number(/^lesson-(\d+)$/.exec(lessonId)?.[1]);
+    return binding?.release.lessons[index]?.resources || [];
+  }
   bind(courseId: string, release: CourseRelease, preview = false) {
     const old = this.app.store.get<Binding>(`academy:delivery:${courseId}`);
     if (old && old.release.hash !== release.hash)
@@ -89,7 +94,7 @@ export class LearnDelivery {
       ...plan.starterFiles,
       {
         path: "LEARN_BRIEF.md",
-        content: `# ${value.lessonTitle}\n\n${value.objective}\n\n${value.brief}\n\n## Acceptance criteria\n${plan.acceptanceCriteria.map((c) => `- ${c}`).join("\n")}\n\n## Reflection\n${plan.reflection}\n\n## Apply it differently\n${plan.transferChallenge}\n\nInstructor-authored assignment, release ${value.releaseId}. Self-review is not automated grading. Starter files are never executed automatically.\n`,
+        content: `# ${plan.title || value.lessonTitle}\n\n${value.objective}\n\n${value.brief}\n\n## Acceptance criteria\n${plan.acceptanceCriteria.map((c) => `- ${c}`).join("\n")}\n\n## Reflection\n${plan.reflection}\n\n## Apply it differently\n${plan.transferChallenge}\n\nInstructor-authored assignment, release ${value.releaseId}. Self-review is not automated grading. Starter files are never executed automatically.\n`,
       },
     ];
     if (value.project)

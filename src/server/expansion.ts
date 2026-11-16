@@ -11,6 +11,7 @@ import {
 } from "../expansion-contract.js";
 import type { Application } from "./application.js";
 import { assertClean, slug, UserError } from "./safety.js";
+import { AcademyResources } from "./academy-resources.js";
 import {
   AcademyCompiler,
   apiStarter,
@@ -55,7 +56,8 @@ export function validateCourse(course: AcademyDraft) {
     );
   course.lessons.forEach((lesson, i) => {
     for (const field of ["title", "objective", "practice", "content"] as const)
-      if (!lesson[field]) issues.push(`Lesson ${i + 1}: add ${field}.`);
+      if (!lesson[field] && (field !== "content" || !lesson.resources?.length))
+        issues.push(`Lesson ${i + 1}: add ${field}.`);
   });
   return {
     valid: !issues.length,
@@ -95,6 +97,9 @@ export class Expansion {
     const input = courseDraft.extend(edit).parse(raw);
     const { id, expectedRevision, ...draft } = input;
     assertClean(JSON.stringify(draft), "course draft");
+    new AcademyResources(this.app).check(
+      draft.lessons.flatMap((l) => l.resources || []),
+    );
     return this.change((state) => {
       const old = state.courses.find((c) => c.id === id);
       this.checkRevision(id, old?.revision, expectedRevision);
@@ -165,6 +170,10 @@ export class Expansion {
   async publishHosted(releaseId: string) {
     const release = this.state().releases.find((r) => r.id === releaseId);
     if (!release) throw new UserError("Choose a local course release.", 404);
+    if (release.lessons.some((lesson) => lesson.resources?.length))
+      throw new UserError(
+        "Uploaded lesson resources are stored on this device. This release can be used in local Learn. Hosted publishing requires a release without local attachments.",
+      );
     const {
       title,
       audience,
@@ -295,7 +304,7 @@ export class Expansion {
         lessons: release.lessons.map((l, i) => ({
           id: `lesson-${i}`,
           title: l.title,
-          section: "Academy",
+          section: l.chapter || "Academy",
           order: i,
           path: `academy/${String(i + 1).padStart(2, "0")}-${slug(l.title)}`,
         })),

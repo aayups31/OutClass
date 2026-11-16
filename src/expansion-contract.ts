@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { learnPackage } from "./learn-package-contract.js";
 import { learningProject } from "./academy-design-contract.js";
+import { academyResource } from "./academy-resource-contract.js";
 import { COURSE_LESSON_LIMIT, COURSE_SOURCE_LIMIT } from "./course-limits.js";
 import type { CompiledProject } from "./server/academy-compiler.js";
 
@@ -11,6 +12,8 @@ export const academyLesson = z
     objective: text(1000),
     practice: text(2000),
     content: text(COURSE_SOURCE_LIMIT),
+    chapter: text(100).optional(),
+    resources: z.array(academyResource).max(12).optional(),
     learn: learnPackage.optional(),
   })
   .strict();

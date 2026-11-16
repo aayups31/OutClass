@@ -466,7 +466,13 @@ export function productionDependencies(
         model: config.model,
         store: false,
         max_output_tokens:
-          task === "checkpoint" ? 250 : task === "work" ? 3500 : 1800,
+          task === "project_forge"
+            ? 5000
+            : task === "work"
+              ? 3500
+              : task === "checkpoint"
+                ? 250
+                : 1800,
         instructions: answerInstructions(task),
         input: [...history, { role: "user", content: context }],
         text: { format: zodTextFormat(schema, "outclass_answer") },

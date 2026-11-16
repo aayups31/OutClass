@@ -32,6 +32,7 @@ import { PublicationQueue } from "./publication-queue.js";
 import type { AgentWorkService } from "./agent-work.js";
 import { MediaTranscripts } from "./media-transcripts.js";
 import { AcademyStudio } from "./academy-studio.js";
+import { AcademyResources } from "./academy-resources.js";
 import packageMetadata from "../../package.json" with { type: "json" };
 
 const text = z.string().max(2000);
@@ -343,6 +344,15 @@ export function createApp(
     }),
   );
   const delivery = new LearnDelivery(application);
+  app.use("/api/academy-resources", new AcademyResources(application).routes());
+  app.get("/api/learn-resources", (req, res) =>
+    res.json(
+      delivery.resources(
+        text.parse(req.query.courseId),
+        text.parse(req.query.lessonId),
+      ),
+    ),
+  );
   app.get("/api/learn-assignment", (req, res) =>
     res.json(
       delivery.snapshot(

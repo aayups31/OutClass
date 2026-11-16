@@ -13,6 +13,7 @@ export const starterPath = z
         .every(
           (part) =>
             /^[a-zA-Z0-9][a-zA-Z0-9_.-]*$/.test(part) &&
+            !part.endsWith(".") &&
             !/^(node_modules|dist|build|coverage|venv|__pycache__)$/i.test(
               part,
             ) &&
@@ -24,6 +25,8 @@ export const starterPath = z
   );
 export const learnPackage = z
   .object({
+    kind: z.enum(["exercise", "capstone"]).optional(),
+    title: z.string().trim().min(1).max(160).optional(),
     minutes: z.number().int().min(5).max(240),
     prerequisiteLessons: z
       .array(
@@ -72,6 +75,15 @@ export function learnPackageIssues(lessons: { learn?: LearnPackage }[]) {
     )
       issues.push(
         `Lesson ${index + 1}: starter file paths must be unique, including case.`,
+      );
+    const filePaths = new Set(p.starterFiles.map((f) => f.path.toLowerCase()));
+    if (
+      [...filePaths].some((file) =>
+        [...filePaths].some((other) => other.startsWith(file + "/")),
+      )
+    )
+      issues.push(
+        `Lesson ${index + 1}: a starter file cannot also be a folder.`,
       );
     if (p.starterFiles.reduce((n, f) => n + f.content.length, 0) > 160000)
       issues.push(

@@ -79,6 +79,7 @@ export class HostedAcademy {
       outcome: course.outcome,
       lessons: course.lessons.map((l) => ({
         title: l.title,
+        chapter: l.chapter,
         objective: l.objective,
         practice: l.practice,
       })),
@@ -119,6 +120,10 @@ export class HostedAcademy {
   publish(actor: string, raw: unknown) {
     const value = publication.parse(raw),
       validation = validateCourse(value.course);
+    if (value.course.lessons.some((lesson) => lesson.resources?.length))
+      throw new UserError(
+        "Remove local attachments before publishing this release to the hosted catalog.",
+      );
     if (!validation.valid) throw new UserError(validation.issues.join(" "));
     assertClean(JSON.stringify(value.course), "public course");
     if (Buffer.byteLength(JSON.stringify(value.course)) > 350000)
