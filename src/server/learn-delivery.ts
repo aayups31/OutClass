@@ -22,6 +22,14 @@ export class LearnDelivery {
       );
     this.app.store.put(`academy:delivery:${courseId}`, { release, preview });
   }
+  initialNote(courseId: string, lessonId: string) {
+    const binding = this.app.store.get<Binding>(`academy:delivery:${courseId}`);
+    const index = Number(/^lesson-(\d+)$/.exec(lessonId)?.[1]);
+    const lesson = binding?.release.lessons[index];
+    return lesson
+      ? `Objective: ${lesson.objective}\n\nPractice: ${lesson.practice}`
+      : "";
+  }
   snapshot(courseId: string, lessonId: string) {
     const binding = this.app.store.get<Binding>(`academy:delivery:${courseId}`),
       index = Number(/^lesson-(\d+)$/.exec(lessonId)?.[1]);

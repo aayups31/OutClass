@@ -37,7 +37,8 @@ const lessonAnswer = (index = 0) => ({
       sourceIds: [`lesson:${index}`],
       lessonIndex: index,
       objective: "Produce one total for each person",
-      practice: "Aggregate the supplied records and test an empty collection.",
+      practice:
+        "Aggregate the records and test an empty collection.\nExample input: Ada 5, Ada 4\nExpected result: Ada 9",
       minutes: 20,
       prerequisiteLessons: [],
       acceptanceCriteria: [

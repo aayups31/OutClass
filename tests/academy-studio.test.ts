@@ -307,8 +307,47 @@ it("delivers a frozen project increment into an isolated instructor preview with
   await app.sessionAction("discard");
   expansion.enroll(release.id);
   const enrolled = await expansion.launch(release.id, 0);
-  expect(store.state().session?.workspace).not.toBe(session.workspace);
+  const enrolledFolder = store.state().session!.workspace;
+  expect(enrolledFolder).not.toBe(session.workspace);
   expect(delivery.snapshot(enrolled.courseId, "lesson-0")?.preview).toBe(false);
+  await writeFile(
+    path.join(enrolledFolder, "my-report.py"),
+    "# Original learner work",
+  );
+  await app.sessionAction("discard");
+  const updated = course();
+  updated.lessons[0].content = "Instructor reference example. ".repeat(1050);
+  const revision = expansion.saveCourse({
+    ...updated,
+    id: saved.id,
+    expectedRevision: 1,
+  });
+  const nextAudit = studio.audit(saved.id);
+  studio.review(saved.id, {
+    expectedRevision: revision.revision,
+    hash: nextAudit.hash,
+    acknowledged: [],
+    approve: true,
+  });
+  const nextRelease = studio.release(saved.id, {
+    expectedRevision: revision.revision,
+    reviewHash: nextAudit.hash,
+    approve: true,
+  });
+  expansion.enroll(nextRelease.id);
+  const next = await expansion.launch(nextRelease.id, 0);
+  expect(next.courseId).not.toBe(enrolled.courseId);
+  expect(
+    await readFile(path.join(enrolledFolder, "my-report.py"), "utf8"),
+  ).toBe("# Original learner work");
+  expect(store.state().session?.note).toContain(updated.lessons[0].practice);
+  expect(store.state().session?.note.length).toBeLessThan(12000);
+  const indexed = store.db
+    .prepare(
+      "SELECT length(content) AS size FROM rag_documents WHERE course_id=? AND lesson_id='lesson-0'",
+    )
+    .get(next.courseId) as { size: number };
+  expect(indexed.size).toBeGreaterThan(30000);
 });
 it("indexes the full supported Academy catalog in Learn", async () => {
   await app.setup(path.join(dir, "history"), false);

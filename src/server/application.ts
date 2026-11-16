@@ -420,6 +420,8 @@ export class Application {
         this.workspace(state, course, lesson),
       !requestedWorkspace && !project,
     );
+    const delivery =
+      course.platform === "academy" ? new LearnDelivery(this) : undefined;
     state.session = {
       id: randomUUID(),
       courseId,
@@ -431,13 +433,13 @@ export class Application {
       destination: `${course.path}/${lesson.path}`,
       startedAt: new Date().toISOString(),
       status: "active",
-      note: "",
+      note: delivery?.initialNote(courseId, lessonId) || "",
       projectId: project?.root === workspace ? project.id : undefined,
     };
     this.store.save(state);
-    if (course.platform === "academy") {
+    if (delivery) {
       try {
-        await new LearnDelivery(this).seed(courseId, lessonId);
+        await delivery.seed(courseId, lessonId);
       } catch (error) {
         state.session = null;
         this.store.save(state);

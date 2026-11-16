@@ -370,6 +370,16 @@ export class AgentWorkService {
           throw new UserError(
             "Cite the selected lesson itself. Course and project references can supplement it.",
           );
+        const example = /^[ \t]*Example input:[ \t]*([^\r\n]+)$/im
+          .exec(a.practice)?.[1]
+          ?.trim();
+        const expected = /^[ \t]*Expected result:[ \t]*([^\r\n]+)$/im
+          .exec(a.practice)?.[1]
+          ?.trim();
+        if (!example || !expected || example === expected)
+          throw new UserError(
+            "Include separate lines starting with Example input: and Expected result: in the practice brief. Put concrete example values in both lines.",
+          );
         if (!a.reflection.trim() || !a.transferChallenge.trim())
           throw new UserError(
             "Provide both an evidence reflection and a changed-requirement challenge.",

@@ -356,11 +356,26 @@ export function auditAcademy(course: Revision<AcademyDraft>): AcademyAudit {
       if (course.lessons[m.lessonIndex] && !course.lessons[m.lessonIndex].learn)
         add(
           `milestone:${i}:assignment`,
-          "review",
+          "blocker",
           "learn",
           "Connect the milestone to Learn",
-          "Add this lesson’s Learn package so the milestone has a guided review experience.",
+          "Add this lesson’s Learn assignment so its milestone and checks reach the learner.",
           m.lessonIndex,
+        );
+    });
+    course.lessons.forEach((lesson, index) => {
+      if (
+        lesson.learn?.starterFiles.some(
+          (file) => file.path.toLowerCase() === "project_connection.md",
+        )
+      )
+        add(
+          `project:${index}:starter-path`,
+          "blocker",
+          "learn",
+          "Rename the project starter file",
+          "Academy writes the learner’s project roadmap to PROJECT_CONNECTION.md. Use another name for the starter file.",
+          index,
         );
     });
     if (!project.milestones.length)

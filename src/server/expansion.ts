@@ -354,9 +354,6 @@ export class Expansion {
           if (error.code !== "EEXIST") throw error;
         });
     }
-    await this.app.saveNote(
-      `${lesson.content}\n\nObjective: ${lesson.objective}\n\nPractice: ${lesson.practice}`,
-    );
     return { courseId, sessionId: this.app.store.state().session!.id };
   }
   saveCreative(raw: unknown) {
