@@ -37,6 +37,7 @@ import * as git from "./git.js";
 import { prepareGithub } from "./github.js";
 import { describe } from "./ai.js";
 import { AIProvider } from "./ai-provider.js";
+import { LearnDelivery } from "./learn-delivery.js";
 
 export class Application {
   readonly ai = new AIProvider(this);
@@ -434,6 +435,15 @@ export class Application {
       projectId: project?.root === workspace ? project.id : undefined,
     };
     this.store.save(state);
+    if (course.platform === "academy") {
+      try {
+        await new LearnDelivery(this).seed(courseId, lessonId);
+      } catch (error) {
+        state.session = null;
+        this.store.save(state);
+        throw error;
+      }
+    }
     this.remember(state.session, "started");
     return state;
   }

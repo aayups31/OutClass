@@ -12,6 +12,7 @@ import type { Application } from "./application.js";
 import { assertClean, child, collect, UserError } from "./safety.js";
 import { IdeaNotebook } from "./notebook.js";
 import { LearnDelivery } from "./learn-delivery.js";
+import { COURSE_LESSON_LIMIT } from "../course-limits.js";
 
 export interface Evidence {
   id: string;
@@ -199,6 +200,8 @@ export class CourseLibrary {
       throw new UserError(
         "This course has reached 2,000 searchable passages. Remove an unused source before adding more.",
       );
+    const sourceLimit =
+      kind === "academy" && preserveSource ? 120 + COURSE_LESSON_LIMIT : 120;
     if (
       !existing &&
       Number(
@@ -209,10 +212,10 @@ export class CourseLibrary {
             )
             .get(courseId) as { count: number }
         ).count,
-      ) >= 120
+      ) >= sourceLimit
     )
       throw new UserError(
-        "This course has 120 sources. Remove an unused source before adding another.",
+        `This course has reached its ${sourceLimit}-source limit. Remove an unused source before adding another.`,
       );
     this.app.store.transaction(() => {
       if (existing) this.erase(id);

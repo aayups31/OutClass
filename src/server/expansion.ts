@@ -309,10 +309,23 @@ export class Expansion {
         ?.workspaceMode
     )
       await this.app.bindProject(courseId, "project");
-    await this.app.start(courseId, lessonId);
     const delivery = new LearnDelivery(this.app);
     delivery.bind(courseId, release, preview);
-    await delivery.seed(courseId, lessonId);
+    const library = new CourseLibrary(this.app);
+    this.app.store.transaction(() => {
+      release.lessons.forEach((l, i) =>
+        library.document(
+          courseId,
+          l.title,
+          `${l.content}\n\nObjective: ${l.objective}\n\nPractice: ${l.practice}`,
+          "academy",
+          `lesson-${i}`,
+          `${courseId}:${i}`,
+          true,
+        ),
+      );
+    });
+    await this.app.start(courseId, lessonId);
     if (
       release.project?.verified ||
       this.app.store.get(`academy:template:${release.id}`) ===
@@ -341,18 +354,6 @@ export class Expansion {
           if (error.code !== "EEXIST") throw error;
         });
     }
-    const library = new CourseLibrary(this.app);
-    release.lessons.forEach((l, i) =>
-      library.document(
-        courseId,
-        l.title,
-        `${l.content}\n\nObjective: ${l.objective}\n\nPractice: ${l.practice}`,
-        "academy",
-        `lesson-${i}`,
-        `${courseId}:${i}`,
-        true,
-      ),
-    );
     await this.app.saveNote(
       `${lesson.content}\n\nObjective: ${lesson.objective}\n\nPractice: ${lesson.practice}`,
     );

@@ -285,4 +285,55 @@ it("delivers a frozen project increment into an isolated instructor preview with
     delivery.teacherContext(result.courseId, "lesson-0")?.project?.milestone
       ?.title,
   ).toBe("First report");
+  await app.sessionAction("discard");
+  // Learn's ordinary lesson picker uses Application.start, not Academy launch.
+  await app.start(result.courseId, "lesson-1");
+  expect(store.state().session?.workspace).toBe(session.workspace);
+  expect(
+    await readFile(
+      path.join(
+        session.workspace,
+        "assignments/lesson-1/PROJECT_CONNECTION.md",
+      ),
+      "utf8",
+    ),
+  ).toContain("Empty weeks");
+  expect(
+    await readFile(
+      path.join(session.workspace, "assignments/lesson-0/main.py"),
+      "utf8",
+    ),
+  ).toBe("# My original attempt");
+  await app.sessionAction("discard");
+  expansion.enroll(release.id);
+  const enrolled = await expansion.launch(release.id, 0);
+  expect(store.state().session?.workspace).not.toBe(session.workspace);
+  expect(delivery.snapshot(enrolled.courseId, "lesson-0")?.preview).toBe(false);
+});
+it("indexes the full supported Academy catalog in Learn", async () => {
+  await app.setup(path.join(dir, "history"), false);
+  const original = course();
+  const lessons = Array.from({ length: 200 }, (_, i) => ({
+    ...original.lessons[0],
+    title: `Activity report lesson ${i + 1}`,
+    learn: undefined,
+  }));
+  const saved = expansion.saveCourse({
+    ...original,
+    lessons,
+    learningProject: undefined,
+    expectedRevision: 0,
+  });
+  const release = expansion.release(saved.id, {
+    expectedRevision: 1,
+    approve: true,
+  });
+  const result = await expansion.launch(release.id, 199, true);
+  expect(
+    store.db
+      .prepare(
+        "SELECT count(*) AS total FROM rag_documents WHERE course_id=? AND kind='academy'",
+      )
+      .get(result.courseId),
+  ).toMatchObject({ total: 200 });
 });
