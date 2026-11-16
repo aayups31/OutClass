@@ -561,68 +561,84 @@
 }
 .agent-choices {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 30px;
-  margin-top: 24px;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: clamp(10px, 1.8vw, 24px);
+  margin-top: 28px;
+  padding-block: 12px 28px;
+  isolation: isolate;
 }
 .agent-choice {
   position: relative;
-  min-width: 0;
   display: block;
+  min-width: 0;
+  padding: 0 0 24px;
   color: var(--glass-ink);
+  text-align: center;
   text-decoration: none;
-  padding-block: 0 18px;
-  border-bottom: 1px solid var(--glass-rail);
 }
 .agent-art {
   display: grid;
   place-items: center;
-  overflow: hidden;
-  margin-bottom: 16px;
-  min-height: clamp(104px, 13vw, 180px);
-  background: radial-gradient(ellipse at 50% 56%, #161627, #0a0a13 77%);
-  border-radius: 8px;
+  margin-bottom: 12px;
+  min-height: clamp(72px, 8vw, 114px);
 }
 .agent-emblem {
   display: block;
-  width: min(100%, 190px);
-  aspect-ratio: 220 / 145;
-  background-image: url("agent-emblems.png");
-  /* Each window isolates one symbol above the lettering in the supplied sheet. */
-  background-size: 648.182% 513.103%;
-  background-repeat: no-repeat;
-  mask-image:
-    linear-gradient(90deg, transparent, #000 8% 92%, transparent),
-    linear-gradient(transparent, #000 7% 95%, transparent);
-  mask-composite: intersect;
+  width: min(96%, 112px);
+  aspect-ratio: 1.32;
+  background: var(--emblem) center / contain no-repeat;
+  filter: drop-shadow(0 10px 10px #415a883a);
 }
 .emblem-offcourse {
-  background-position: 19.071% 17.362%;
+  --emblem: url("emblem-offcourse.webp");
 }
 .emblem-blueprint {
-  background-position: 52.819% 17.362%;
+  --emblem: url("emblem-blueprint.webp");
 }
 .emblem-atlas {
-  background-position: 86.567% 17.362%;
+  --emblem: url("emblem-atlas.webp");
 }
 .emblem-forge {
-  background-position: 8.292% 66.611%;
+  --emblem: url("emblem-forge.webp");
 }
 .emblem-muse {
-  background-position: 36.899% 66.611%;
+  --emblem: url("emblem-muse.webp");
 }
 .emblem-signal {
-  background-position: 65.589% 66.611%;
+  --emblem: url("emblem-signal.webp");
 }
 .emblem-pulse {
-  background-position: 95.688% 66.611%;
+  --emblem: url("emblem-pulse.webp");
+}
+@media (min-width: 951px) {
+  .agent-choice:first-child,
+  .agent-choice:last-child {
+    margin-top: 31px;
+  }
+  .agent-choice:nth-child(2),
+  .agent-choice:nth-child(6) {
+    margin-top: 15px;
+  }
+  .agent-choice:nth-child(3),
+  .agent-choice:nth-child(5) {
+    margin-top: 5px;
+  }
+  .agent-choice:nth-child(-n + 3) .agent-emblem {
+    transform: perspective(240px) rotateY(14deg);
+  }
+  .agent-choice:nth-child(n + 5) .agent-emblem {
+    transform: perspective(240px) rotateY(-14deg);
+  }
 }
 @media (prefers-reduced-motion: no-preference) {
   .agent-art .agent-emblem {
-    transition: transform 280ms ease;
+    transition:
+      translate 230ms ease,
+      filter 230ms ease;
   }
   .agent-choice:is(:hover, :focus-visible) .agent-emblem {
-    transform: scale(1.07);
+    translate: 0 -6px;
+    filter: drop-shadow(0 12px 12px #547bd464);
   }
 }
 .agent-choice small,
@@ -633,31 +649,25 @@
   color: var(--glass-muted);
 }
 .agent-choice :is(h2, h3) {
-  margin: 4px 24px 4px 0;
+  margin: 4px 0;
   font-size: clamp(18px, 2vw, 24px);
   letter-spacing: -0.04em;
 }
 .agent-enter {
   position: absolute;
-  right: 2px;
-  bottom: 19px;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
   font-size: 16px;
 }
 .agent-role {
   display: block;
-  padding-right: 19px;
 }
 .agent-identity {
   display: flex;
   align-items: center;
   gap: 12px;
   margin-top: 20px;
-}
-.agent-identity .agent-emblem,
-.agent-profile .agent-emblem {
-  background-color: #090913;
-  mask-image: none;
-  border-radius: 8px;
 }
 .agent-identity .agent-emblem {
   width: 64px;
@@ -666,7 +676,6 @@
   display: flex;
   align-items: center;
   gap: clamp(14px, 4vw, 42px);
-  border-top: 1px solid var(--glass-rail);
   padding-block: 28px;
   margin-bottom: 26px;
   scroll-margin-top: 112px;
@@ -775,9 +784,6 @@
   .curriculum > div:first-child {
     display: none;
   }
-  .agent-choices {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
 }
 @media (max-width: 600px) {
   .product-body {
@@ -811,6 +817,7 @@
     gap: 15px;
   }
   .agent-choices {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 20px 14px;
   }
   .glass-page .glass-scene {
@@ -825,4 +832,14 @@
 }
 .agent-directory {
   padding-top: 120px;
+}
+
+@media (min-width: 601px) and (max-width: 950px) {
+  .agent-choices {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+.glass-agent-callout,
+.agent-directory {
+  background: radial-gradient(ellipse at 50% 62%, #e0e9ff9c, transparent 67%);
 }
