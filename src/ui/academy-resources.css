@@ -1,0 +1,64 @@
+.academy-resource-list {
+  display: grid;
+  gap: 8px;
+  margin-block: 14px;
+}
+.academy-resource-card {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--surface);
+  padding: 10px;
+}
+.academy-resource-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+}
+.academy-resource-icon {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 7px;
+  background: var(--soft);
+  color: var(--accent);
+}
+.academy-resource-row strong,
+.academy-resource-row small {
+  display: block;
+  overflow-wrap: anywhere;
+}
+.academy-resource-row small {
+  margin-top: 4px;
+  color: var(--muted);
+}
+.academy-resource-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.academy-resource-card video {
+  display: block;
+  width: 100%;
+  max-height: 440px;
+  margin-top: 12px;
+  border-radius: 6px;
+  background: #070a10;
+}
+@media (max-width: 650px) {
+  .academy-resource-actions {
+    grid-column: 2;
+  }
+}
+.learn-resources {
+  padding: 16px;
+  margin-bottom: 16px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+}
+.learn-resources > summary {
+  cursor: pointer;
+  font-weight: 600;
+}

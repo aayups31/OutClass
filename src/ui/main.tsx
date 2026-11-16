@@ -62,6 +62,8 @@ async function request<T>(route: string, body?: unknown): Promise<T> {
     },
     body: body === undefined ? undefined : binary ? body : JSON.stringify(body),
   });
+  if (response.ok && response.headers.get("X-OutClass-Resource") === "1")
+    return (await response.blob()) as T;
   const result = await response.json();
   if (!response.ok)
     throw new Error(result.error || "Could not complete this action.");

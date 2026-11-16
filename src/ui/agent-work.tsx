@@ -68,6 +68,7 @@ export function AgentWorkPanel({
   api,
   onApplied,
   preferredLesson,
+  forgeRequest,
 }: {
   domain: AgentWorkRequest["domain"];
   entity?: { id: string; revision: number };
@@ -75,6 +76,7 @@ export function AgentWorkPanel({
   api: API;
   onApplied?: () => Promise<void>;
   preferredLesson?: number;
+  forgeRequest?: { kind: "exercise" | "capstone" };
 }) {
   const [context, setContext] = useState<Context>(),
     [job, setJob] = useState<AgentWork>(),
@@ -82,6 +84,10 @@ export function AgentWorkPanel({
   const [goal, setGoal] = useState(goals[domain]),
     [lesson, setLesson] = useState(0),
     [asset, setAsset] = useState("");
+  const [scaffold, setScaffold] = useState<"exercise" | "capstone">();
+  useEffect(() => {
+    if (forgeRequest) setScaffold(forgeRequest.kind);
+  }, [forgeRequest]);
   const [providers, setProviders] = useState<AgentWorkRequest["providers"]>([
     "youtube",
     "linkedin",
@@ -209,6 +215,7 @@ export function AgentWorkPanel({
         providers: domain === "growth" ? providers : [],
         maxCalls,
         approveProvider: true,
+        ...(domain === "academy" && scaffold ? { scaffold } : {}),
       });
       if (target.current === entityId) {
         if (
@@ -308,6 +315,40 @@ export function AgentWorkPanel({
         </p>
       ) : (
         <>
+          {domain === "academy" && (
+            <label>
+              Specialist
+              <select
+                aria-label="Academy specialist"
+                value={scaffold || "architect"}
+                disabled={busy || working(job?.phase)}
+                onChange={(e) => {
+                  const kind = e.target.value;
+                  setScaffold(
+                    kind === "exercise" || kind === "capstone"
+                      ? kind
+                      : undefined,
+                  );
+                }}
+              >
+                <option value="architect">
+                  Academy Architect · lesson design
+                </option>
+                <option value="exercise">
+                  Project Forge · exercise scaffold
+                </option>
+                <option value="capstone">
+                  Project Forge · capstone scaffold
+                </option>
+              </select>
+            </label>
+          )}
+          {domain === "academy" && scaffold && (
+            <p className="agent-work-state">
+              Project Forge drafts a build guide and starter files with TODOs.
+              Review each file before applying it to Learn.
+            </p>
+          )}
           {domain === "academy" && (
             <label>
               Assignment task
@@ -431,7 +472,9 @@ export function AgentWorkPanel({
                 ? "Working…"
                 : job?.phase === "failed" || job?.phase === "interrupted"
                   ? "Retry task"
-                  : "Run agent"}
+                  : scaffold
+                    ? "Run Project Forge"
+                    : "Run agent"}
             </button>
             <span>
               Up to {maxCalls} model {maxCalls === 1 ? "call" : "calls"} · your
@@ -551,7 +594,9 @@ export function AgentWorkPanel({
                     disabled={dirty || stale || busy || otherLesson}
                   >
                     <Check size={14} />
-                    {deliveryNames[domain]}
+                    {job.request.scaffold
+                      ? "Apply scaffold to course"
+                      : deliveryNames[domain]}
                   </button>
                   <small>Applies this reviewed result to local drafts.</small>
                 </div>
@@ -653,7 +698,12 @@ function AssignmentChanges({ job }: { job: AgentWork }) {
   const source = job.sources.find(
     (s) => s.id === `lesson:${job.request.lessonIndex}`,
   );
-  if (proposed?.kind !== "lesson_package" || !source) return null;
+  if (
+    (proposed?.kind !== "lesson_package" &&
+      proposed?.kind !== "lesson_scaffold") ||
+    !source
+  )
+    return null;
   let saved: {
     objective: string;
     practice: string;
@@ -664,7 +714,7 @@ function AssignmentChanges({ job }: { job: AgentWork }) {
   } catch {
     return null;
   }
-  const before = {
+  const before: Record<string, unknown> = {
     ...saved.currentAssignment,
     objective: saved.objective,
     practice: saved.practice,
@@ -720,10 +770,23 @@ function Artifact({
         <span>{a.kind.replaceAll("_", " ")}</span>
         <strong>{a.title}</strong>
       </summary>
-      {a.kind === "lesson_package" ? (
+      {a.kind === "lesson_package" || a.kind === "lesson_scaffold" ? (
         <div>
           <p>{a.objective}</p>
           <p className="learn-practice-brief">{a.practice}</p>
+          {a.kind === "lesson_scaffold" && (
+            <div className="academy-forge-files">
+              <h5>
+                {a.activityType === "capstone" ? "Capstone" : "Exercise"} files
+              </h5>
+              {a.starterFiles.map((file) => (
+                <details key={file.path}>
+                  <summary>{file.path}</summary>
+                  <pre>{file.content}</pre>
+                </details>
+              ))}
+            </div>
+          )}
           <small>
             {a.minutes} minutes · Lesson {a.lessonIndex + 1}
           </small>

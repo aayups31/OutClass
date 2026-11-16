@@ -14,6 +14,9 @@ Academy strengthens instructor-owned courses and delivers their practical work i
 - The desktop workbench offers course outline import, one lesson at a time, a project editor, and a separate release review. Unsaved changes can be recovered from the local app after reloading. A stale recovery opens as a separate draft.
 - The Architect can design a new assignment, strengthen an existing one, or connect it to a project increment. Instructors see the source citations and a before-and-after comparison before applying to the saved revision. The practice brief includes a concrete input and expected result for the learner to try.
 - Starting a later lesson from Learn seeds that lesson’s assignment and project roadmap in the same project folder without replacing existing files. Full teaching material stays in the course library. The session note starts with a short objective and practice brief.
+- Group adjacent lessons by chapter. Markdown outlines can use `## Chapter: Chapter name` followed by `### Lesson title` headings. Existing outlines with `## Lesson title` still import.
+- Lesson resources accept MP4, WebM, PDF, ZIP, and UTF-8 code files. Learn can play video and download attachments. Instructors can copy individual code files into the assignment starter. Uploads stay in the device’s resource library. Course JSON carries file references, and hosted publishing is blocked for releases with local attachments.
+- Project Forge drafts exercises or capstones with a README, ordered build milestones, verification steps, and starter code with TODOs. Instructors review the files before applying them. Learn copies approved starter files into the lesson assignment folder and preserves any existing files.
 
 ## Quality bar
 

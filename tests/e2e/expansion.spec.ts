@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import express from "express";
 import type { Server } from "node:http";
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { Store } from "../../src/server/store";
@@ -43,7 +43,7 @@ test("author a course, launch Learn, approve grounded copy and prepare a manual 
       name: "activity.md",
       mimeType: "text/markdown",
       buffer: Buffer.from(
-        "# Practical Python activities\nAudience: Beginners who know loops\nOutcome: A correct activity report\n\n## Accumulate totals\nObjective: Group minutes by student\nPractice: Handle empty input and repeated students\nA dictionary can retain each student's running total.",
+        "# Practical Python activities\nAudience: Beginners who know loops\nOutcome: A correct activity report\n\n## Chapter: Activity reports\n### Accumulate totals\nObjective: Group minutes by student\nPractice: Handle empty input and repeated students\nA dictionary can retain each student's running total.",
       ),
     });
   await expect(page.getByRole("dialog")).toBeVisible();
@@ -84,14 +84,47 @@ test("author a course, launch Learn, approve grounded copy and prepare a manual 
   await page
     .getByLabel("Lesson content 1", { exact: true })
     .fill("A dictionary can retain each student's running total.");
+  await expect(page.getByLabel("Chapter for lesson 1")).toHaveValue(
+    "Activity reports",
+  );
+  expect((await request.get(base + "/api/academy-resources")).status()).toBe(
+    401,
+  );
+  await page.getByRole("button", { name: "Resources", exact: true }).click();
+  const upload = page.getByLabel("Upload lesson resource");
+  await upload.setInputFiles({
+    name: "report.py",
+    mimeType: "text/plain",
+    buffer: Buffer.from("# TODO: group rows\n"),
+  });
+  await expect(page.getByText("report.py", { exact: true })).toBeVisible();
+  await upload.setInputFiles("src/site/assets/agents-film.mp4");
+  await expect(
+    page.getByText("agents-film.mp4", { exact: true }),
+  ).toBeVisible();
+  await upload.setInputFiles({
+    name: "project.zip",
+    mimeType: "application/zip",
+    buffer: Buffer.from("504b0506000000000000000000000000000000000000", "hex"),
+  });
+  await expect(page.getByText("project.zip", { exact: true })).toBeVisible();
+  await upload.setInputFiles({
+    name: "example.pdf",
+    mimeType: "application/pdf",
+    buffer: Buffer.from("%PDF-1.7\n%%EOF"),
+  });
+  await expect(page.getByText("example.pdf", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Play", exact: true }).click();
+  await expect(page.locator(".academy-resource-card video")).toBeVisible();
+  await expect
+    .poll(() =>
+      page
+        .locator(".academy-resource-card video")
+        .evaluate((v: HTMLVideoElement) => v.readyState),
+    )
+    .toBeGreaterThan(0);
   await page
-    .getByRole("button", { name: "Practice & review", exact: true })
-    .click();
-  await page
-    .getByRole("button", {
-      name: "Add Learn experience to lesson 1",
-      exact: true,
-    })
+    .getByRole("button", { name: "Use in Learn starter", exact: true })
     .click();
   await page
     .getByLabel("Acceptance criteria · one per line 1", { exact: true })
@@ -99,9 +132,6 @@ test("author a course, launch Learn, approve grounded copy and prepare a manual 
   await page
     .getByLabel("Progressive hints · one per line 1", { exact: true })
     .fill("Predict one student’s running total first.");
-  await page
-    .getByRole("button", { name: "Add starter file", exact: true })
-    .click();
   await page
     .getByRole("button", { name: "Save course draft", exact: true })
     .click();
@@ -139,11 +169,25 @@ test("author a course, launch Learn, approve grounded copy and prepare a manual 
     .getByRole("button", { name: /Open Accumulate totals in Learn/ })
     .click();
   await expect(page.locator(".topbar")).toContainText("Code & learn");
+  expect(store.state().session?.section).toBe("Activity reports");
   expect(store.state().session?.note).toContain("Handle empty input");
   await page
     .locator(".layout-tools")
     .getByRole("button", { name: "Lesson", exact: true })
     .click();
+  await expect(page.locator(".learn-resources")).toContainText("project.zip");
+  const pdfDownload = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Download example.pdf" }).click();
+  expect((await pdfDownload).suggestedFilename()).toBe("example.pdf");
+  expect(
+    await readFile(
+      path.join(
+        store.state().session!.workspace,
+        "assignments/lesson-0/report.py",
+      ),
+      "utf8",
+    ),
+  ).toContain("# TODO: group rows");
   await expect(page.locator(".learn-assignment")).toContainText(
     "Handle repeated students",
   );

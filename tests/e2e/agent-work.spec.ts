@@ -71,7 +71,7 @@ test.beforeAll(async () => {
       input.domain === "academy"
         ? [
             {
-              kind: "lesson_package",
+              kind: input.scaffold ? "lesson_scaffold" : "lesson_package",
               title: "Write a grouping report",
               sourceIds,
               lessonIndex: 0,
@@ -91,6 +91,23 @@ test.beforeAll(async () => {
               reflection:
                 "Which example proved that repeated people are combined?",
               transferChallenge: "Allow choosing a different grouping field.",
+              ...(input.scaffold
+                ? {
+                    activityType: input.scaffold,
+                    starterFiles: [
+                      {
+                        path: "capstone/README.md",
+                        content:
+                          "# Club report\n\nUse Python 3. Then implement the TODO. Run python report.py and check repeated people and empty input.",
+                      },
+                      {
+                        path: "capstone/report.py",
+                        content:
+                          "def report(rows):\n    # TODO: accumulate totals by person\n    raise NotImplementedError\n",
+                      },
+                    ],
+                  }
+                : {}),
             },
           ]
         : input.domain === "creative"
@@ -212,6 +229,26 @@ test("the four specialists produce, review, deliver and restore actual product a
     .selectOption({ label: "Python activity reports" });
   await page.getByRole("button", { name: "Architect", exact: true }).click();
   await expect(academy.getByText("Delivered", { exact: true })).toBeVisible();
+  await academy
+    .getByLabel("Academy specialist", { exact: true })
+    .selectOption("capstone");
+  await academy.getByRole("button", { name: "Run Project Forge" }).click();
+  await expect(
+    academy.getByText("Ready for review", { exact: true }),
+  ).toBeVisible();
+  await academy.getByText("capstone/report.py", { exact: true }).click();
+  await expect(academy.getByText(/TODO: accumulate totals/)).toBeVisible();
+  expect(expansion.state().courses[0].revision).toBe(2);
+  await academy
+    .getByRole("button", { name: "Apply scaffold to course" })
+    .click();
+  await expect(academy.getByText("Delivered", { exact: true })).toBeVisible();
+  expect(expansion.state().courses[0].lessons[0].learn).toMatchObject({
+    kind: "capstone",
+    starterFiles: expect.arrayContaining([
+      expect.objectContaining({ path: "capstone/report.py" }),
+    ]),
+  });
   await page
     .getByRole("button", { name: "Creator Studio", exact: true })
     .click();

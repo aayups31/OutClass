@@ -26,7 +26,13 @@ import {
   COURSE_LESSON_LIMIT,
   COURSE_SOURCE_LIMIT,
 } from "../course-limits";
-import { LearnPackageEditor } from "./learn-package";
+import { defaultLearnPackage, LearnPackageEditor } from "./learn-package";
+import { AcademyResourceList } from "./academy-resources";
+import {
+  ACADEMY_RESOURCE_MAX_BYTES,
+  type AcademyResource,
+} from "../academy-resource-contract";
+import { starterPath } from "../learn-package-contract";
 import { AgentPanel, CompilerPanel } from "./product-intelligence";
 import { HostedAcademyPanel } from "./academy-hosted";
 import { HandoffInbox } from "./agent-handoffs";
@@ -109,7 +115,9 @@ export function AcademyWorkbench({
     [selected, setSelected] = useState<Revision<AcademyDraft>>();
   const [tab, setTab] = useState<Tab>("overview"),
     [lessonIndex, setLessonIndex] = useState(0),
-    [lessonTab, setLessonTab] = useState<"material" | "practice">("material");
+    [lessonTab, setLessonTab] = useState<"material" | "resources" | "practice">(
+      "material",
+    );
   const [dirty, setDirty] = useState(false),
     [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
@@ -117,6 +125,9 @@ export function AcademyWorkbench({
   const [showAgent, setShowAgent] = useState(false),
     [audit, setAudit] = useState<AcademyAudit>(),
     [ack, setAck] = useState<string[]>([]);
+  const [forgeRequest, setForgeRequest] = useState<{
+    kind: "exercise" | "capstone";
+  }>();
   const [imported, setImported] = useState<{
     course: AcademyDraft;
     warnings: string[];
@@ -327,7 +338,7 @@ export function AcademyWorkbench({
     }
   }
   function lessonChange(
-    field: "title" | "objective" | "practice" | "content",
+    field: "title" | "objective" | "practice" | "content" | "chapter",
     text: string,
   ) {
     change({
@@ -337,10 +348,25 @@ export function AcademyWorkbench({
       ),
     });
   }
-  function addLesson() {
+  function addLesson(after = course.lessons.length - 1) {
     if (course.lessons.length >= COURSE_LESSON_LIMIT) return;
-    change({ ...course, lessons: [...course.lessons, newLesson()] });
-    setLessonIndex(course.lessons.length);
+    const chapter = course.lessons[after]?.chapter;
+    const index = after + 1;
+    const order = course.lessons.map((_, i) => i);
+    order.splice(index, 0, course.lessons.length);
+    change(
+      arrangeLessons(
+        {
+          ...course,
+          lessons: [
+            ...course.lessons,
+            { ...newLesson(), ...(chapter ? { chapter } : {}) },
+          ],
+        },
+        order,
+      ),
+    );
+    setLessonIndex(index);
     setLessonTab("material");
     setTab("lessons");
   }
@@ -388,6 +414,61 @@ export function AcademyWorkbench({
         <p role={error ? "alert" : "status"}>{error || "Opening Academy…"}</p>
       </section>
     );
+  const updateLesson = (updates: Partial<AcademyDraft["lessons"][number]>) =>
+    change({
+      ...course,
+      lessons: course.lessons.map((l, i) =>
+        i === lessonIndex ? { ...l, ...updates } : l,
+      ),
+    });
+  function uploadResource(file: File) {
+    if (!lesson) return;
+    void action(async () => {
+      if (file.size > ACADEMY_RESOURCE_MAX_BYTES)
+        throw Error("This file exceeds 80 MB.");
+      if ((lesson.resources?.length || 0) >= 12)
+        throw Error("This lesson already has 12 resources.");
+      const item = await api<AcademyResource>(
+        `academy-resources?name=${encodeURIComponent(file.name)}`,
+        file,
+      );
+      if (mounted.current && !lesson.resources?.some((r) => r.id === item.id))
+        updateLesson({ resources: [...(lesson.resources || []), item] });
+    });
+  }
+  function useResourceAsStarter(item: AcademyResource) {
+    if (!lesson) return;
+    void action(async () => {
+      const plan = lesson.learn || defaultLearnPackage();
+      const parsedPath = starterPath.safeParse(item.name);
+      if (!parsedPath.success)
+        throw Error(
+          "Rename this file with a simple code filename before using it as starter code.",
+        );
+      if (
+        plan.starterFiles.some(
+          (f) => f.path.toLowerCase() === item.name.toLowerCase(),
+        )
+      )
+        throw Error("A starter file already has this name.");
+      if (plan.starterFiles.length >= 12)
+        throw Error("This assignment already has 12 starter files.");
+      const { content } = await api<{ content: string }>(
+        `academy-resources/${item.id}?text=1`,
+      );
+      if (!mounted.current) return;
+      updateLesson({
+        learn: {
+          ...plan,
+          starterFiles: [
+            ...plan.starterFiles,
+            { path: parsedPath.data, content },
+          ],
+        },
+      });
+      setLessonTab("practice");
+    });
+  }
   return (
     <section
       className="academy-workbench"
@@ -561,7 +642,7 @@ export function AcademyWorkbench({
             </span>
             <button
               className="button small"
-              onClick={addLesson}
+              onClick={() => addLesson()}
               disabled={busy || course.lessons.length >= COURSE_LESSON_LIMIT}
               aria-label="Add lesson"
             >
@@ -570,35 +651,65 @@ export function AcademyWorkbench({
           </div>
           <nav className="academy-lessons" aria-label="Course lessons">
             {course.lessons.map((l, i) => (
-              <button
-                key={i}
-                disabled={busy}
-                aria-current={
-                  tab === "lessons" && lessonIndex === i ? "step" : undefined
-                }
-                onClick={() => {
-                  setLessonIndex(i);
-                  setTab("lessons");
-                }}
-              >
-                <span>{String(i + 1).padStart(2, "0")}</span>
-                <span>
-                  {l.title || "Untitled lesson"}
-                  <small>
-                    {l.learn
-                      ? `${l.learn.minutes} min · Learn assignment`
-                      : "Assignment not added"}
-                    {course.learningProject?.milestones.some(
-                      (m) => m.lessonIndex === i,
-                    )
-                      ? " · Project"
-                      : ""}
-                  </small>
-                </span>
-                {l.learn && (
-                  <Check size={12} aria-label="Learn package added" />
+              <React.Fragment key={i}>
+                {(i === 0 ||
+                  (l.chapter || "").trim() !==
+                    (course.lessons[i - 1]?.chapter || "").trim()) && (
+                  <div className="academy-chapter-label">
+                    <span>{l.chapter?.trim() || "Unsectioned"}</span>
+                    {l.chapter?.trim() && (
+                      <button
+                        type="button"
+                        aria-label={`Add lesson to chapter ${l.chapter.trim()}`}
+                        disabled={
+                          busy || course.lessons.length >= COURSE_LESSON_LIMIT
+                        }
+                        onClick={() => {
+                          let last = i;
+                          while (
+                            course.lessons[last + 1]?.chapter?.trim() ===
+                            l.chapter?.trim()
+                          )
+                            last++;
+                          addLesson(last);
+                        }}
+                      >
+                        <Plus size={13} />
+                      </button>
+                    )}
+                  </div>
                 )}
-              </button>
+                <button
+                  disabled={busy}
+                  aria-current={
+                    tab === "lessons" && lessonIndex === i ? "step" : undefined
+                  }
+                  onClick={() => {
+                    setLessonIndex(i);
+                    setTab("lessons");
+                  }}
+                >
+                  <span>{String(i + 1).padStart(2, "0")}</span>
+                  <span>
+                    {l.title || "Untitled lesson"}
+                    <small>
+                      {l.learn
+                        ? `${l.learn.minutes} min · ${l.learn.kind === "capstone" ? "Capstone" : "Exercise"}`
+                        : l.resources?.length
+                          ? `${l.resources.length} resources`
+                          : "Teaching material"}
+                      {course.learningProject?.milestones.some(
+                        (m) => m.lessonIndex === i,
+                      )
+                        ? " · Project"
+                        : ""}
+                    </small>
+                  </span>
+                  {l.learn && (
+                    <Check size={12} aria-label="Learn package added" />
+                  )}
+                </button>
+              </React.Fragment>
             ))}
           </nav>
           {!course.lessons.length && (
@@ -669,7 +780,7 @@ export function AcademyWorkbench({
                 <div className="academy-next">
                   <button
                     className="button"
-                    onClick={addLesson}
+                    onClick={() => addLesson()}
                     disabled={course.lessons.length >= COURSE_LESSON_LIMIT}
                   >
                     <Plus size={14} /> Add lesson
@@ -751,6 +862,13 @@ export function AcademyWorkbench({
                     Teaching material
                   </button>
                   <button
+                    className={lessonTab === "resources" ? "selected" : ""}
+                    aria-pressed={lessonTab === "resources"}
+                    onClick={() => setLessonTab("resources")}
+                  >
+                    Resources {lesson.resources?.length || ""}
+                  </button>
+                  <button
                     className={lessonTab === "practice" ? "selected" : ""}
                     aria-pressed={lessonTab === "practice"}
                     onClick={() => setLessonTab("practice")}
@@ -760,6 +878,30 @@ export function AcademyWorkbench({
                 </div>
                 {lessonTab === "material" ? (
                   <>
+                    <label>
+                      Chapter
+                      <input
+                        aria-label={`Chapter for lesson ${lessonIndex + 1}`}
+                        value={lesson.chapter || ""}
+                        maxLength={100}
+                        list="academy-chapter-names"
+                        placeholder="Choose or name a chapter"
+                        onChange={(e) =>
+                          lessonChange("chapter", e.target.value)
+                        }
+                      />
+                      <datalist id="academy-chapter-names">
+                        {[
+                          ...new Set(
+                            course.lessons
+                              .map((l) => l.chapter?.trim())
+                              .filter(Boolean),
+                          ),
+                        ].map((chapter) => (
+                          <option value={chapter} key={chapter} />
+                        ))}
+                      </datalist>
+                    </label>
                     <label>
                       Measurable objective
                       <textarea
@@ -815,14 +957,79 @@ export function AcademyWorkbench({
                       AI.
                     </small>
                   </>
+                ) : lessonTab === "resources" ? (
+                  <section className="academy-resource-workspace">
+                    <div className="academy-page-heading small">
+                      <h2>Lesson resources</h2>
+                      <p>
+                        Upload MP4, WebM, PDF, ZIP or code files for this
+                        lesson. Up to 80 MB per file.
+                      </p>
+                    </div>
+                    <label className="academy-upload-resource">
+                      <FileUp size={19} />
+                      <strong>Choose a file</strong>
+                      <input
+                        type="file"
+                        aria-label="Upload lesson resource"
+                        onChange={(event) => {
+                          const file = event.currentTarget.files?.[0];
+                          event.currentTarget.value = "";
+                          if (file) uploadResource(file);
+                        }}
+                      />
+                    </label>
+                    <AcademyResourceList
+                      key={`${selected?.id || "draft"}:${lessonIndex}`}
+                      api={api}
+                      items={lesson.resources || []}
+                      onStarter={useResourceAsStarter}
+                      onRemove={(id) =>
+                        updateLesson({
+                          resources:
+                            lesson.resources?.filter(
+                              (item) => item.id !== id,
+                            ) || [],
+                        })
+                      }
+                    />
+                    <p className="academy-fineprint">
+                      Resources are available in Learn on this device. Course
+                      JSON exports contain resource references.
+                    </p>
+                  </section>
                 ) : (
                   <>
                     <div className="academy-page-heading small">
-                      <h2>Give the lesson somewhere to go.</h2>
+                      <h2>Exercises and capstones</h2>
                       <p>
                         Define what the learner attempts, how they check it, and
                         what changes after it works.
                       </p>
+                    </div>
+                    <div className="academy-forge-callout">
+                      <Sparkles size={20} />
+                      <div>
+                        <strong>Project Forge</strong>
+                        <p>
+                          Draft a build guide, learner TODOs, and checks for
+                          this lesson.
+                        </p>
+                      </div>
+                      {(["exercise", "capstone"] as const).map((kind) => (
+                        <button
+                          key={kind}
+                          className="button small"
+                          onClick={() => {
+                            setForgeRequest({ kind });
+                            setShowAgent(true);
+                          }}
+                        >
+                          {kind === "exercise"
+                            ? "Design exercise"
+                            : "Design capstone"}
+                        </button>
+                      ))}
                     </div>
                     <LearnPackageEditor
                       index={lessonIndex}
@@ -880,7 +1087,7 @@ export function AcademyWorkbench({
             {tab === "lessons" && !lesson && (
               <div className="academy-page">
                 <h2>Your next lesson starts here.</h2>
-                <button className="button primary" onClick={addLesson}>
+                <button className="button primary" onClick={() => addLesson()}>
                   <Plus size={14} /> Add lesson
                 </button>
               </div>
@@ -1545,6 +1752,7 @@ export function AcademyWorkbench({
             entity={selected}
             dirty={dirty || busy}
             lessonIndex={lessonIndex}
+            forgeRequest={forgeRequest}
             onWorkApplied={workApplied}
           />
         </aside>

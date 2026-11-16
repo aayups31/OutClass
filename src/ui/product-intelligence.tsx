@@ -13,6 +13,7 @@ export function AgentPanel({
   onApply,
   onWorkApplied,
   lessonIndex,
+  forgeRequest,
 }: {
   domain: "academy" | "creative" | "growth" | "analytics";
   entity?: { id: string; revision: number };
@@ -21,6 +22,7 @@ export function AgentPanel({
   onApply?: (text: string) => void;
   onWorkApplied?: () => Promise<void>;
   lessonIndex?: number;
+  forgeRequest?: { kind: "exercise" | "capstone" };
 }) {
   const [run, setRun] = useState<ProductAgentRun>();
   const [busy, setBusy] = useState(false);
@@ -63,6 +65,7 @@ export function AgentPanel({
         api={api}
         onApplied={onWorkApplied}
         preferredLesson={lessonIndex}
+        forgeRequest={forgeRequest}
       />
       <details className="agent-quick-review">
         <summary>Quick review & specialist handoff</summary>

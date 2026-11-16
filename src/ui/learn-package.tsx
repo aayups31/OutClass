@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import "./learn-package.css";
 import type { LearnPackage } from "../learn-package-contract";
 import type { LearnDelivery } from "../server/learn-delivery";
+import { LearnResources } from "./academy-resources";
 type API = <T>(route: string, body?: unknown) => Promise<T>;
 export const defaultLearnPackage = (): LearnPackage => ({
   minutes: 20,
@@ -38,6 +39,34 @@ export function LearnPackageEditor({
     );
   return (
     <section className="learn-package-editor">
+      <div className="academy-assignment-type">
+        <label>
+          Learn activity
+          <select
+            value={value.kind || "exercise"}
+            onChange={(e) =>
+              onChange({
+                ...value,
+                kind: e.target.value === "capstone" ? "capstone" : "exercise",
+              })
+            }
+          >
+            <option value="exercise">Exercise</option>
+            <option value="capstone">Capstone project</option>
+          </select>
+        </label>
+        <label>
+          Activity title
+          <input
+            value={value.title || ""}
+            maxLength={160}
+            placeholder="Uses the lesson title when empty"
+            onChange={(e) =>
+              onChange({ ...value, title: e.target.value || undefined })
+            }
+          />
+        </label>
+      </div>
       <div className="product-panel-heading">
         <h3>Learn experience</h3>
         <button
@@ -223,6 +252,29 @@ export function LearnAssignment({
   lessonId: string;
   onDirty: (dirty: boolean) => void;
 }) {
+  return (
+    <>
+      <LearnResources api={api} courseId={courseId} lessonId={lessonId} />
+      <AssignmentReview
+        api={api}
+        courseId={courseId}
+        lessonId={lessonId}
+        onDirty={onDirty}
+      />
+    </>
+  );
+}
+function AssignmentReview({
+  api,
+  courseId,
+  lessonId,
+  onDirty,
+}: {
+  api: API;
+  courseId: string;
+  lessonId: string;
+  onDirty: (dirty: boolean) => void;
+}) {
   const [value, setValue] = useState<Assignment | null>(null),
     [checked, setChecked] = useState<number[]>([]),
     [reflection, setReflection] = useState(""),
@@ -276,8 +328,12 @@ export function LearnAssignment({
   return (
     <details className="learn-assignment" open>
       <summary>
-        Instructor’s Learn experience · {value.plan.minutes} min
+        {value.plan.kind === "capstone"
+          ? "Capstone project"
+          : "Instructor’s Learn experience"}{" "}
+        · {value.plan.minutes} min
       </summary>
+      {value.plan.title && <h2>{value.plan.title}</h2>}
       <h3>{value.objective}</h3>
       {value.preview && (
         <p>

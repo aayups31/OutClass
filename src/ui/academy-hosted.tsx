@@ -28,6 +28,10 @@ export function HostedAcademyPanel({
       setBusy(false);
     }
   }
+  const publication = releases.find((release) => release.id === selected);
+  const hasLocalResources = publication?.lessons.some(
+    (lesson) => lesson.resources?.length,
+  );
   return (
     <section className="product-catalog">
       <h2>Academy, connected</h2>
@@ -53,7 +57,7 @@ export function HostedAcademyPanel({
         </label>
         <button
           className="button primary"
-          disabled={!selected}
+          disabled={!publication || hasLocalResources}
           onClick={() => {
             const release = releases.find((r) => r.id === selected)!;
             if (
@@ -75,6 +79,12 @@ export function HostedAcademyPanel({
         >
           Review & publish free course
         </button>
+        {hasLocalResources && (
+          <p>
+            Use this release in local Learn. Uploaded resources need hosted file
+            storage before the course can go public.
+          </p>
+        )}
         <button
           className="button"
           onClick={() =>

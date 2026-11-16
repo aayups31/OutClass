@@ -869,3 +869,68 @@
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
+.academy-lessons .academy-chapter-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 28px;
+  margin: 12px 4px 4px;
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.academy-lessons .academy-chapter-label button {
+  display: grid;
+  width: 26px;
+  min-width: 26px;
+  padding: 4px;
+  place-items: center;
+}
+.academy-workbench .academy-upload-resource {
+  display: grid;
+  justify-items: start;
+  gap: 9px;
+  border: 1px dashed var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  padding: 18px;
+}
+.academy-upload-resource > svg,
+.academy-forge-callout > svg {
+  color: var(--accent);
+}
+.academy-upload-resource input[type="file"] {
+  min-width: 0;
+  max-width: 100%;
+}
+.academy-forge-callout {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-block: 12px 24px;
+  padding: 15px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+}
+.academy-forge-callout > div {
+  min-width: 150px;
+  flex: 1;
+}
+.academy-forge-callout p {
+  margin: 4px 0 0;
+  color: var(--muted);
+}
+.academy-assignment-type {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
+  gap: 12px;
+}
+.academy-forge-files pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 11px;
+}
