@@ -56,6 +56,17 @@ test("author a course, launch Learn, approve grounded copy and prepare a manual 
   await expect(page.getByLabel("Course title", { exact: true })).toHaveValue(
     "Practical Python activities",
   );
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.getByRole("button", { name: "Architect", exact: true }).click();
+  const architect = page.getByRole("region", {
+    name: "Academy Architect task workspace",
+  });
+  await expect(architect).toBeVisible();
+  expect(
+    await page.evaluate(() => document.documentElement.scrollWidth),
+  ).toBeLessThanOrEqual(390);
+  await page.getByRole("button", { name: "Close Academy Architect" }).click();
+  await page.setViewportSize({ width: 1440, height: 1000 });
   await page
     .getByRole("button", { name: "Course overview", exact: true })
     .click();
