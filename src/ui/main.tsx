@@ -33,6 +33,8 @@ import type { Course, PublicPreview as Preview, Status } from "../shared";
 import "./style.css";
 import "./studio.css";
 import { Onboarding, DesktopKeySettings } from "./onboarding";
+import { AcademyEnrollment } from "./academy-enrollment";
+import { outClassEdition } from "../outclass-edition";
 import { ContinueLearning, SetupDiagnostics } from "./learning";
 import { Divider, useWorkspaceLayout } from "./workspace-layout";
 import { ArchitectNotebook, LaunchIdeaPrompt } from "./notebook";
@@ -82,7 +84,19 @@ type Page =
   | "academy"
   | "creator"
   | "gtm";
+const authoringPages: Page[] = ["academy", "creator", "gtm"];
+const authoringNav = [
+  { id: "academy", label: "Academy", icon: BookOpen },
+  { id: "creator", label: "Creator Studio", icon: LayoutGrid },
+  { id: "gtm", label: "GTM", icon: ArrowUpRight },
+] as const;
+
 function App() {
+  const [edition, setEdition] = useState(() =>
+    outClassEdition(window.gitLearnDesktop?.edition),
+  );
+  const educator = edition === "educator";
+  const home = educator ? "academy" : "overview";
   const layoutControl = useWorkspaceLayout();
   const { layout } = layoutControl;
   const [theme, setTheme] = useState<Theme>(initialTheme);
@@ -99,6 +113,8 @@ function App() {
   const [onboarding, setOnboarding] = useState(false);
   const [page, setPage] = useState<Page>(() => {
     const view = new URLSearchParams(location.search).get("view");
+    if (edition === "learn" && authoringPages.includes(view as Page))
+      return "overview";
     return [
       "overview",
       "courses",
@@ -114,7 +130,7 @@ function App() {
       "gtm",
     ].includes(view || "")
       ? (view as Page)
-      : "overview";
+      : home;
   });
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
@@ -129,6 +145,7 @@ function App() {
   const [draftDirty, setDraftDirty] = useState(false);
   const [practiceTab, setPracticeTab] = useState("practice");
   function navigate(next: Page, courseId?: string) {
+    if (edition === "learn" && authoringPages.includes(next)) return;
     if (
       draftDirty &&
       (next !== page ||
@@ -163,6 +180,24 @@ function App() {
       .then((response) => response.json())
       .then(async (result) => {
         token = result.token;
+        const activeEdition = outClassEdition(
+          window.gitLearnDesktop?.edition || result.edition,
+        );
+        setEdition(activeEdition);
+        const initialView = new URLSearchParams(location.search).get(
+          "view",
+        ) as Page | null;
+        if (
+          activeEdition === "learn" &&
+          initialView &&
+          authoringPages.includes(initialView)
+        ) {
+          const url = new URL(location.href);
+          url.searchParams.delete("view");
+          history.replaceState(null, "", url);
+          setPage("overview");
+        } else if (activeEdition === "educator" && !initialView)
+          setPage("academy");
         const loaded = await refresh();
         if (
           window.gitLearnDesktop &&
@@ -175,6 +210,7 @@ function App() {
         setNote(loaded.session?.note || "");
         if (
           loaded.session &&
+          activeEdition !== "educator" &&
           !new URLSearchParams(location.search).has("view")
         ) {
           setSelectedCourse(loaded.session.courseId);
@@ -244,12 +280,13 @@ function App() {
   if (state && onboarding)
     return (
       <Onboarding
+        educator={educator}
         state={state}
         request={request}
         onRefresh={refresh}
         onDone={() => {
           setOnboarding(false);
-          setPage("courses");
+          setPage(educator ? "academy" : "courses");
           refresh().catch(() => {});
         }}
       />
@@ -266,12 +303,17 @@ function App() {
           href="#"
           onClick={(event) => {
             event.preventDefault();
-            navigate("overview");
+            navigate(home);
           }}
         >
           <BrandMark />
-          <span className="brand-name">OutClass</span>
-          <small>Personal workspace</small>
+          <span className="brand-name">
+            {educator
+              ? "OutClass Educator"
+              : edition === "learn"
+                ? "OutClass Learn"
+                : "OutClass"}
+          </span>
         </a>
         {page === "studio" && (
           <div className="studio-rail-tools" aria-label="Explorer views">
@@ -319,12 +361,17 @@ function App() {
         )}
         <div className="nav-caption">Workspace</div>
         <nav aria-label="Workspace navigation">
-          {(
-            [
-              { id: "overview", label: "Overview", icon: LayoutGrid },
-              { id: "studio", label: "Code & learn", icon: Code2 },
-              { id: "courses", label: "My courses", icon: BookOpen },
-            ] as const
+          {(educator
+            ? ([
+                ...authoringNav,
+                { id: "studio", label: "Learn workspace", icon: Code2 },
+                { id: "courses", label: "Course library", icon: BookOpen },
+              ] as const)
+            : ([
+                { id: "overview", label: "Overview", icon: LayoutGrid },
+                { id: "studio", label: "Code & learn", icon: Code2 },
+                { id: "courses", label: "My courses", icon: BookOpen },
+              ] as const)
           ).map((item) => (
             <button
               key={item.id}
@@ -349,9 +396,7 @@ function App() {
               "ideas",
               "editors",
               "history",
-              "academy",
-              "creator",
-              "gtm",
+              ...(edition === "combined" ? authoringPages : []),
             ].includes(page)}
           >
             <summary title="More tools">
@@ -369,10 +414,16 @@ function App() {
                     icon: Sparkles,
                   },
                   { id: "history", label: "Checkpoints", icon: History },
-                  { id: "editors", label: "Editors & extensions", icon: Code2 },
-                  { id: "academy", label: "Academy", icon: BookOpen },
-                  { id: "creator", label: "Creator Studio", icon: LayoutGrid },
-                  { id: "gtm", label: "GTM", icon: ArrowUpRight },
+                  ...(!educator
+                    ? [
+                        {
+                          id: "editors",
+                          label: "Editors & extensions",
+                          icon: Code2,
+                        } as const,
+                      ]
+                    : []),
+                  ...(edition === "combined" ? authoringNav : []),
                 ] as const
               ).map((item) => (
                 <button
@@ -956,7 +1007,7 @@ function App() {
                   )}
                 </>
               )}
-              {(["academy", "creator", "gtm"] as string[]).includes(page) && (
+              {edition !== "learn" && authoringPages.includes(page) && (
                 <Suspense fallback={<p>Opening product workspace…</p>}>
                   <ProductWorkspace
                     key={page}
@@ -1016,6 +1067,17 @@ function App() {
                       Add a course
                     </button>
                   </div>
+                  {configured && edition === "learn" && (
+                    <AcademyEnrollment
+                      api={request}
+                      onCode={(id) => {
+                        void refresh().then((next) => {
+                          setNote(next.session?.note || "");
+                          navigate("studio", id);
+                        });
+                      }}
+                    />
+                  )}
                   {!configured ? (
                     <SetupPrompt onClick={() => setPage("setup")} />
                   ) : state.courses.length ? (
@@ -1102,10 +1164,11 @@ function App() {
               )}
               {page === "setup" && (
                 <Setup
+                  educator={educator}
                   state={state}
                   busy={busy}
                   act={act}
-                  onReady={() => setPage("overview")}
+                  onReady={() => setPage(home)}
                 />
               )}
             </>
@@ -1357,6 +1420,7 @@ function CourseCard({
   onMirror: () => void;
   busy: boolean;
 }) {
+  const platform = course.platform === "academy" ? "Academy" : "Udemy";
   const lesson =
     course.lessons.find((item) => item.id === course.currentLessonId) ||
     course.lessons[0];
@@ -1365,12 +1429,12 @@ function CourseCard({
       <span className="course-number">{String(index).padStart(2, "0")}</span>
       <div className="course-information">
         <div className="course-card-top">
-          <span className="platform">UDEMY</span>
+          <span className="platform">{platform}</span>
           <a
             href={course.url}
             target="_blank"
             rel="noreferrer"
-            aria-label={`Open ${course.title} on Udemy`}
+            aria-label={`Open ${course.title} on ${platform}`}
           >
             <ArrowUpRight size={18} />
           </a>
@@ -1949,11 +2013,13 @@ function StartSession({
   );
 }
 function Setup({
+  educator,
   state,
   busy,
   act,
   onReady,
 }: {
+  educator: boolean;
   state: Status;
   busy: string;
   act: Act;
@@ -2111,98 +2177,100 @@ function Setup({
             </p>
           )}
         </section>
-        <section className="setup-card">
-          <div className="setup-heading">
-            <span className="setup-icon">
-              <Link2 size={23} />
-            </span>
-            <div>
-              <h2>Connect the Chrome extension</h2>
-              <p>Let your Udemy lesson find its way into your workspace.</p>
-            </div>
-            {state.extensionConnected && (
-              <span className="save-status">
-                <Check size={14} />
-                Connected
+        {!educator && (
+          <section className="setup-card">
+            <div className="setup-heading">
+              <span className="setup-icon">
+                <Link2 size={23} />
               </span>
-            )}
-          </div>
-          <ol className="setup-instructions">
-            <li>
-              Open{" "}
-              <a
-                href="chrome://extensions"
-                onClick={(event) => {
-                  event.preventDefault();
-                  navigator.clipboard
-                    .writeText("chrome://extensions")
-                    .then(() =>
-                      alert(
-                        "Copied chrome://extensions. Paste it into your Chrome address bar.",
-                      ),
-                    );
-                }}
-              >
-                chrome://extensions
-              </a>{" "}
-              and enable <strong>Developer mode</strong>.
-            </li>
-            <li>
-              Choose <strong>Load unpacked</strong> and select the project’s{" "}
-              <code>dist/extension</code> folder.
-            </li>
-            <li>
-              Pin <strong>OutClass</strong>. Enter the connection code below in
-              its popup.
-            </li>
-          </ol>
-          <div className="pair-row">
-            <button
-              className="button secondary"
-              onClick={() =>
-                act("pair", async () => {
-                  const result = await request<{ code: string }>(
-                    "pair-code",
-                    {},
-                  );
-                  setCode(result.code);
-                })
-              }
-            >
-              Get connection code <Link2 size={16} />
-            </button>
-            {code && (
-              <>
-                <code className="pair-code">{code}</code>
-                <button
-                  className="text-button"
-                  aria-label="Copy connection code"
-                  onClick={() => navigator.clipboard.writeText(code)}
+              <div>
+                <h2>Connect the Chrome extension</h2>
+                <p>Let your Udemy lesson find its way into your workspace.</p>
+              </div>
+              {state.extensionConnected && (
+                <span className="save-status">
+                  <Check size={14} />
+                  Connected
+                </span>
+              )}
+            </div>
+            <ol className="setup-instructions">
+              <li>
+                Open{" "}
+                <a
+                  href="chrome://extensions"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    navigator.clipboard
+                      .writeText("chrome://extensions")
+                      .then(() =>
+                        alert(
+                          "Copied chrome://extensions. Paste it into your Chrome address bar.",
+                        ),
+                      );
+                  }}
                 >
-                  <Copy size={16} />
-                </button>
-                <span className="muted">Expires in 5 minutes</span>
-              </>
-            )}
-            {state.extensionConnected && (
+                  chrome://extensions
+                </a>{" "}
+                and enable <strong>Developer mode</strong>.
+              </li>
+              <li>
+                Choose <strong>Load unpacked</strong> and select the project’s{" "}
+                <code>dist/extension</code> folder.
+              </li>
+              <li>
+                Pin <strong>OutClass</strong>. Enter the connection code below
+                in its popup.
+              </li>
+            </ol>
+            <div className="pair-row">
               <button
-                className="text-button"
+                className="button secondary"
                 onClick={() =>
-                  act(
-                    "unpair",
-                    () => request("unpair", {}),
-                    "Extension disconnected.",
-                  )
+                  act("pair", async () => {
+                    const result = await request<{ code: string }>(
+                      "pair-code",
+                      {},
+                    );
+                    setCode(result.code);
+                  })
                 }
               >
-                Disconnect
+                Get connection code <Link2 size={16} />
               </button>
-            )}
-          </div>
-          <p className="hint">
-            You can add lessons manually while the extension is disconnected.
-          </p>
-        </section>
+              {code && (
+                <>
+                  <code className="pair-code">{code}</code>
+                  <button
+                    className="text-button"
+                    aria-label="Copy connection code"
+                    onClick={() => navigator.clipboard.writeText(code)}
+                  >
+                    <Copy size={16} />
+                  </button>
+                  <span className="muted">Expires in 5 minutes</span>
+                </>
+              )}
+              {state.extensionConnected && (
+                <button
+                  className="text-button"
+                  onClick={() =>
+                    act(
+                      "unpair",
+                      () => request("unpair", {}),
+                      "Extension disconnected.",
+                    )
+                  }
+                >
+                  Disconnect
+                </button>
+              )}
+            </div>
+            <p className="hint">
+              You can add lessons manually while the extension is disconnected.
+            </p>
+          </section>
+        )}
         <section className="setup-card">
           <div className="setup-heading">
             <span className="setup-icon">

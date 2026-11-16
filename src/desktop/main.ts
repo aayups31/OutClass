@@ -8,7 +8,7 @@ import {
   utilityProcess,
 } from "electron";
 import path from "node:path";
-import { mkdirSync } from "node:fs";
+import { mkdirSync, readFileSync } from "node:fs";
 import { mkdir, readFile, writeFile, unlink } from "node:fs/promises";
 import { spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
@@ -16,19 +16,41 @@ import dotenv from "dotenv";
 import type { DesktopEnvironment } from "./bridge";
 import { LocalTerminals } from "./terminal";
 import { approvedSocialLink } from "./social-links";
+import {
+  EDUCATOR_PORT,
+  LEARN_PORT,
+  outClassEdition,
+} from "../outclass-edition";
 
-app.setName("OutClass");
+const root = app.getAppPath();
+const metadata = JSON.parse(
+  readFileSync(path.join(root, "package.json"), "utf8"),
+);
+const edition = outClassEdition(
+  app.isPackaged ? metadata.outclassEdition : process.env.OUTCLASS_EDITION,
+);
+const educator = edition === "educator";
+const title = educator
+  ? "OutClass Educator"
+  : edition === "learn"
+    ? "OutClass Learn"
+    : "OutClass";
+app.setName(title);
 // Keep the encrypted key and saved workspace in the existing installation.
 const profilePath =
   process.env.GITLEARN_DESKTOP_USER_DATA ||
-  path.join(app.getPath("appData"), "GitLearn");
+  path.join(
+    app.getPath("appData"),
+    educator ? "OutClass Educator" : "GitLearn",
+  );
 mkdirSync(profilePath, { recursive: true });
 app.setPath("userData", profilePath);
-const root = app.getAppPath();
 const extensionSource = app.isPackaged
   ? path.join(process.resourcesPath, "extension")
   : path.join(root, "dist/extension");
-const port = Number(process.env.GITLEARN_PORT || "47831");
+const port = Number(
+  process.env.GITLEARN_PORT || (educator ? EDUCATOR_PORT : LEARN_PORT),
+);
 const origin = `http://127.0.0.1:${port}`;
 let window: BrowserWindow | undefined;
 let companion: ReturnType<typeof utilityProcess.fork> | undefined;
@@ -122,6 +144,10 @@ async function startCompanion() {
     });
     const health = await response.json();
     if (health.ok && health.name === "GitLearn") {
+      if (edition !== "combined" && health.edition !== edition)
+        throw new Error(
+          "The OutClass port is occupied by another application or edition.",
+        );
       if (health.version !== app.getVersion())
         throw new Error(
           "Another OutClass version is running. Save your files and close it, then open this version again.",
@@ -272,6 +298,7 @@ async function startCompanion() {
     companion!.postMessage({
       root,
       port,
+      edition,
       apiKey: savedKey,
       accountSession,
       socialSessions,
@@ -291,7 +318,7 @@ async function startCompanion() {
         process.env.GITLEARN_DATA_DIR ||
         path.join(
           process.env.LOCALAPPDATA || app.getPath("userData"),
-          "GitForLearning",
+          educator ? "OutClassEducator" : "GitForLearning",
         ),
     });
   });
@@ -378,7 +405,7 @@ else {
           version: app.getVersion(),
           defaultLearningFolder: path.join(
             app.getPath("desktop"),
-            "My Learning",
+            educator ? "OutClass Educator Courses" : "My Learning",
           ),
           gitAvailable: await available("git"),
           keyManaged: !!companion,
@@ -463,11 +490,12 @@ else {
         minHeight: 660,
         show: false,
         backgroundColor: "#101114",
-        title: "OutClass",
+        title,
         icon: path.join(extensionSource, "icons/icon-256.png"),
         autoHideMenuBar: true,
         webPreferences: {
           preload: path.join(root, "dist/desktop/preload.cjs"),
+          additionalArguments: [`--outclass-edition=${edition}`],
           contextIsolation: true,
           nodeIntegration: false,
           sandbox: true,

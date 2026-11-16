@@ -88,7 +88,7 @@ async function load() {
         await request(`courses/${c.id}/enroll`, {}, true);
         enroll.textContent = "Enrolled";
         notice.textContent =
-          "Choose a lesson, create a launch code, then paste it in the OutClass app’s Academy page while signed in to the same account.";
+          "Choose a lesson and create a launch code. In OutClass Learn, sign in and go to My courses → Open an Academy course. In earlier OutClass apps, use the Academy page.";
       });
       action(launch, async () => {
         const result = await request(

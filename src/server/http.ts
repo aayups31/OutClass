@@ -33,6 +33,7 @@ import type { AgentWorkService } from "./agent-work.js";
 import { MediaTranscripts } from "./media-transcripts.js";
 import { AcademyStudio } from "./academy-studio.js";
 import { AcademyResources } from "./academy-resources.js";
+import type { OutClassEdition } from "../outclass-edition.js";
 import packageMetadata from "../../package.json" with { type: "json" };
 
 const text = z.string().max(2000);
@@ -49,6 +50,7 @@ export function createApp(
   editorVsix = process.env.OUTCLASS_EDITOR_VSIX ||
     path.resolve(`dist/editor/OutClass-Editor-${version}.vsix`),
   socialVault: SocialVault = {},
+  edition: OutClassEdition = "combined",
 ) {
   const app = express();
   let agentWork: AgentWorkService | undefined;
@@ -140,7 +142,7 @@ export function createApp(
   app.use("/social-image", publishing.images.publicRoutes());
   app.use("/social/callback", social.callbacks());
   app.get("/api/health", (_req, res) =>
-    res.json({ ok: true, name: "GitLearn", version }),
+    res.json({ ok: true, name: "GitLearn", version, edition }),
   );
   app.get("/preview/:token", (req, res) => {
     res.setHeader("X-Frame-Options", "SAMEORIGIN");
@@ -168,7 +170,7 @@ export function createApp(
       return;
     }
     res.setHeader("Cache-Control", "no-store");
-    res.json({ token: application.store.get("localToken") });
+    res.json({ token: application.store.get("localToken"), edition });
   });
   app.post("/api/pair", (req, res) => {
     const origin = req.headers.origin || "";

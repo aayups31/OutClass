@@ -17,11 +17,13 @@ import { AIAccessSettings } from "./ai-access";
 
 type Request = <T>(route: string, body?: unknown) => Promise<T>;
 export function Onboarding({
+  educator = false,
   state,
   request,
   onDone,
   onRefresh,
 }: {
+  educator?: boolean;
   state: Status;
   request: Request;
   onDone: () => void;
@@ -30,7 +32,11 @@ export function Onboarding({
   const [step, setStep] = useState(() => {
     try {
       const saved = Number(localStorage.getItem("gitlearn-setup-step"));
-      return state.settings.configured && [2, 3].includes(saved) ? saved : 0;
+      return state.settings.configured && [2, 3].includes(saved)
+        ? educator
+          ? 2
+          : saved
+        : 0;
     } catch {
       return 0;
     }
@@ -71,21 +77,30 @@ export function Onboarding({
       <aside className="onboarding-aside">
         <div className="onboarding-brand">
           <ArrowUpRight size={25} />
-          <strong>OutClass</strong>
+          <strong>{educator ? "OutClass Educator" : "OutClass"}</strong>
           <span>01 / YOUR WORKSPACE</span>
         </div>
         <div className="onboarding-story">
-          <p>FROM LESSON TO PRACTICE</p>
-          <h1>
-            A place for
-            <br />
-            what you’re
-            <br />
-            <span>learning.</span>
-          </h1>
           <p>
-            Your courses, your code, your next breakthrough. All together, on
-            your computer.
+            {educator ? "YOUR TEACHING WORKSPACE" : "FROM LESSON TO PRACTICE"}
+          </p>
+          {educator ? (
+            <h1>
+              Build courses that <span>teach by doing.</span>
+            </h1>
+          ) : (
+            <h1>
+              A place for
+              <br />
+              what you’re
+              <br />
+              <span>learning.</span>
+            </h1>
+          )}
+          <p>
+            {educator
+              ? "Design in Academy, preview in Learn, and prepare your launch."
+              : "Your courses, your code, your next breakthrough. All together, on your computer."}
           </p>
         </div>
         <div className="onboarding-local">
@@ -94,7 +109,12 @@ export function Onboarding({
       </aside>
       <main className="onboarding-main">
         <nav className="onboarding-progress" aria-label="Setup progress">
-          {["Welcome", "Workspace", "AI help", "Browser"].map((name, i) => (
+          {[
+            "Welcome",
+            "Workspace",
+            "AI help",
+            ...(educator ? [] : ["Browser"]),
+          ].map((name, i) => (
             <span
               key={name}
               aria-current={step === i ? "step" : undefined}
@@ -110,24 +130,33 @@ export function Onboarding({
             <>
               <Code2 className="onboarding-symbol" size={30} />
               <div className="eyebrow">
-                A SMALL SETUP. A BETTER WAY TO LEARN.
+                {educator
+                  ? "ACADEMY · CREATOR STUDIO · GTM"
+                  : "A SMALL SETUP. A BETTER WAY TO LEARN."}
               </div>
-              <h2>Make yourself at home.</h2>
+              <h2>
+                {educator
+                  ? "Set up your educator workspace."
+                  : "Make yourself at home."}
+              </h2>
               <p>
-                Set up a learning folder, connect your browser, and build
-                alongside your Udemy courses. VS Code and GitHub are optional.
+                {educator
+                  ? "Choose a folder for your courses and connect AI if you want help building exercises and capstones."
+                  : "Set up a learning folder, connect your browser, and build alongside your Udemy courses. VS Code and GitHub are optional."}
               </p>
-              <div className="onboarding-preview">
-                <span>
-                  <Folder size={18} /> Courses find their own folder
-                </span>
-                <span>
-                  <Code2 size={18} /> A real editor, ready to practice
-                </span>
-                <span>
-                  <Sparkles size={18} /> Course answers with sources
-                </span>
-              </div>
+              {!educator && (
+                <div className="onboarding-preview">
+                  <span>
+                    <Folder size={18} /> Courses find their own folder
+                  </span>
+                  <span>
+                    <Code2 size={18} /> A real editor, ready to practice
+                  </span>
+                  <span>
+                    <Sparkles size={18} /> Course answers with sources
+                  </span>
+                </div>
+              )}
               <button
                 className="button primary"
                 disabled={!environment || busy}
@@ -270,7 +299,10 @@ export function Onboarding({
                       );
                       if (connection.ready)
                         await request("assistant-enable", { enabled: true });
-                      setStep(3);
+                      if (educator) {
+                        localStorage.removeItem("gitlearn-setup-step");
+                        onDone();
+                      } else setStep(3);
                     })
                   }
                 >

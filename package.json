@@ -21,6 +21,7 @@
     "check": "tsc --noEmit",
     "desktop": "node scripts/desktop.mjs",
     "package:desktop": "npm run build && electron-builder --win nsis --x64 --publish never",
+    "package:apps": "npm run build && node scripts/package-outclass-apps.mjs",
     "package:extension": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/package-extension.ps1",
     "preview:site": "node scripts/preview-site.mjs",
     "test:desktop": "playwright test --config playwright.desktop.config.ts"

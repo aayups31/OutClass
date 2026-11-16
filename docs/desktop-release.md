@@ -64,3 +64,11 @@ Release assets belong in GitHub Releases, not Git source history. The site uses 
 ## Verification
 
 Use `npm run check`, `npm test`, `npm run test:desktop`, `npx playwright test --config playwright.site.config.ts`, and the existing workflow suite. The desktop test uses its own temporary profile, database, learning folder, and port; it does not alter the user's setup or contact OpenAI. Set GITLEARN_PACKAGED_TEST to the unpacked packaged OutClass.exe to exercise the actual distributed runtime. The page tests exercise desktop/mobile, keyboard tabs, privacy, no JavaScript, live reduced-motion switching, and absence of workspace API calls.
+
+## Separate Windows apps
+
+Run `npm run package:apps` to build the Learn and Educator installers under `dist/releases/learn` and `dist/releases/educator`.
+
+OutClass Learn uses the existing learner profile and the standard Udemy and editor connection port. Close the earlier combined OutClass app before opening Learn. Learners can redeem hosted Academy launch codes under **My courses → Open an Academy course**.
+
+OutClass Educator has its own profile and opens to Academy, Creator Studio, and GTM. It uses the built-in Learn workspace for course previews and practical assignments. Earlier authoring drafts stay in the combined app’s data until you move them. Existing Academy course JSON exports can be imported into Educator. Local attachments still require access to their original files and must be added again in the new profile.

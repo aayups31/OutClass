@@ -160,7 +160,9 @@ export class SocialConnections {
       throw new UserError(
         "Finish an open authorization before starting another.",
       );
-    const state = randomBytes(32).toString("base64url"),
+    const state =
+        (this.port === EDUCATOR_PORT ? "edu_" : "learn_") +
+        randomBytes(32).toString("base64url"),
       verifier = randomBytes(40).toString("base64url");
     const base =
       process.env.OUTCLASS_SOCIAL_REDIRECT_BASE ||
@@ -403,3 +405,4 @@ export class SocialConnections {
     return router;
   }
 }
+import { EDUCATOR_PORT } from "../outclass-edition.js";

@@ -5,6 +5,7 @@ import { Application } from "../server/application";
 import { createApp } from "../server/http";
 import { randomUUID } from "node:crypto";
 import type { AccountSession } from "../server/ai-provider";
+import { outClassEdition } from "../outclass-edition";
 const parentPort = process.parentPort;
 
 parentPort!.once("message", async ({ data }) => {
@@ -73,6 +74,7 @@ parentPort!.once("message", async ({ data }) => {
           }
         : {}),
     },
+    outClassEdition(data.edition),
   );
   web.use((_req, res, next) => {
     res.setHeader(

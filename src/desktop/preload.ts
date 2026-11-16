@@ -1,6 +1,12 @@
 import { contextBridge, ipcRenderer } from "electron";
 import type { DesktopBridge } from "./bridge";
+import { outClassEdition } from "../outclass-edition";
 const bridge: DesktopBridge = {
+  edition: outClassEdition(
+    process.argv
+      .find((arg) => arg.startsWith("--outclass-edition="))
+      ?.split("=")[1],
+  ),
   environment: () => ipcRenderer.invoke("desktop:environment"),
   chooseFolder: () => ipcRenderer.invoke("desktop:folder"),
   setApiKey: (key) => ipcRenderer.invoke("desktop:key", key),

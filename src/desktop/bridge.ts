@@ -6,6 +6,7 @@ export interface DesktopEnvironment {
   hasSavedKey: boolean;
 }
 export interface DesktopBridge {
+  edition: OutClassEdition;
   environment(): Promise<DesktopEnvironment>;
   chooseFolder(): Promise<string | null>;
   setApiKey(key: string): Promise<void>;
@@ -37,3 +38,4 @@ declare global {
     gitLearnDesktop?: DesktopBridge;
   }
 }
+import type { OutClassEdition } from "../outclass-edition";

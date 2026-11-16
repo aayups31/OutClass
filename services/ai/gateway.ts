@@ -211,8 +211,11 @@ export function createGateway(deps: GatewayDependencies) {
         );
       return;
     }
+    const port = parsed.data.state.startsWith("edu_")
+      ? EDUCATOR_PORT
+      : LEARN_PORT;
     const target = new URL(
-      `http://127.0.0.1:47831/social/callback/${parsed.data.provider}`,
+      `http://127.0.0.1:${port}/social/callback/${parsed.data.provider}`,
     );
     target.searchParams.set("state", parsed.data.state);
     target.searchParams.set("code", parsed.data.code);
@@ -488,3 +491,4 @@ export function productionDependencies(
       : {}),
   };
 }
+import { EDUCATOR_PORT, LEARN_PORT } from "../../src/outclass-edition.js";
