@@ -566,65 +566,122 @@
   margin-top: 24px;
 }
 .agent-choice {
+  position: relative;
+  min-width: 0;
   display: block;
+  color: var(--glass-ink);
   text-decoration: none;
-  padding: 12px 0 20px;
+  padding-block: 0 18px;
+  border-bottom: 1px solid var(--glass-rail);
 }
 .agent-art {
-  height: 165px;
-  position: relative;
   display: grid;
   place-items: center;
+  overflow: hidden;
+  margin-bottom: 16px;
+  min-height: clamp(104px, 13vw, 180px);
+  background: radial-gradient(ellipse at 50% 56%, #161627, #0a0a13 77%);
+  border-radius: 8px;
 }
-.agent-orbit {
-  width: 110px;
-  height: 110px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 30% 20%, #fff, #bacbfa 48%, #7493d3);
-  box-shadow:
-    inset -10px -12px 20px #4268b54d,
-    0 20px 40px -15px #7288c480;
-  transform: rotate(-20deg);
-  transition: transform 0.5s;
+.agent-emblem {
+  display: block;
+  width: min(100%, 190px);
+  aspect-ratio: 220 / 145;
+  background-image: url("agent-emblems.png");
+  /* Each window isolates one symbol above the lettering in the supplied sheet. */
+  background-size: 648.182% 513.103%;
+  background-repeat: no-repeat;
+  mask-image:
+    linear-gradient(90deg, transparent, #000 8% 92%, transparent),
+    linear-gradient(transparent, #000 7% 95%, transparent);
+  mask-composite: intersect;
 }
-.agent-orbit::after {
-  content: "";
-  position: absolute;
-  inset: 25px -28px;
-  border: 1px solid #90a9de;
-  border-radius: 50%;
-  transform: rotate(-28deg);
+.emblem-offcourse {
+  background-position: 19.071% 17.362%;
 }
-.agent-glyph {
-  position: absolute;
-  font-size: 38px;
-  color: #294d99;
+.emblem-blueprint {
+  background-position: 52.819% 17.362%;
 }
-.choice-academy .agent-orbit {
-  border-radius: 25%;
-  transform: rotate(15deg);
+.emblem-atlas {
+  background-position: 86.567% 17.362%;
 }
-.choice-creator-studio .agent-orbit {
-  border-radius: 18% 50% 18% 50%;
+.emblem-forge {
+  background-position: 8.292% 66.611%;
 }
-.choice-gtm .agent-orbit {
-  border-radius: 50% 12% 50% 50%;
-  transform: rotate(-35deg);
+.emblem-muse {
+  background-position: 36.899% 66.611%;
 }
-.agent-choice:hover .agent-orbit {
-  transform: translateY(-8px) rotate(8deg);
+.emblem-signal {
+  background-position: 65.589% 66.611%;
 }
-.agent-choice small {
-  font-size: 11px;
-  color: #677897;
+.emblem-pulse {
+  background-position: 95.688% 66.611%;
 }
-.agent-choice h3 {
-  font-size: 20px;
-  margin: 7px 0 10px;
+@media (prefers-reduced-motion: no-preference) {
+  .agent-art .agent-emblem {
+    transition: transform 280ms ease;
+  }
+  .agent-choice:is(:hover, :focus-visible) .agent-emblem {
+    transform: scale(1.07);
+  }
+}
+.agent-choice small,
+.agent-role,
+.agent-identity small,
+.agent-profile small {
+  font-size: 12px;
+  color: var(--glass-muted);
+}
+.agent-choice :is(h2, h3) {
+  margin: 4px 24px 4px 0;
+  font-size: clamp(18px, 2vw, 24px);
   letter-spacing: -0.04em;
 }
 .agent-enter {
-  font-size: 11px;
+  position: absolute;
+  right: 2px;
+  bottom: 19px;
+  font-size: 16px;
+}
+.agent-role {
+  display: block;
+  padding-right: 19px;
+}
+.agent-identity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 20px;
+}
+.agent-identity .agent-emblem,
+.agent-profile .agent-emblem {
+  background-color: #090913;
+  mask-image: none;
+  border-radius: 8px;
+}
+.agent-identity .agent-emblem {
+  width: 64px;
+}
+.agent-profile {
+  display: flex;
+  align-items: center;
+  gap: clamp(14px, 4vw, 42px);
+  border-top: 1px solid var(--glass-rail);
+  padding-block: 28px;
+  margin-bottom: 26px;
+  scroll-margin-top: 112px;
+}
+.agent-profile .agent-emblem {
+  flex: 0 0 clamp(88px, 16vw, 180px);
+}
+.agent-profile h2 {
+  margin: 5px 0;
+  font-size: clamp(18px, 3vw, 32px);
+  letter-spacing: -0.04em;
+}
+.agent-profile p {
+  margin: 6px 0 0;
+  max-width: 58ch;
 }
 .agent-directory {
   padding-block: 65px;
@@ -753,16 +810,19 @@
     grid-template-columns: 1fr;
     gap: 15px;
   }
-  .agent-art {
-    height: 130px;
-  }
-  .agent-choice h3 {
-    font-size: 17px;
+  .agent-choices {
+    gap: 20px 14px;
   }
   .glass-page .glass-scene {
     margin-block: 35px;
   }
 }
-.agent-intro { padding-top:115px; }
-.glass-page .glass-detail-hero { margin-top:110px; }
-.agent-directory { padding-top:120px; }
+.agent-intro {
+  padding-top: 115px;
+}
+.glass-page .glass-detail-hero {
+  margin-top: 110px;
+}
+.agent-directory {
+  padding-top: 120px;
+}
