@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <meta name="theme-color" content="#080a10" />
+    <meta name="theme-color" content="#f4f7ff" />
     <title>OutClass Learn · The workspace · OutClass</title>
     <meta
       name="description"
@@ -33,8 +33,10 @@
     <script src="assets/site.js" defer=""></script>
     <link rel="stylesheet" href="assets/refinement.css" />
     <link rel="stylesheet" href="assets/suite.css" />
+    <link rel="stylesheet" href="assets/glass.css" />
+    <script src="assets/glass.js" defer></script>
   </head>
-  <body class="subpage">
+  <body class="glass-page subpage">
     <a class="skip-link" href="#main">Skip to content</a>
     <header class="site-header">
       <a class="wordmark" href="./" aria-label="OutClass home"
@@ -54,7 +56,7 @@
         <span></span><span></span>
       </button>
       <nav id="site-navigation" aria-label="Main navigation">
-        <a href="product.html">Product</a><a href="agents.html">Agents</a
+        <a href="./#product">The apps</a><a href="agents.html">Agents</a
         ><a href="setup.html">How it works</a><a href="./#pricing">Pricing</a>
       </nav>
       <div class="header-actions">
@@ -73,244 +75,56 @@
       ><a href="gtm.html">GTM</a>
     </nav>
     <main id="main" tabindex="-1">
-      <section class="page-hero wrap">
-        <h1>The lesson is<br /><span>only the beginning.</span></h1>
+      <section class="glass-detail-hero glass-learn" data-glass="lift">
+        <div class="glass-scene-copy">
+          <span>OutClass Learn</span>
+          <h1>Build while you learn.</h1>
+          <p>Your lesson, editor, and AI teacher work side by side.</p>
+          <a class="glass-button" href="download.html#learn-download"
+            >Get Learn ↗</a
+          >
+        </div>
+        <div
+          class="glass-demo demo-learn"
+          aria-label="Illustration of the Learn workspace"
+        >
+          <div class="glass-bar">
+            <span>OutClass Learn</span><span>Checkpoint saved</span>
+          </div>
+          <div class="glass-grid">
+            <div class="glass-editor">
+              <span>activity.py</span>
+              <pre><code><b>def</b> totals(records):
+    groups = {}
+    <b>for</b> name, minutes <b>in</b> records:
+        groups[name] = groups.get(name, 0) + minutes
+    <b>return</b> groups</code></pre>
+              <div class="glass-terminal">
+                › python activity.py <strong>✓</strong>
+              </div>
+            </div>
+            <div class="glass-panel">
+              <span>OffCourse</span>
+              <p>What happens when the same name appears twice?</p>
+              <small>Hint from the current lesson</small>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section
+        class="glass-detail-section wrap"
+        id="workflow"
+        data-glass="band"
+      >
+        <h2>Practice before the final lesson.</h2>
         <p>
-          OutClass connects the part where you learn something<br />to the part
-          where you can actually use it.
+          Use checkpoints to keep a record of the experiments that taught you
+          something.
         </p>
-        <a class="button primary" href="download.html"
-          >Find your starting point
-          <svg class="icon" aria-hidden="true">
-            <use href="assets/icons.svg#arrow"></use></svg
-        ></a>
-      </section>
-      <section class="product-detail-preview wide">
-        <div class="workspace-frame">
-          <div class="workspace-top">
-            <div class="window-dots" aria-hidden="true">
-              <i></i><i></i><i></i>
-            </div>
-            <span>OutClass — Python foundations</span
-            ><span class="workspace-local"
-              ><i class="status-dot"></i> On your computer</span
-            >
-          </div>
-          <div class="workspace-body">
-            <aside class="preview-sidebar">
-              <div class="preview-brand">
-                <img
-                  src="assets/orbital-logo.webp"
-                  width="19"
-                  height="19"
-                  alt=""
-                />OutClass <span>⌄</span>
-              </div>
-              <div class="preview-nav">◫ &nbsp; Overview</div>
-              <div class="preview-nav selected">⌘ &nbsp; Code &amp; learn</div>
-              <div class="preview-nav">↗ &nbsp; Learn by doing</div>
-              <div class="preview-nav">◷ &nbsp; Reviews</div>
-              <div class="preview-nav">⌥ &nbsp; Live work</div>
-              <p class="preview-label">MY COURSES</p>
-              <div class="preview-course"><i></i> Python foundations</div>
-              <div class="preview-course muted"><i></i> Building AI agents</div>
-              <div class="preview-lesson">
-                08 &nbsp; Working with collections
-              </div>
-              <div class="preview-progress"><span></span></div>
-              <small>A good moment to try it yourself.</small>
-              <div class="preview-bottom">
-                ⚙ &nbsp; Settings <span>Local workspace</span>
-              </div>
-            </aside>
-            <div class="preview-editor">
-              <div class="editor-toolbar">
-                <span
-                  >Python foundations
-                  <span class="muted">/</span> activity-report</span
-                ><span>▶ &nbsp; Run</span>
-              </div>
-              <div class="file-tabs">
-                <span>⌁ &nbsp; main.py <i></i></span><span>README.md</span>
-              </div>
-              <div class="code-area">
-                <div class="line-numbers" aria-hidden="true">
-                  1<br />2<br />3<br />4<br />5<br />6<br />7<br />8<br />9<br />10<br />11<br />12
-                </div>
-                <pre><span class="code-muted"># A little less following along.</span>
-<span class="code-muted"># A little more figuring it out.</span>
-
-<span class="code-blue">def</span> <span class="code-yellow">summarize_activity</span>(events):
-    <span class="code-muted"># Your task: group events by user.</span>
-    <span class="code-muted"># Handle empty and invalid input.</span>
-    <span class="code-blue">pass</span>
-
-<span class="code-muted"># Try an example of your own.</span>
-events = [
-    {<span class="code-green">"user"</span>: <span class="code-green">"maya"</span>, <span class="code-green">"minutes"</span>: <span class="code-yellow">20</span>},
-]<span class="code-cursor" aria-hidden="true">▍</span></pre>
-              </div>
-              <div class="preview-terminal">
-                <div>CONSOLE <span>Local Python</span></div>
-                <p>
-                  <span class="code-blue">›</span> Your code. Your experiments.
-                  Your understanding.
-                </p>
-                <p class="code-muted">
-                  Write your implementation, then run the checks.
-                </p>
-              </div>
-              <div class="editor-status">
-                Python <span>UTF-8 &nbsp; · &nbsp; Local files</span>
-              </div>
-            </div>
-            <aside class="preview-teacher">
-              <div class="teacher-toolbar">OffCourse <span>✧</span></div>
-              <div class="teacher-mode">
-                <span>Code help</span><span>Ask the course</span>
-              </div>
-              <div class="teacher-question">
-                I get the example. How do I start this on my own?
-              </div>
-              <div class="teacher-answer">
-                <img
-                  src="assets/orbital-logo.webp"
-                  width="20"
-                  height="20"
-                  alt=""
-                />
-                <p>
-                  Start with the smallest case: one user, one event. What should
-                  your result look like?
-                </p>
-                <p>
-                  Then think about what changes when the same user appears
-                  twice. Which structure from your lesson would help?
-                </p>
-                <div class="teacher-citation">
-                  ↳ &nbsp; Working with collections
-                  <small>Imported course passage · Example</small>
-                </div>
-              </div>
-              <div class="teacher-context">
-                IN CONTEXT <span>main.py</span><span>Your practical brief</span>
-              </div>
-              <div class="teacher-input">Ask for a hint… <span>↑</span></div>
-            </aside>
-          </div>
+        <div class="glass-detail-flow">
+          <b>Watch a lesson</b><b>Try a small task</b><b>Save a checkpoint</b>
         </div>
-        <p class="proof-caption">Illustrative workspace · example content</p>
-      </section>
-      <section class="feature-story wrap">
-        <div class="story-label">
-          <h2>Start with<br /><span>what you want to build.</span></h2>
-        </div>
-        <div>
-          <p>
-            Choose an outcome, your experience, and the time you have. Keep a
-            practical direction alongside your course, with one project that
-            grows through it.
-          </p>
-          <ul class="detail-list">
-            <li>Courses automatically organized inside one learning folder.</li>
-            <li>
-              A local editor, terminal, project console, and ordinary files.
-            </li>
-            <li>Keep using VS Code or VSCodium with the editor companion.</li>
-            <li>
-              Python, JavaScript, TypeScript, C/C++, and full web projects with
-              the appropriate installed runtimes.
-            </li>
-          </ul>
-        </div>
-      </section>
-      <section id="offcourse" class="feature-story wrap">
-        <div class="story-label">
-          <h2>Meet OffCourse.<br /><span>Stay in the driver’s seat.</span></h2>
-        </div>
-        <div>
-          <p>
-            Each course has its own sources and conversation. Ask about a
-            passage, your current code, or recorded errors. OffCourse uses
-            progressive hints to help you reason through the problem.
-          </p>
-          <ul class="detail-list">
-            <li>
-              Import visible Udemy transcripts or permitted text yourself.
-            </li>
-            <li>
-              Open citations to inspect the passages behind a course answer.
-            </li>
-            <li>
-              Changed the code after an error? Run it before asking for another
-              debugging hint.
-            </li>
-            <li>The teacher cannot edit files or execute your code for you.</li>
-          </ul>
-          <p class="footnote">
-            AI is optional. Personal keys and compatible local models are
-            available. Included AI is owner-tested; public sign-ups are not open
-            yet.
-          </p>
-        </div>
-      </section>
-      <section class="feature-story wrap">
-        <div class="story-label">
-          <h2>Get beyond<br /><span>following along.</span></h2>
-        </div>
-        <div>
-          <p>
-            Take a practical brief when your recorded progress suggests a useful
-            moment. Write a solution, run checks, reflect, then try a changed
-            requirement.
-          </p>
-          <ul class="detail-list">
-            <li>Practice invitations you can accept or defer.</li>
-            <li>Tests and debugging in your evolving course project.</li>
-            <li>
-              Learning memory supported by attempts, runs, and reflections.
-            </li>
-            <li>Reviewed Git checkpoints and a portfolio learning ledger.</li>
-            <li>
-              Reopen the captured Udemy lesson and timestamp from a checkpoint
-              when available.
-            </li>
-          </ul>
-        </div>
-      </section>
-      <section class="feature-story wrap">
-        <div class="story-label">
-          <h2>Ready for more?<br /><span>Make a contribution.</span></h2>
-        </div>
-        <div>
-          <p>
-            Live work looks for public issues in your stack and explains their
-            fit with recorded practice. Read contributor guidance, clone a
-            separate workspace, and investigate with assistance.
-          </p>
-          <ul class="detail-list">
-            <li>Understand the project before changing it.</li>
-            <li>Reproduce the issue, test the fix, explain the tradeoffs.</li>
-            <li>
-              Prepare a truthful local pull request draft. You decide when to
-              submit.
-            </li>
-            <li>
-              Develop your own ideas with the separate Architect notebook and
-              explicit course-sharing controls.
-            </li>
-          </ul>
-        </div>
-      </section>
-      <section class="product-end wrap product-end-simple">
-        <div>
-          <h2>Built around<br /><span>your independence.</span></h2>
-          <a class="button primary" href="setup.html"
-            >See how to start
-            <svg class="icon" aria-hidden="true">
-              <use href="assets/icons.svg#arrow"></use></svg
-          ></a>
-        </div>
+        <a href="agents.html#tab-learn">Meet the Learn agents ↗</a>
       </section>
     </main>
     <footer class="site-footer wrap">

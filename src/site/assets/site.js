@@ -41,7 +41,7 @@ if (location.pathname.startsWith("/welcome/")) {
   });
 }
 const tabs = [...document.querySelectorAll('[role="tab"]')];
-function selectTab(tab, focus = false) {
+function selectTab(tab) {
   const group = tab.closest('[role="tablist"]');
   for (const item of group.querySelectorAll('[role="tab"]')) {
     const selected = item === tab;
@@ -50,7 +50,6 @@ function selectTab(tab, focus = false) {
     document.getElementById(item.getAttribute("aria-controls")).hidden =
       !selected;
   }
-  if (focus) tab.focus();
 }
 for (const tab of tabs) {
   tab.addEventListener("click", () => selectTab(tab));
@@ -71,7 +70,8 @@ for (const tab of tabs) {
                 group.length) %
                 group.length
             ];
-    selectTab(next, true);
+    next.click();
+    next.focus();
   });
 }
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");

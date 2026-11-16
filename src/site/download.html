@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <meta name="theme-color" content="#080a10" />
+    <meta name="theme-color" content="#f4f7ff" />
     <title>Download · OutClass</title>
     <meta
       name="description"
@@ -33,9 +33,10 @@
     <script src="assets/site.js" defer=""></script>
     <link rel="stylesheet" href="assets/refinement.css" />
     <link rel="stylesheet" href="assets/launch.css" />
-    <script src="assets/launch.js" defer></script>
+    <link rel="stylesheet" href="assets/glass.css" />
+    <script src="assets/glass.js" defer></script>
   </head>
-  <body class="subpage">
+  <body class="glass-page subpage">
     <a class="skip-link" href="#main">Skip to content</a>
     <header class="site-header">
       <a class="wordmark" href="./" aria-label="OutClass home"
@@ -55,7 +56,7 @@
         <span></span><span></span>
       </button>
       <nav id="site-navigation" aria-label="Main navigation">
-        <a href="product.html">Product</a><a href="agents.html">Agents</a
+        <a href="./#product">The apps</a><a href="agents.html">Agents</a
         ><a href="setup.html">How it works</a><a href="./#pricing">Pricing</a>
       </nav>
       <div class="header-actions">
@@ -86,12 +87,15 @@
                 >Download Learn <span aria-hidden="true">↗</span></a
               >
             </div>
-            <img
-              src="assets/learn-workspace.webp"
-              width="1366"
-              height="768"
-              alt="OutClass Learn editor beside OffCourse"
-            />
+            <div class="glass-download-demo">
+              <div class="glass-bar">
+                <span>Learn</span><span>OffCourse</span>
+              </div>
+              <div class="glass-editor">
+                <code>activity.py</code>
+                <p>Try the first example, then test an empty input.</p>
+              </div>
+            </div>
           </article>
           <article class="launch-download-card download-educator">
             <div>
@@ -107,12 +111,15 @@
                 >Download Educator <span aria-hidden="true">↗</span></a
               >
             </div>
-            <img
-              src="assets/educator-academy.webp"
-              width="1440"
-              height="1000"
-              alt="Academy authoring and Project Forge in OutClass Educator"
-            />
+            <div class="glass-download-demo">
+              <div class="glass-bar">
+                <span>Academy</span><span>Project Forge</span>
+              </div>
+              <div class="glass-editor">
+                <strong>Build a course around a project.</strong>
+                <p>Draft a capstone and preview it in Learn.</p>
+              </div>
+            </div>
           </article>
         </div>
         <p class="launch-download-meta">

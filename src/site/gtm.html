@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <meta name="theme-color" content="#080a10" />
+    <meta name="theme-color" content="#f4f7ff" />
     <title>OutClass GTM</title>
     <meta
       name="description"
@@ -18,9 +18,10 @@
     <script src="assets/vendor/ScrollTrigger.min.js" defer></script>
     <script src="assets/site.js" defer></script>
     <link rel="stylesheet" href="assets/launch.css" />
-    <script src="assets/launch.js" defer></script>
+    <link rel="stylesheet" href="assets/glass.css" />
+    <script src="assets/glass.js" defer></script>
   </head>
-  <body class="subpage suite-page">
+  <body class="glass-page subpage suite-page">
     <a class="skip-link" href="#main">Skip to content</a>
     <header class="site-header">
       <a class="wordmark" href="./" aria-label="OutClass home"
@@ -40,7 +41,7 @@
         <span></span><span></span>
       </button>
       <nav id="site-navigation" aria-label="Main navigation">
-        <a href="product.html">Product</a><a href="agents.html">Agents</a
+        <a href="./#product">The apps</a><a href="agents.html">Agents</a
         ><a href="setup.html">How it works</a><a href="./#pricing">Pricing</a>
       </nav>
       <div class="header-actions">
@@ -58,93 +59,55 @@
       ><a href="gtm.html" aria-current="page">GTM</a>
     </nav>
     <main id="main" tabindex="-1">
-      <section class="suite-hero wrap">
-        <div data-reveal>
-          <p class="launch-label">OutClass Educator / GTM</p>
+      <section class="glass-detail-hero glass-gtm" data-glass="stack">
+        <div class="glass-scene-copy">
+          <span>GTM</span>
           <h1>Give your course a launch.</h1>
-          <p>Adapt your posts for each channel and review what goes out.</p>
-          <div class="hero-actions">
-            <a class="button primary" href="download.html">Get Educator ↗</a
-            ><a class="text-link" href="#workflow">See the workflow ↓</a>
-          </div>
-        </div>
-        <figure class="launch-detail-image">
-          <div class="launch-preview-crop">
-            <img
-              src="assets/educator-gtm.webp"
-              width="878"
-              height="1493"
-              alt="GTM composer showing a YouTube preview of a draft course post."
-            />
-          </div>
-          <figcaption>GTM · Draft and review a channel post</figcaption>
-        </figure>
-      </section>
-      <section class="suite-workflow wrap" id="workflow">
-        <h2>A clear hypothesis.<br />An honest result.</h2>
-        <p>
-          Pair approved copy with a campaign, define your goal and proposed
-          budget, and prepare a tagged link for a reviewed launch. Keep
-          unsupported metrics out of your decisions.
-        </p>
-        <div class="suite-steps">
-          <article data-reveal>
-            <h3>Position</h3>
-            <p>An explicit audience, goal and campaign hypothesis.</p>
-          </article>
-          <article data-reveal>
-            <h3>Prepare</h3>
-            <p>
-              HTTPS destinations, UTM parameters and the exact approved creative
-              hash.
-            </p>
-          </article>
-          <article data-reveal>
-            <h3>Measure</h3>
-            <p>
-              A measurement checklist. No invented traffic, revenue or
-              attribution.
-            </p>
-          </article>
-        </div>
-      </section>
-      <section class="suite-agent wrap">
-        <div>
-          <span class="suite-status">Flagship agent · bounded proposals</span>
-          <h2>Growth Strategist</h2>
-          <p>Create the promotion. Connect the evidence.</p>
-        </div>
-        <div>
-          <h3>Separate the plan from the proof.</h3>
           <p>
-            Create channel-specific posts, graphics and real video previews
-            directly in GTM. Connect an eligible account, review the content,
-            and schedule automatic submission while OutClass is running. A
-            separate Analytics specialist uses timestamped provider observations
-            and dated reports. Acceptance, confirmed publication, and financial
-            evidence remain distinct. Calculate CTR, CPC, CPM and gross ROAS
-            without filling missing figures with zero. Manual reports remain
-            unverified; payment reconciliation and advertising ingestion are not
-            connected yet.
+            Adapt a post for each channel and review the media before
+            publishing.
           </p>
-          <a
-            class="text-link"
-            href="https://github.com/aayups31/OutClass/blob/main/docs/expansion-implementation.md"
-            >Read the implementation direction ↗</a
+          <a class="glass-button" href="download.html#educator-download"
+            >Get Educator ↗</a
           >
         </div>
+        <div
+          class="glass-demo demo-gtm"
+          aria-label="Illustration of the GTM post review"
+        >
+          <div class="glass-bar">
+            <span>GTM</span><span>Draft for review</span>
+          </div>
+          <div class="glass-grid">
+            <div class="glass-panel">
+              <span>Channel draft</span>
+              <div class="glass-chip">YouTube</div>
+              <div class="glass-chip">Title and description</div>
+              <div class="glass-chip">Approved course preview</div>
+            </div>
+            <div class="glass-focus">
+              <div class="glass-thumbnail">▶</div>
+              <strong>Build a report from real inputs</strong
+              ><small>Preview · Unlisted</small>
+            </div>
+          </div>
+        </div>
       </section>
-      <section class="suite-connected wrap">
-        <h2>One connected OutClass.</h2>
+      <section
+        class="glass-detail-section wrap"
+        id="workflow"
+        data-glass="band"
+      >
+        <h2>Preview the post before it goes out.</h2>
         <p>
-          Create the course. Prove the learning. Tell the story. Grow with
-          evidence.
+          Connect an eligible account to publish reviewed drafts. Use campaign
+          evidence to plan what to try next.
         </p>
-        <nav class="suite-nav wrap" aria-label="OutClass products">
-          <a href="learn.html">Learn</a><a href="academy.html">Academy</a
-          ><a href="creator-studio.html">Creator Studio</a
-          ><a href="gtm.html" aria-current="page">GTM</a>
-        </nav>
+        <div class="glass-detail-flow">
+          <b>Draft for a channel</b><b>Review the preview</b
+          ><b>Measure the response</b>
+        </div>
+        <a href="agents.html#tab-gtm">Meet the GTM agents ↗</a>
       </section>
     </main>
     <footer class="site-footer wrap">

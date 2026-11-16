@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <meta name="theme-color" content="#080a10" />
+    <meta name="theme-color" content="#f4f7ff" />
     <title>OutClass · Break free from tutorial hell</title>
     <meta
       name="description"
@@ -36,9 +36,10 @@
     <script src="assets/site.js" defer=""></script>
     <link rel="stylesheet" href="assets/refinement.css" />
     <link rel="stylesheet" href="assets/launch.css" />
-    <script src="assets/launch.js" defer></script>
+    <link rel="stylesheet" href="assets/glass.css" />
+    <script src="assets/glass.js" defer></script>
   </head>
-  <body class="home-page">
+  <body class="glass-page home-page">
     <a class="skip-link" href="#main">Skip to content</a>
     <header class="site-header">
       <a class="wordmark" href="./" aria-label="OutClass home"
@@ -71,170 +72,383 @@
       </div>
     </header>
     <main id="main" tabindex="-1">
-      <section class="launch-hero" aria-labelledby="launch-title">
-        <div class="launch-copy wrap">
-          <p class="launch-label">OutClass for Windows</p>
-          <h1 id="launch-title">OutClass the lesson.</h1>
+      <section class="glass-hero">
+        <div class="glass-hero-heading wrap">
+          <h1>OutClass the lesson.</h1>
           <p>Build while you learn. Teach what people can build.</p>
-          <div class="launch-actions">
-            <a class="button primary" href="download.html"
-              >Get OutClass <span aria-hidden="true">↗</span></a
-            >
-            <a class="button launch-outline" href="#product"
-              >Explore the apps <span aria-hidden="true">↓</span></a
-            >
+          <div class="glass-actions">
+            <a class="glass-button" href="download.html">Get OutClass ↗</a
+            ><a href="#product">Explore the apps ↓</a>
           </div>
         </div>
-        <figure class="launch-device">
-          <div class="launch-window">
-            <div class="launch-window-bar">
-              <span></span><span></span><span></span><b>OutClass Learn</b>
+        <div class="glass-hero-visual wrap" data-glass="hero">
+          <div
+            class="glass-demo demo-learn"
+            aria-label="Illustration of the Learn workspace"
+          >
+            <div class="glass-bar">
+              <span>OutClass Learn</span><span>Checkpoint saved</span>
             </div>
-            <img
-              src="assets/learn-workspace.webp"
-              width="1366"
-              height="768"
-              fetchpriority="high"
-              alt="OutClass Learn displays a JavaScript editor next to the OffCourse AI teacher."
-            />
+            <div class="glass-grid">
+              <div class="glass-editor">
+                <span>activity.py</span>
+                <pre><code><b>def</b> totals(records):
+    groups = {}
+    <b>for</b> name, minutes <b>in</b> records:
+        groups[name] = groups.get(name, 0) + minutes
+    <b>return</b> groups</code></pre>
+                <div class="glass-terminal">
+                  › python activity.py <strong>✓</strong>
+                </div>
+              </div>
+              <div class="glass-panel">
+                <span>OffCourse</span>
+                <p>What happens when the same name appears twice?</p>
+                <small>Hint from the current lesson</small>
+              </div>
+            </div>
           </div>
-        </figure>
+          <div class="glass-float">
+            <span>Learn by doing</span><strong>Build the activity report</strong
+            ><small>Practice · 20 min</small>
+          </div>
+        </div>
       </section>
-
-      <section
-        class="launch-story wrap"
-        id="product"
-        aria-label="Explore the OutClass apps"
-      >
-        <aside class="launch-chapters">
+      <section id="product" class="glass-story">
+        <div class="glass-intro wrap">
           <h2>Two apps.<br />One learning workflow.</h2>
-          <nav aria-label="Explore the apps">
-            <a href="#learn-app" data-chapter="learn-app">OutClass Learn</a>
-            <a href="#educator-app" data-chapter="educator-app"
-              >OutClass Educator</a
-            >
-            <a href="#launch-tools" data-chapter="launch-tools"
-              >Creator Studio &amp; GTM</a
-            >
-          </nav>
-        </aside>
-        <div class="launch-scenes">
-          <article class="launch-scene" id="learn-app">
-            <div class="launch-scene-copy">
-              <p class="launch-label">OutClass Learn</p>
-              <h3>Break free from tutorial hell.</h3>
-              <p>
-                Code alongside the lesson. Get a hint from OffCourse, then try
-                the next step yourself.
-              </p>
-              <a class="launch-link" href="learn.html"
-                >Explore Learn <span aria-hidden="true">↗</span></a
-              >
+          <div>
+            <a href="#learn-app">For self-learners ↓</a
+            ><a href="#academy-app">For educators ↓</a>
+          </div>
+        </div>
+        <section
+          id="learn-app"
+          class="glass-scene glass-learn"
+          data-glass="lift"
+        >
+          <div class="glass-scene-copy">
+            <span>OutClass Learn</span>
+            <h2>Build while you learn.</h2>
+            <p>Your lesson, editor, and AI teacher work side by side.</p>
+            <a href="learn.html">Explore Learn ↗</a>
+          </div>
+          <div
+            class="glass-demo demo-learn"
+            aria-label="Illustration of the Learn workspace"
+          >
+            <div class="glass-bar">
+              <span>OutClass Learn</span><span>Checkpoint saved</span>
             </div>
-            <figure class="launch-frame launch-frame-learn">
-              <img
-                src="assets/learn-practice.webp"
-                width="1440"
-                height="1000"
-                loading="lazy"
-                alt="The Learn coding workspace with an active lesson, a code editor, a checkpoint button, and OffCourse."
-              />
-              <figcaption>
-                Lesson context, code, and OffCourse in one workspace.
-              </figcaption>
-            </figure>
-          </article>
-          <article class="launch-scene" id="educator-app">
-            <div class="launch-scene-copy">
-              <p class="launch-label">OutClass Educator</p>
-              <h3>Teach through real projects.</h3>
-              <p>
-                Organize your course in Academy. Draft a capstone with Project
-                Forge, then preview it in Learn.
-              </p>
-              <a class="launch-link" href="academy.html"
-                >Explore Academy <span aria-hidden="true">↗</span></a
-              >
-            </div>
-            <figure class="launch-frame launch-frame-academy">
-              <img
-                src="assets/educator-academy.webp"
-                width="1440"
-                height="1000"
-                loading="lazy"
-                alt="Academy shows the lesson outline, exercises and capstone editor, and the project design assistant."
-              />
-              <figcaption>
-                Academy · Exercise and capstone authoring.
-              </figcaption>
-            </figure>
-          </article>
-          <article class="launch-scene" id="launch-tools">
-            <div class="launch-scene-copy">
-              <p class="launch-label">OutClass Educator</p>
-              <h3>Show learners what they’ll build.</h3>
-              <p>
-                Make a course preview in Creator Studio. Review the post and its
-                media in GTM before publishing.
-              </p>
-              <div class="launch-scene-links">
-                <a class="launch-link" href="creator-studio.html"
-                  >Creator Studio <span aria-hidden="true">↗</span></a
-                >
-                <a class="launch-link" href="gtm.html"
-                  >GTM <span aria-hidden="true">↗</span></a
-                >
+            <div class="glass-grid">
+              <div class="glass-editor">
+                <span>activity.py</span>
+                <pre><code><b>def</b> totals(records):
+    groups = {}
+    <b>for</b> name, minutes <b>in</b> records:
+        groups[name] = groups.get(name, 0) + minutes
+    <b>return</b> groups</code></pre>
+                <div class="glass-terminal">
+                  › python activity.py <strong>✓</strong>
+                </div>
+              </div>
+              <div class="glass-panel">
+                <span>OffCourse</span>
+                <p>What happens when the same name appears twice?</p>
+                <small>Hint from the current lesson</small>
               </div>
             </div>
-            <figure class="launch-frame launch-frame-gtm">
-              <div class="launch-preview-crop">
-                <img
-                  src="assets/educator-gtm.webp"
-                  width="878"
-                  height="1493"
-                  loading="lazy"
-                  alt="GTM’s YouTube composer shows the video title and a preview of the selected media."
-                />
+          </div>
+        </section>
+        <section
+          id="academy-app"
+          class="glass-scene glass-academy"
+          data-glass="wipe"
+        >
+          <div class="glass-scene-copy">
+            <span>Academy</span>
+            <h2>Teach through real projects.</h2>
+            <p>
+              Turn chapters into exercises and capstones with Project Forge.
+            </p>
+            <a href="academy.html">Explore Academy ↗</a>
+          </div>
+          <div
+            class="glass-demo demo-academy"
+            aria-label="Illustration of the Academy workbench"
+          >
+            <div class="glass-bar">
+              <span>Academy</span><span>Course draft</span>
+            </div>
+            <div class="glass-grid">
+              <div class="glass-panel">
+                <span>Curriculum</span>
+                <ol class="glass-outline">
+                  <li>01 · Collect the data</li>
+                  <li>02 · Group records</li>
+                  <li>03 · Build the report</li>
+                </ol>
               </div>
-              <figcaption>
-                GTM · YouTube preview with the selected course video.
-              </figcaption>
-            </figure>
-          </article>
+              <div class="glass-focus">
+                <small>CAPSTONE</small
+                ><strong>Build the activity report</strong>
+                <div class="glass-chip">README.md</div>
+                <div class="glass-chip">report.py · Starter</div>
+                <div class="glass-chip">Verify an empty week</div>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section
+          id="creator-studio-app"
+          class="glass-scene glass-creator-studio"
+          data-glass="pan"
+        >
+          <div class="glass-scene-copy">
+            <span>Creator Studio</span>
+            <h2>Show what learners will build.</h2>
+            <p>
+              Turn course material into a preview with a clear hook, a
+              demonstration, and captions.
+            </p>
+            <a href="creator-studio.html">Explore Creator Studio ↗</a>
+          </div>
+          <div
+            class="glass-demo demo-creative"
+            aria-label="Illustration of Creator Studio’s video and caption workflow"
+          >
+            <div class="glass-bar">
+              <span>Creator Studio</span><span>Course preview</span>
+            </div>
+            <div class="glass-artboard">
+              <small>PYTHON IN PRACTICE</small
+              ><strong>Build a real<br />activity report.</strong>
+              <div class="glass-rings" aria-hidden="true"></div>
+            </div>
+            <div class="glass-timeline">
+              <span>01 · Hook</span><span>02 · Demonstration</span
+              ><span>03 · Try it</span>
+            </div>
+          </div>
+        </section>
+        <section id="gtm-app" class="glass-scene glass-gtm" data-glass="stack">
+          <div class="glass-scene-copy">
+            <span>GTM</span>
+            <h2>Give your course a launch.</h2>
+            <p>
+              Adapt a post for each channel and review the media before
+              publishing.
+            </p>
+            <a href="gtm.html">Explore GTM ↗</a>
+          </div>
+          <div
+            class="glass-demo demo-gtm"
+            aria-label="Illustration of the GTM post review"
+          >
+            <div class="glass-bar">
+              <span>GTM</span><span>Draft for review</span>
+            </div>
+            <div class="glass-grid">
+              <div class="glass-panel">
+                <span>Channel draft</span>
+                <div class="glass-chip">YouTube</div>
+                <div class="glass-chip">Title and description</div>
+                <div class="glass-chip">Approved course preview</div>
+              </div>
+              <div class="glass-focus">
+                <div class="glass-thumbnail">▶</div>
+                <strong>Build a report from real inputs</strong
+                ><small>Preview · Unlisted</small>
+              </div>
+            </div>
+          </div>
+        </section>
+      </section>
+      <section class="glass-agent-callout" id="agents">
+        <div class="wrap">
+          <h2>Meet your agents.</h2>
+          <p>Choose a product to see how its agents help.</p>
+          <div class="glass-tabs" role="tablist" aria-label="Agents by product">
+            <button
+              type="button"
+              role="tab"
+              id="tab-learn"
+              aria-controls="agent-learn"
+              aria-selected="true"
+              tabindex="0"
+            >
+              Learn</button
+            ><button
+              type="button"
+              role="tab"
+              id="tab-academy"
+              aria-controls="agent-academy"
+              aria-selected="false"
+              tabindex="-1"
+            >
+              Academy</button
+            ><button
+              type="button"
+              role="tab"
+              id="tab-creator-studio"
+              aria-controls="agent-creator-studio"
+              aria-selected="false"
+              tabindex="-1"
+            >
+              Creator Studio</button
+            ><button
+              type="button"
+              role="tab"
+              id="tab-gtm"
+              aria-controls="agent-gtm"
+              aria-selected="false"
+              tabindex="-1"
+            >
+              GTM
+            </button>
+          </div>
+          <section
+            id="agent-learn"
+            role="tabpanel"
+            aria-labelledby="tab-learn"
+            class="glass-agent-panel"
+            tabindex="0"
+          >
+            <div class="glass-scene-copy">
+              <span>Learn</span>
+              <h2>OffCourse & Architect</h2>
+              <p>
+                Get a lesson-aware hint or work through the next decision for a
+                project.
+              </p>
+              <a href="learn.html">Explore Learn ↗</a>
+            </div>
+            <div class="glass-conversation">
+              <small>Example task</small>
+              <p>What happens if a record appears twice?</p>
+              <small>OffCourse & Architect</small>
+              <p>
+                Trace the running total before changing the code. Check your
+                prediction with a two-row example.
+              </p>
+            </div>
+          </section>
+          <section
+            id="agent-academy"
+            role="tabpanel"
+            aria-labelledby="tab-academy"
+            class="glass-agent-panel"
+            tabindex="0"
+            hidden
+          >
+            <div class="glass-scene-copy">
+              <span>Academy</span>
+              <h2>Academy Architect & Project Forge</h2>
+              <p>
+                Design an exercise or capstone tied to the skills your course
+                teaches.
+              </p>
+              <a href="academy.html">Explore Academy ↗</a>
+            </div>
+            <div class="glass-conversation">
+              <small>Example task</small>
+              <p>Design a capstone for this chapter.</p>
+              <small>Academy Architect & Project Forge</small>
+              <p>
+                Draft a README, learner TODOs, and checks to review before
+                applying.
+              </p>
+            </div>
+          </section>
+          <section
+            id="agent-creator-studio"
+            role="tabpanel"
+            aria-labelledby="tab-creator-studio"
+            class="glass-agent-panel"
+            tabindex="0"
+            hidden
+          >
+            <div class="glass-scene-copy">
+              <span>Creator Studio</span>
+              <h2>Creative Director</h2>
+              <p>Turn a real lesson into a short, grounded preview.</p>
+              <a href="creator-studio.html">Explore Creator Studio ↗</a>
+            </div>
+            <div class="glass-conversation">
+              <small>Example task</small>
+              <p>Make a short video about grouping records.</p>
+              <small>Creative Director</small>
+              <p>
+                Open with the duplicate record, show the example, and end with
+                one practical challenge.
+              </p>
+            </div>
+          </section>
+          <section
+            id="agent-gtm"
+            role="tabpanel"
+            aria-labelledby="tab-gtm"
+            class="glass-agent-panel"
+            tabindex="0"
+            hidden
+          >
+            <div class="glass-scene-copy">
+              <span>GTM</span>
+              <h2>Growth Strategist & Analytics</h2>
+              <p>
+                Prepare channel drafts and turn campaign evidence into a next
+                step.
+              </p>
+              <a href="gtm.html">Explore GTM ↗</a>
+            </div>
+            <div class="glass-conversation">
+              <small>Example task</small>
+              <p>Adapt this course preview for YouTube.</p>
+              <small>Growth Strategist & Analytics</small>
+              <p>
+                Draft a title and description around the real exercise. Review
+                the selected video before publishing.
+              </p>
+            </div>
+          </section>
+          <p>
+            <a id="glass-agent-details" href="agents.html"
+              >Explore all agents ↗</a
+            >
+          </p>
         </div>
       </section>
-
-      <section
-        id="pricing"
-        class="launch-pricing wrap"
-        aria-labelledby="launch-pricing-title"
-      >
-        <h2 id="launch-pricing-title">Start with a free workspace.</h2>
-        <div class="launch-plans">
+      <section id="pricing" class="glass-pricing wrap">
+        <h2>Start free.</h2>
+        <p>Choose how you connect AI.</p>
+        <div class="glass-plans">
           <article>
-            <h3>Desktop preview</h3>
-            <p class="launch-price">Free</p>
-            <p>
-              Local courses, code, and projects. Connect your own AI key or a
-              compatible local model.
-            </p>
-            <a class="launch-link" href="download.html"
-              >Download for Windows <span aria-hidden="true">↗</span></a
-            >
+            <small>WINDOWS DESKTOP</small>
+            <h3>Free</h3>
+            <p>Learn and Educator</p>
+            <ul>
+              <li>Local courses, code, and projects</li>
+              <li>Academy, Creator Studio, and GTM</li>
+              <li>Use a personal AI key or compatible local model</li>
+            </ul>
+            <a class="glass-button" href="download.html">Get the free apps ↗</a>
           </article>
           <article>
-            <h3>OutClass Plus</h3>
-            <p class="launch-price">
-              C$12 <small>/ month · test pricing</small>
-            </p>
-            <p>
-              Included AI for approved test accounts. Checkout uses test mode.
-            </p>
-            <a class="launch-link" href="account.html"
-              >Explore included AI <span aria-hidden="true">↗</span></a
-            >
+            <small>INCLUDED AI · TEST PREVIEW</small>
+            <h3>C$12 <span>/ month</span></h3>
+            <p>OutClass Plus</p>
+            <ul>
+              <li>Up to 600 AI answers per month in the paid test plan</li>
+              <li>Available to approved test accounts</li>
+              <li>Stripe test checkout</li>
+            </ul>
+            <a class="glass-button" href="account.html">See the AI preview ↗</a>
           </article>
         </div>
+        <p class="glass-note">
+          Personal AI providers may charge separately. Test checkout collects no
+          real payment.
+        </p>
       </section>
     </main>
     <footer class="site-footer wrap">

@@ -3,11 +3,11 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <meta name="theme-color" content="#080a10" />
+    <meta name="theme-color" content="#f4f7ff" />
     <title>AI agents · OutClass</title>
     <meta
       name="description"
-      content="Meet OffCourse, your course and code teacher, and Architect, the separate agent for developing ideas, architecture, and practical next decisions."
+      content="Explore the AI agents in OutClass Learn, Academy, Creator Studio, and GTM through examples of course coaching, capstone design, content creation, and publishing."
     />
     <link rel="icon" href="assets/orbital-logo.webp" type="image/webp" />
     <link rel="stylesheet" href="assets/site.css" />
@@ -22,7 +22,7 @@
     <meta property="og:title" content="AI agents · OutClass" />
     <meta
       property="og:description"
-      content="Meet OffCourse, your course and code teacher, and Architect, the separate agent for developing ideas, architecture, and practical next decisions."
+      content="Explore the AI agents in OutClass Learn, Academy, Creator Studio, and GTM through examples of course coaching, capstone design, content creation, and publishing."
     />
     <meta
       property="og:image"
@@ -33,9 +33,10 @@
     <script src="assets/site.js" defer=""></script>
     <link rel="stylesheet" href="assets/refinement.css" />
     <link rel="stylesheet" href="assets/agents.css" />
-    <script src="assets/agents.js" defer></script>
+    <link rel="stylesheet" href="assets/glass.css" />
+    <script src="assets/glass.js" defer></script>
   </head>
-  <body class="subpage">
+  <body class="glass-page subpage">
     <a class="skip-link" href="#main">Skip to content</a>
     <header class="site-header">
       <a class="wordmark" href="./" aria-label="OutClass home"
@@ -55,7 +56,7 @@
         <span></span><span></span>
       </button>
       <nav id="site-navigation" aria-label="Main navigation">
-        <a href="product.html">Product</a><a href="agents.html">Agents</a
+        <a href="./#product">The apps</a><a href="agents.html">Agents</a
         ><a href="setup.html">How it works</a><a href="./#pricing">Pricing</a>
       </nav>
       <div class="header-actions">
@@ -68,217 +69,159 @@
       </div>
     </header>
     <main id="main" tabindex="-1">
-      <section class="agent-cinema-hero wrap">
-        <div class="agent-cinema-heading">
-          <div class="agent-identity">
-            <span class="film-mark">✧</span
-            ><span class="film-mark architect-mark">⌘</span>
-          </div>
-          <h1>Go further.<br /><span>Think for yourself.</span></h1>
-          <p>
-            Meet the agents that turn “I’m stuck” into understanding,<br />and
-            “what if” into your next project.
-          </p>
-          <div class="hero-actions">
-            <a class="button primary" href="download.html">Get OutClass ↗</a
-            ><a class="text-link" href="#offcourse">See how they work ↓</a>
-          </div>
-        </div>
-        <figure class="agent-video-showcase">
-          <video
-            controls
-            playsinline
-            preload="none"
-            poster="assets/agents-film-poster.webp"
-            aria-label="OffCourse and Architect: a 20-second illustrative workflow"
-            aria-describedby="agent-film-description"
+      <section class="glass-agent-page wrap">
+        <h1>Meet your agents.</h1>
+        <p>Choose a product to see its agents in action.</p>
+        <div class="glass-tabs" role="tablist" aria-label="Agents by product">
+          <button
+            type="button"
+            role="tab"
+            id="tab-learn"
+            aria-controls="agent-learn"
+            aria-selected="true"
+            tabindex="0"
           >
-            <source src="assets/agents-film.mp4" type="video/mp4" />
-            Your browser does not support this video.
-            <a href="assets/agents-film.mp4">Download the agent preview</a>.
-          </video>
-          <figcaption id="agent-film-description">
-            <span>OffCourse → Architect</span
-            ><span>20 seconds · Illustrative workflow · No audio</span>
-          </figcaption>
-          <details class="agent-video-transcript">
-            <summary>Read the video walkthrough</summary>
-            <p>
-              <strong>OffCourse:</strong> A recorded run shows 20 minutes
-              instead of the expected 45. The teacher connects the current code
-              to an imported collections lesson and asks what happens when the
-              same student appears twice. It suggests tracing two events. The
-              learner changes assignment to accumulation and runs the code
-              again, getting 45 minutes.
-            </p>
-            <p>
-              <strong>Architect:</strong> A campus activity finder starts with
-              an observation: students hear about events too late. With selected
-              API lessons and reflections as context, Architect asks who misses
-              out and how they find events now. It proposes talking to three
-              students, prototyping one event feed, and testing it with a
-              student. The learner chooses what to build.
-            </p>
-          </details>
-        </figure>
-      </section>
-      <section id="offcourse" class="agent-profile wrap">
-        <div class="agent-profile-copy" data-reveal="">
-          <div class="agent-name">
-            <svg class="icon" aria-hidden="true">
-              <use href="assets/icons.svg#spark"></use>
-            </svg>
-            OffCourse
-          </div>
-          <h2>Find your way<br /><span>through the hard part.</span></h2>
-          <p>
-            Your course teacher and coding guide. OffCourse connects the lesson,
-            your attempt, and your recorded runs to help you reason out the next
-            step.
-          </p>
-          <ul class="detail-list">
-            <li>Each course keeps its own sources and conversation.</li>
-            <li>Course answers cite the material you explicitly import.</li>
-            <li>Progressive hints help you predict, try, and check.</li>
-            <li>
-              Practice invitations connect learning to projects and suitable
-              public issues.
-            </li>
-          </ul>
-        </div>
-        <div class="agent-console" data-reveal="">
-          <div class="agent-console-bar">
-            <span><i class="status-dot"></i> OffCourse</span
-            ><span>Illustrative conversation</span>
-          </div>
-          <div class="agent-context-pills">
-            <span>main.py</span><span>Recorded run</span
-            ><span>Collections lesson</span>
-          </div>
-          <p class="agent-question">
-            It works for one event. The second event replaces the total.
-          </p>
-          <div class="agent-response">
-            <span class="agent-avatar">✧</span>
-            <p>
-              What should happen to the existing total when that user appears
-              again?
-            </p>
-            <p>
-              Trace two events on paper. Compare the value before and after the
-              second update.
-            </p>
-            <div class="agent-citation">
-              <svg class="icon" aria-hidden="true">
-                <use href="assets/icons.svg#book"></use>
-              </svg>
-              Working with collections <small>Imported source · example</small>
-            </div>
-          </div>
-          <div class="reasoning-loop">
-            <span>Predict</span
-            ><svg class="icon" aria-hidden="true">
-              <use href="assets/icons.svg#right"></use></svg
-            ><span>Try</span
-            ><svg class="icon" aria-hidden="true">
-              <use href="assets/icons.svg#right"></use></svg
-            ><span>Check</span>
-          </div>
-        </div>
-      </section>
-      <section id="architect" class="agent-profile architect-profile wrap">
-        <div class="agent-profile-copy" data-reveal="">
-          <div class="agent-name">
-            <svg class="icon" aria-hidden="true">
-              <use href="assets/icons.svg#code"></use>
-            </svg>
-            Architect
-          </div>
-          <h2>Give your idea<br /><span>somewhere to go.</span></h2>
-          <p>
-            A separate software architect for your ideas. Connect what you’re
-            learning to a useful problem, make the tradeoffs clear, and find the
-            smallest experiment worth building.
-          </p>
-          <ul class="detail-list">
-            <li>
-              Your idea notebook and project decisions have their own memory.
-            </li>
-            <li>Share context from selected courses explicitly.</li>
-            <li>Opt into notes drawn from saved reflections.</li>
-            <li>
-              Revisit the problem, users, constraints, and next decision as the
-              idea grows.
-            </li>
-          </ul>
-        </div>
-        <div class="architecture-canvas" data-reveal="">
-          <div class="agent-console-bar">
-            <span><i class="status-dot"></i> Architect</span
-            ><span>Illustrative plan</span>
-          </div>
-          <div class="architecture-root">
-            Campus activity finder<small>Your idea</small>
-          </div>
-          <div class="architecture-connect"></div>
-          <div class="architecture-branches">
-            <div>Understand the need<small>Talk to 3 students</small></div>
-            <div>Test one interaction<small>Find an event nearby</small></div>
-          </div>
-          <div class="architecture-decision">
-            <span>Next decision</span>
-            <p>Which single problem would make this useful enough to try?</p>
-          </div>
-          <div class="architecture-memory">
-            <span class="memory-node"></span><span>Notebook</span
-            ><span class="memory-node"></span><span>Shared course context</span>
-          </div>
-        </div>
-      </section>
-      <section class="agent-boundaries wrap">
-        <h2>
-          You bring the judgment.<br /><span
-            >Your agents bring perspective.</span
+            Learn</button
+          ><button
+            type="button"
+            role="tab"
+            id="tab-academy"
+            aria-controls="agent-academy"
+            aria-selected="false"
+            tabindex="-1"
           >
-        </h2>
-        <div class="boundary-columns">
-          <div>
-            <h3>Your work stays yours.</h3>
-            <p>
-              You write the code, run the checks, and choose when to publish.
-              The agents guide; they have no tools to edit files or execute
-              commands for you.
-            </p>
-          </div>
-          <div>
-            <h3>Context you can inspect.</h3>
-            <p>
-              Course material is imported by you. Citations open real passages.
-              Architect uses explicitly linked notes and courses, and
-              distinguishes evidence from suggestions.
-            </p>
-          </div>
-          <div>
-            <h3>Choose your connection.</h3>
-            <p>
-              Use a personal OpenAI key or a compatible local model. Included AI
-              is currently a test-account preview.
-            </p>
-            <a class="text-link" href="account.html"
-              >Account &amp; included AI
-              <svg class="icon" aria-hidden="true">
-                <use href="assets/icons.svg#arrow"></use></svg
-            ></a>
-          </div>
+            Academy</button
+          ><button
+            type="button"
+            role="tab"
+            id="tab-creator-studio"
+            aria-controls="agent-creator-studio"
+            aria-selected="false"
+            tabindex="-1"
+          >
+            Creator Studio</button
+          ><button
+            type="button"
+            role="tab"
+            id="tab-gtm"
+            aria-controls="agent-gtm"
+            aria-selected="false"
+            tabindex="-1"
+          >
+            GTM
+          </button>
         </div>
-      </section>
-      <section class="subpage-cta wrap">
-        <h2>Your next idea<br /><span>starts with you.</span></h2>
-        <a class="button primary" href="download.html"
-          >Get OutClass
-          <svg class="icon" aria-hidden="true">
-            <use href="assets/icons.svg#arrow"></use></svg
-        ></a>
+        <section
+          id="agent-learn"
+          role="tabpanel"
+          aria-labelledby="tab-learn"
+          class="glass-agent-panel"
+          tabindex="0"
+        >
+          <div class="glass-scene-copy">
+            <span>Learn</span>
+            <h2>OffCourse & Architect</h2>
+            <p>
+              Get a lesson-aware hint or work through the next decision for a
+              project.
+            </p>
+            <a href="learn.html">Explore Learn ↗</a>
+          </div>
+          <div class="glass-conversation">
+            <small>Example task</small>
+            <p>What happens if a record appears twice?</p>
+            <small>OffCourse & Architect</small>
+            <p>
+              Trace the running total before changing the code. Check your
+              prediction with a two-row example.
+            </p>
+          </div>
+        </section>
+        <section
+          id="agent-academy"
+          role="tabpanel"
+          aria-labelledby="tab-academy"
+          class="glass-agent-panel"
+          tabindex="0"
+          hidden
+        >
+          <div class="glass-scene-copy">
+            <span>Academy</span>
+            <h2>Academy Architect & Project Forge</h2>
+            <p>
+              Design an exercise or capstone tied to the skills your course
+              teaches.
+            </p>
+            <a href="academy.html">Explore Academy ↗</a>
+          </div>
+          <div class="glass-conversation">
+            <small>Example task</small>
+            <p>Design a capstone for this chapter.</p>
+            <small>Academy Architect & Project Forge</small>
+            <p>
+              Draft a README, learner TODOs, and checks to review before
+              applying.
+            </p>
+          </div>
+        </section>
+        <section
+          id="agent-creator-studio"
+          role="tabpanel"
+          aria-labelledby="tab-creator-studio"
+          class="glass-agent-panel"
+          tabindex="0"
+          hidden
+        >
+          <div class="glass-scene-copy">
+            <span>Creator Studio</span>
+            <h2>Creative Director</h2>
+            <p>Turn a real lesson into a short, grounded preview.</p>
+            <a href="creator-studio.html">Explore Creator Studio ↗</a>
+          </div>
+          <div class="glass-conversation">
+            <small>Example task</small>
+            <p>Make a short video about grouping records.</p>
+            <small>Creative Director</small>
+            <p>
+              Open with the duplicate record, show the example, and end with one
+              practical challenge.
+            </p>
+          </div>
+        </section>
+        <section
+          id="agent-gtm"
+          role="tabpanel"
+          aria-labelledby="tab-gtm"
+          class="glass-agent-panel"
+          tabindex="0"
+          hidden
+        >
+          <div class="glass-scene-copy">
+            <span>GTM</span>
+            <h2>Growth Strategist & Analytics</h2>
+            <p>
+              Prepare channel drafts and turn campaign evidence into a next
+              step.
+            </p>
+            <a href="gtm.html">Explore GTM ↗</a>
+          </div>
+          <div class="glass-conversation">
+            <small>Example task</small>
+            <p>Adapt this course preview for YouTube.</p>
+            <small>Growth Strategist & Analytics</small>
+            <p>
+              Draft a title and description around the real exercise. Review the
+              selected video before publishing.
+            </p>
+          </div>
+        </section>
+        <noscript
+          ><p>
+            More agents: <a href="academy.html">Academy</a> ·
+            <a href="creator-studio.html">Creator Studio</a> ·
+            <a href="gtm.html">GTM</a>.
+          </p></noscript
+        >
       </section>
     </main>
     <footer class="site-footer wrap">
