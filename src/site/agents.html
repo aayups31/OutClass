@@ -70,161 +70,49 @@
         ></a>
       </div>
     </header>
-    <main id="main" tabindex="-1">
-      <section class="glass-agent-page wrap">
-        <h1>Meet your agents.</h1>
-        <p>Choose a product to see its agents in action.</p>
-        <div class="glass-tabs" role="tablist" aria-label="Agents by product">
-          <button
-            type="button"
-            role="tab"
-            id="tab-learn"
-            aria-controls="agent-learn"
-            aria-selected="true"
-            tabindex="0"
-          >
-            Learn</button
-          ><button
-            type="button"
-            role="tab"
-            id="tab-academy"
-            aria-controls="agent-academy"
-            aria-selected="false"
-            tabindex="-1"
-          >
-            Academy</button
-          ><button
-            type="button"
-            role="tab"
-            id="tab-creator-studio"
-            aria-controls="agent-creator-studio"
-            aria-selected="false"
-            tabindex="-1"
-          >
-            Creator Studio</button
-          ><button
-            type="button"
-            role="tab"
-            id="tab-gtm"
-            aria-controls="agent-gtm"
-            aria-selected="false"
-            tabindex="-1"
-          >
-            GTM
-          </button>
-        </div>
-        <section
-          id="agent-learn"
-          role="tabpanel"
-          aria-labelledby="tab-learn"
-          class="glass-agent-panel"
-          tabindex="0"
+    <main id="main" class="agent-directory wrap">
+      <h1>A partner for<br />every next step.</h1>
+      <div class="agent-choices">
+        <a class="agent-choice choice-learn" href="agents-learn.html"
+          ><div class="agent-art">
+            <span class="agent-orbit"></span><span class="agent-glyph">✧</span>
+          </div>
+          <div>
+            <small>Learn</small>
+            <h3>OffCourse</h3>
+            <span class="agent-enter">Explore agent ↗</span>
+          </div></a
+        ><a class="agent-choice choice-academy" href="agents-academy.html"
+          ><div class="agent-art">
+            <span class="agent-orbit"></span><span class="agent-glyph">⌘</span>
+          </div>
+          <div>
+            <small>Academy</small>
+            <h3>Project Forge</h3>
+            <span class="agent-enter">Explore agent ↗</span>
+          </div></a
+        ><a
+          class="agent-choice choice-creator-studio"
+          href="agents-creator-studio.html"
+          ><div class="agent-art">
+            <span class="agent-orbit"></span><span class="agent-glyph">▷</span>
+          </div>
+          <div>
+            <small>Creator Studio</small>
+            <h3>Creative Director</h3>
+            <span class="agent-enter">Explore agent ↗</span>
+          </div></a
+        ><a class="agent-choice choice-gtm" href="agents-gtm.html"
+          ><div class="agent-art">
+            <span class="agent-orbit"></span><span class="agent-glyph">↗</span>
+          </div>
+          <div>
+            <small>GTM</small>
+            <h3>Growth Strategist</h3>
+            <span class="agent-enter">Explore agent ↗</span>
+          </div></a
         >
-          <div class="glass-scene-copy">
-            <span>Learn</span>
-            <h2>OffCourse & Architect</h2>
-            <p>
-              Get a lesson-aware hint or work through the next decision for a
-              project.
-            </p>
-            <a href="learn.html">Explore Learn ↗</a>
-          </div>
-          <div class="glass-conversation">
-            <small>Example task</small>
-            <p>What happens if a record appears twice?</p>
-            <small>OffCourse & Architect</small>
-            <p>
-              Trace the running total before changing the code. Check your
-              prediction with a two-row example.
-            </p>
-          </div>
-        </section>
-        <section
-          id="agent-academy"
-          role="tabpanel"
-          aria-labelledby="tab-academy"
-          class="glass-agent-panel"
-          tabindex="0"
-          hidden
-        >
-          <div class="glass-scene-copy">
-            <span>Academy</span>
-            <h2>Academy Architect & Project Forge</h2>
-            <p>
-              Design an exercise or capstone tied to the skills your course
-              teaches.
-            </p>
-            <a href="academy.html">Explore Academy ↗</a>
-          </div>
-          <div class="glass-conversation">
-            <small>Example task</small>
-            <p>Design a capstone for this chapter.</p>
-            <small>Academy Architect & Project Forge</small>
-            <p>
-              Draft a README, learner TODOs, and checks to review before
-              applying.
-            </p>
-          </div>
-        </section>
-        <section
-          id="agent-creator-studio"
-          role="tabpanel"
-          aria-labelledby="tab-creator-studio"
-          class="glass-agent-panel"
-          tabindex="0"
-          hidden
-        >
-          <div class="glass-scene-copy">
-            <span>Creator Studio</span>
-            <h2>Creative Director</h2>
-            <p>Turn a real lesson into a short, grounded preview.</p>
-            <a href="creator-studio.html">Explore Creator Studio ↗</a>
-          </div>
-          <div class="glass-conversation">
-            <small>Example task</small>
-            <p>Make a short video about grouping records.</p>
-            <small>Creative Director</small>
-            <p>
-              Open with the duplicate record, show the example, and end with one
-              practical challenge.
-            </p>
-          </div>
-        </section>
-        <section
-          id="agent-gtm"
-          role="tabpanel"
-          aria-labelledby="tab-gtm"
-          class="glass-agent-panel"
-          tabindex="0"
-          hidden
-        >
-          <div class="glass-scene-copy">
-            <span>GTM</span>
-            <h2>Growth Strategist & Analytics</h2>
-            <p>
-              Prepare channel drafts and turn campaign evidence into a next
-              step.
-            </p>
-            <a href="gtm.html">Explore GTM ↗</a>
-          </div>
-          <div class="glass-conversation">
-            <small>Example task</small>
-            <p>Adapt this course preview for YouTube.</p>
-            <small>Growth Strategist & Analytics</small>
-            <p>
-              Draft a title and description around the real exercise. Review the
-              selected video before publishing.
-            </p>
-          </div>
-        </section>
-        <noscript
-          ><p>
-            More agents: <a href="academy.html">Academy</a> ·
-            <a href="creator-studio.html">Creator Studio</a> ·
-            <a href="gtm.html">GTM</a>.
-          </p></noscript
-        >
-      </section>
+      </div>
     </main>
     <footer class="site-footer wrap">
       <div class="footer-top">

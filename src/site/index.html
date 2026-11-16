@@ -85,29 +85,55 @@
         </div>
         <div class="glass-hero-visual wrap" data-glass="hero">
           <div
-            class="glass-demo demo-learn"
-            aria-label="Illustration of the Learn workspace"
+            class="product-window glass-demo"
+            aria-label="Learn concept interface"
           >
-            <div class="glass-bar">
-              <span>OutClass Learn</span><span>Checkpoint saved</span>
+            <div class="product-titlebar">
+              <img
+                src="assets/orbital-logo.webp"
+                width="32"
+                height="24"
+                alt=""
+              /><b>OutClass</b><span>Learn / lesson.py</span
+              ><small>Concept preview</small>
             </div>
-            <div class="glass-grid">
-              <div class="glass-editor">
-                <span>activity.py</span>
-                <pre><code><b>def</b> totals(records):
-    groups = {}
-    <b>for</b> name, minutes <b>in</b> records:
-        groups[name] = groups.get(name, 0) + minutes
-    <b>return</b> groups</code></pre>
-                <div class="glass-terminal">
-                  › python activity.py <strong>✓</strong>
+            <div class="product-body">
+              <aside class="product-sidebar">
+                <span>Courses</span><span>Python foundations</span
+                ><span>Files</span><span>lesson.py</span
+                ><span>test_lesson.py</span>
+              </aside>
+              <div class="product-canvas">
+                <div class="app-breadcrumb">
+                  Python foundations / Working with collections
+                </div>
+                <div class="editor-tab">lesson.py　×</div>
+                <pre class="real-code"><span>1</span>  def summarize(records):
+<span>2</span>      totals = {}
+<span>3</span>      for name, minutes in records:
+<span>4</span>          totals[name] = totals.get(name, 0) + minutes
+<span>5</span>      return totals
+<span>6</span>
+<span>7</span>  print(summarize(today))</pre>
+                <div class="run-output">
+                  <small>TERMINAL　　OUTPUT</small>
+                  <p>› python lesson.py</p>
+                  <code>{ "reading": 45, "coding": 90 }</code>
+                  <p>✓ Process finished</p>
                 </div>
               </div>
-              <div class="glass-panel">
-                <span>OffCourse</span>
-                <p>What happens when the same name appears twice?</p>
-                <small>Hint from the current lesson</small>
-              </div>
+              <aside class="product-assistant">
+                <div class="assistant-title">✧ OffCourse</div>
+                <div class="assistant-user">Help me take the next step.</div>
+                <p class="agent-reveal">Read the error with your code.</p>
+                <div class="assistant-evidence">
+                  Get a hint grounded in the lesson
+                </div>
+                <p class="agent-reveal">
+                  Test your understanding with a new requirement.
+                </p>
+                <div class="assistant-input">Ask OffCourse <span>↑</span></div>
+              </aside>
             </div>
           </div>
           <div class="glass-float">
@@ -136,29 +162,55 @@
             <a href="learn.html">Explore Learn ↗</a>
           </div>
           <div
-            class="glass-demo demo-learn"
-            aria-label="Illustration of the Learn workspace"
+            class="product-window glass-demo"
+            aria-label="Learn concept interface"
           >
-            <div class="glass-bar">
-              <span>OutClass Learn</span><span>Checkpoint saved</span>
+            <div class="product-titlebar">
+              <img
+                src="assets/orbital-logo.webp"
+                width="32"
+                height="24"
+                alt=""
+              /><b>OutClass</b><span>Learn / lesson.py</span
+              ><small>Concept preview</small>
             </div>
-            <div class="glass-grid">
-              <div class="glass-editor">
-                <span>activity.py</span>
-                <pre><code><b>def</b> totals(records):
-    groups = {}
-    <b>for</b> name, minutes <b>in</b> records:
-        groups[name] = groups.get(name, 0) + minutes
-    <b>return</b> groups</code></pre>
-                <div class="glass-terminal">
-                  › python activity.py <strong>✓</strong>
+            <div class="product-body">
+              <aside class="product-sidebar">
+                <span>Courses</span><span>Python foundations</span
+                ><span>Files</span><span>lesson.py</span
+                ><span>test_lesson.py</span>
+              </aside>
+              <div class="product-canvas">
+                <div class="app-breadcrumb">
+                  Python foundations / Working with collections
+                </div>
+                <div class="editor-tab">lesson.py　×</div>
+                <pre class="real-code"><span>1</span>  def summarize(records):
+<span>2</span>      totals = {}
+<span>3</span>      for name, minutes in records:
+<span>4</span>          totals[name] = totals.get(name, 0) + minutes
+<span>5</span>      return totals
+<span>6</span>
+<span>7</span>  print(summarize(today))</pre>
+                <div class="run-output">
+                  <small>TERMINAL　　OUTPUT</small>
+                  <p>› python lesson.py</p>
+                  <code>{ "reading": 45, "coding": 90 }</code>
+                  <p>✓ Process finished</p>
                 </div>
               </div>
-              <div class="glass-panel">
-                <span>OffCourse</span>
-                <p>What happens when the same name appears twice?</p>
-                <small>Hint from the current lesson</small>
-              </div>
+              <aside class="product-assistant">
+                <div class="assistant-title">✧ OffCourse</div>
+                <div class="assistant-user">Help me take the next step.</div>
+                <p class="agent-reveal">Read the error with your code.</p>
+                <div class="assistant-evidence">
+                  Get a hint grounded in the lesson
+                </div>
+                <p class="agent-reveal">
+                  Test your understanding with a new requirement.
+                </p>
+                <div class="assistant-input">Ask OffCourse <span>↑</span></div>
+              </aside>
             </div>
           </div>
         </section>
@@ -176,28 +228,71 @@
             <a href="academy.html">Explore Academy ↗</a>
           </div>
           <div
-            class="glass-demo demo-academy"
-            aria-label="Illustration of the Academy workbench"
+            class="product-window glass-demo"
+            aria-label="Academy concept interface"
           >
-            <div class="glass-bar">
-              <span>Academy</span><span>Course draft</span>
+            <div class="product-titlebar">
+              <img
+                src="assets/orbital-logo.webp"
+                width="32"
+                height="24"
+                alt=""
+              /><b>OutClass</b><span>Academy / Activity API</span
+              ><small>Concept preview</small>
             </div>
-            <div class="glass-grid">
-              <div class="glass-panel">
-                <span>Curriculum</span>
-                <ol class="glass-outline">
-                  <li>01 · Collect the data</li>
-                  <li>02 · Group records</li>
-                  <li>03 · Build the report</li>
-                </ol>
+            <div class="product-body">
+              <aside class="product-sidebar">
+                <span>Overview</span><span>Academy</span
+                ><span>Creator Studio</span><span>GTM</span><span>Assets</span>
+              </aside>
+              <div class="product-canvas">
+                <div class="app-breadcrumb">
+                  Python foundations / Section 03
+                </div>
+                <h3>Working with real data</h3>
+                <div class="curriculum">
+                  <div>
+                    <small>LESSONS</small>
+                    <p>01　Import and clean a dataset <em>08:24</em></p>
+                    <p class="active">02　Group records <em>12:06</em></p>
+                    <p>03　Build the report <em>09:18</em></p>
+                  </div>
+                  <div class="lesson-canvas">
+                    <div class="media-scene">
+                      <span>PYTHON FOUNDATIONS</span
+                      ><strong>Make your data<br />tell a story.</strong
+                      ><i>▶　12:06</i>
+                    </div>
+                    <p>Lesson resources</p>
+                    <div class="resource-line">
+                      ▧ lesson-03.mp4　 ⌘ starter.zip　 ≡ notes.pdf
+                    </div>
+                    <div class="app-task">
+                      <b>Capstone · Activity API</b
+                      ><span
+                        >Validate inputs → Aggregate records → Test edge
+                        cases</span
+                      >
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div class="glass-focus">
-                <small>CAPSTONE</small
-                ><strong>Build the activity report</strong>
-                <div class="glass-chip">README.md</div>
-                <div class="glass-chip">report.py · Starter</div>
-                <div class="glass-chip">Verify an empty week</div>
-              </div>
+              <aside class="product-assistant">
+                <div class="assistant-title">✧ Project Forge</div>
+                <div class="assistant-user">
+                  Help me design a capstone for this section.
+                </div>
+                <p class="agent-reveal">
+                  Connect objectives to practical tasks.
+                </p>
+                <div class="assistant-evidence">
+                  Build a scaffold with teaching notes
+                </div>
+                <p class="agent-reveal">Preview the learner experience.</p>
+                <div class="assistant-input">
+                  Ask Project Forge <span>↑</span>
+                </div>
+              </aside>
             </div>
           </div>
         </section>
@@ -216,20 +311,64 @@
             <a href="creator-studio.html">Explore Creator Studio ↗</a>
           </div>
           <div
-            class="glass-demo demo-creative"
-            aria-label="Illustration of Creator Studio’s video and caption workflow"
+            class="product-window glass-demo"
+            aria-label="Creator Studio concept interface"
           >
-            <div class="glass-bar">
-              <span>Creator Studio</span><span>Course preview</span>
+            <div class="product-titlebar">
+              <img
+                src="assets/orbital-logo.webp"
+                width="32"
+                height="24"
+                alt=""
+              /><b>OutClass</b
+              ><span>Creator Studio / Working with real data</span
+              ><small>Concept preview</small>
             </div>
-            <div class="glass-artboard">
-              <small>PYTHON IN PRACTICE</small
-              ><strong>Build a real<br />activity report.</strong>
-              <div class="glass-rings" aria-hidden="true"></div>
-            </div>
-            <div class="glass-timeline">
-              <span>01 · Hook</span><span>02 · Demonstration</span
-              ><span>03 · Try it</span>
+            <div class="product-body">
+              <aside class="product-sidebar">
+                <span>Overview</span><span>Academy</span
+                ><span>Creator Studio</span><span>GTM</span><span>Assets</span>
+              </aside>
+              <div class="product-canvas">
+                <div class="app-breadcrumb">Projects / Python foundations</div>
+                <h3>Working with real data</h3>
+                <div class="studio-canvas">
+                  <div class="media-scene">
+                    <span>PYTHON FOUNDATIONS</span
+                    ><strong>From raw data.<br />To something useful.</strong
+                    ><i>▶　00:18 / 01:24</i>
+                  </div>
+                  <div class="caption-line">
+                    “Let’s see what happens with an empty dataset.”
+                  </div>
+                </div>
+                <div class="timeline-ruler">
+                  00:00　　　　　00:20　　　　　00:40　　　　　01:00
+                </div>
+                <div class="timeline-track">
+                  ▥　Lesson demonstration　▥　▥　▥　▥
+                </div>
+                <div class="timeline-track audio-track">
+                  ⌁⌁⌁⌁⌁⌁⌁⌁ Voiceover ⌁⌁⌁⌁⌁⌁⌁
+                </div>
+                <div class="timeline-track caption-track">
+                  Opening　│　Demonstration　│　Try it yourself
+                </div>
+              </div>
+              <aside class="product-assistant">
+                <div class="assistant-title">✧ Creative Director</div>
+                <div class="assistant-user">Help me take the next step.</div>
+                <p class="agent-reveal">
+                  Find the demonstration in your footage.
+                </p>
+                <div class="assistant-evidence">
+                  Plan captions and visual explanations
+                </div>
+                <p class="agent-reveal">Prepare a preview for GTM.</p>
+                <div class="assistant-input">
+                  Ask Creative Director <span>↑</span>
+                </div>
+              </aside>
             </div>
           </div>
         </section>
@@ -244,180 +383,117 @@
             <a href="gtm.html">Explore GTM ↗</a>
           </div>
           <div
-            class="glass-demo demo-gtm"
-            aria-label="Illustration of the GTM post review"
+            class="product-window glass-demo"
+            aria-label="GTM concept interface"
           >
-            <div class="glass-bar">
-              <span>GTM</span><span>Draft for review</span>
+            <div class="product-titlebar">
+              <img
+                src="assets/orbital-logo.webp"
+                width="32"
+                height="24"
+                alt=""
+              /><b>OutClass</b><span>GTM / Activity API launch</span
+              ><small>Concept preview</small>
             </div>
-            <div class="glass-grid">
-              <div class="glass-panel">
-                <span>Channel draft</span>
-                <div class="glass-chip">YouTube</div>
-                <div class="glass-chip">Title and description</div>
-                <div class="glass-chip">Approved course preview</div>
+            <div class="product-body">
+              <aside class="product-sidebar">
+                <span>Overview</span><span>Academy</span
+                ><span>Creator Studio</span><span>GTM</span><span>Assets</span>
+              </aside>
+              <div class="product-canvas">
+                <div class="app-breadcrumb">Campaigns / Activity API</div>
+                <h3>From the lesson to the launch.</h3>
+                <div class="campaign-heading">
+                  <span>Content from Creator Studio</span
+                  ><b>Ready for review</b>
+                </div>
+                <div class="media-scene campaign-media">
+                  <span>PYTHON FOUNDATIONS</span
+                  ><strong>Your first API.<br />Built by you.</strong
+                  ><i>Preview · 00:24</i>
+                </div>
+                <div class="campaign-row">
+                  <b>𝕏　X</b
+                  ><span>One small API. One real skill. Start building.</span
+                  ><em>Draft</em>
+                </div>
+                <div class="campaign-row">
+                  <b>in　LinkedIn</b
+                  ><span
+                    >What changes when learners build during the lesson?</span
+                  ><em>Draft</em>
+                </div>
+                <div class="campaign-row">
+                  <b>▷　YouTube</b><span>Build an Activity API with Python</span
+                  ><em>Review</em>
+                </div>
               </div>
-              <div class="glass-focus">
-                <div class="glass-thumbnail">▶</div>
-                <strong>Build a report from real inputs</strong
-                ><small>Preview · Unlisted</small>
-              </div>
+              <aside class="product-assistant">
+                <div class="assistant-title">✧ Growth Strategist</div>
+                <div class="assistant-user">Help me take the next step.</div>
+                <p class="agent-reveal">
+                  Bring content over from Creator Studio.
+                </p>
+                <div class="assistant-evidence">
+                  Adapt copy and media for each channel
+                </div>
+                <p class="agent-reveal">
+                  Review the campaign and learn from results.
+                </p>
+                <div class="assistant-input">
+                  Ask Growth Strategist <span>↑</span>
+                </div>
+              </aside>
             </div>
           </div>
         </section>
       </section>
-      <section class="glass-agent-callout" id="agents">
-        <div class="wrap">
-          <h2>Meet your agents.</h2>
-          <p>Choose a product to see how its agents help.</p>
-          <div class="glass-tabs" role="tablist" aria-label="Agents by product">
-            <button
-              type="button"
-              role="tab"
-              id="tab-learn"
-              aria-controls="agent-learn"
-              aria-selected="true"
-              tabindex="0"
-            >
-              Learn</button
-            ><button
-              type="button"
-              role="tab"
-              id="tab-academy"
-              aria-controls="agent-academy"
-              aria-selected="false"
-              tabindex="-1"
-            >
-              Academy</button
-            ><button
-              type="button"
-              role="tab"
-              id="tab-creator-studio"
-              aria-controls="agent-creator-studio"
-              aria-selected="false"
-              tabindex="-1"
-            >
-              Creator Studio</button
-            ><button
-              type="button"
-              role="tab"
-              id="tab-gtm"
-              aria-controls="agent-gtm"
-              aria-selected="false"
-              tabindex="-1"
-            >
-              GTM
-            </button>
-          </div>
-          <section
-            id="agent-learn"
-            role="tabpanel"
-            aria-labelledby="tab-learn"
-            class="glass-agent-panel"
-            tabindex="0"
+      <section class="glass-agent-callout wrap" id="agents">
+        <h2>Meet your agents.</h2>
+        <div class="agent-choices">
+          <a class="agent-choice choice-learn" href="agents-learn.html"
+            ><div class="agent-art">
+              <span class="agent-orbit"></span
+              ><span class="agent-glyph">✧</span>
+            </div>
+            <div>
+              <small>Learn</small>
+              <h3>OffCourse</h3>
+              <span class="agent-enter">Explore agent ↗</span>
+            </div></a
+          ><a class="agent-choice choice-academy" href="agents-academy.html"
+            ><div class="agent-art">
+              <span class="agent-orbit"></span
+              ><span class="agent-glyph">⌘</span>
+            </div>
+            <div>
+              <small>Academy</small>
+              <h3>Project Forge</h3>
+              <span class="agent-enter">Explore agent ↗</span>
+            </div></a
+          ><a
+            class="agent-choice choice-creator-studio"
+            href="agents-creator-studio.html"
+            ><div class="agent-art">
+              <span class="agent-orbit"></span
+              ><span class="agent-glyph">▷</span>
+            </div>
+            <div>
+              <small>Creator Studio</small>
+              <h3>Creative Director</h3>
+              <span class="agent-enter">Explore agent ↗</span>
+            </div></a
+          ><a class="agent-choice choice-gtm" href="agents-gtm.html"
+            ><div class="agent-art">
+              <span class="agent-orbit"></span
+              ><span class="agent-glyph">↗</span>
+            </div>
+            <div>
+              <small>GTM</small>
+              <h3>Growth Strategist</h3>
+              <span class="agent-enter">Explore agent ↗</span>
+            </div></a
           >
-            <div class="glass-scene-copy">
-              <span>Learn</span>
-              <h2>OffCourse & Architect</h2>
-              <p>
-                Get a lesson-aware hint or work through the next decision for a
-                project.
-              </p>
-              <a href="learn.html">Explore Learn ↗</a>
-            </div>
-            <div class="glass-conversation">
-              <small>Example task</small>
-              <p>What happens if a record appears twice?</p>
-              <small>OffCourse & Architect</small>
-              <p>
-                Trace the running total before changing the code. Check your
-                prediction with a two-row example.
-              </p>
-            </div>
-          </section>
-          <section
-            id="agent-academy"
-            role="tabpanel"
-            aria-labelledby="tab-academy"
-            class="glass-agent-panel"
-            tabindex="0"
-            hidden
-          >
-            <div class="glass-scene-copy">
-              <span>Academy</span>
-              <h2>Academy Architect & Project Forge</h2>
-              <p>
-                Design an exercise or capstone tied to the skills your course
-                teaches.
-              </p>
-              <a href="academy.html">Explore Academy ↗</a>
-            </div>
-            <div class="glass-conversation">
-              <small>Example task</small>
-              <p>Design a capstone for this chapter.</p>
-              <small>Academy Architect & Project Forge</small>
-              <p>
-                Draft a README, learner TODOs, and checks to review before
-                applying.
-              </p>
-            </div>
-          </section>
-          <section
-            id="agent-creator-studio"
-            role="tabpanel"
-            aria-labelledby="tab-creator-studio"
-            class="glass-agent-panel"
-            tabindex="0"
-            hidden
-          >
-            <div class="glass-scene-copy">
-              <span>Creator Studio</span>
-              <h2>Creative Director</h2>
-              <p>Turn a real lesson into a short, grounded preview.</p>
-              <a href="creator-studio.html">Explore Creator Studio ↗</a>
-            </div>
-            <div class="glass-conversation">
-              <small>Example task</small>
-              <p>Make a short video about grouping records.</p>
-              <small>Creative Director</small>
-              <p>
-                Open with the duplicate record, show the example, and end with
-                one practical challenge.
-              </p>
-            </div>
-          </section>
-          <section
-            id="agent-gtm"
-            role="tabpanel"
-            aria-labelledby="tab-gtm"
-            class="glass-agent-panel"
-            tabindex="0"
-            hidden
-          >
-            <div class="glass-scene-copy">
-              <span>GTM</span>
-              <h2>Growth Strategist & Analytics</h2>
-              <p>
-                Prepare channel drafts and turn campaign evidence into a next
-                step.
-              </p>
-              <a href="gtm.html">Explore GTM ↗</a>
-            </div>
-            <div class="glass-conversation">
-              <small>Example task</small>
-              <p>Adapt this course preview for YouTube.</p>
-              <small>Growth Strategist & Analytics</small>
-              <p>
-                Draft a title and description around the real exercise. Review
-                the selected video before publishing.
-              </p>
-            </div>
-          </section>
-          <p>
-            <a id="glass-agent-details" href="agents.html"
-              >Explore all agents ↗</a
-            >
-          </p>
         </div>
       </section>
       <section id="pricing" class="glass-pricing wrap">
