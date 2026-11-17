@@ -142,20 +142,6 @@ html:has(.glass-page) {
   text-align: left;
   perspective: 1200px;
 }
-.glass-hero-visual::before {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  inset: -1% -1.5% 10%;
-  border: 2px solid #fffffff2;
-  border-radius: 50%;
-  transform: rotate(-13deg);
-  box-shadow:
-    0 0 10px #ffffffc7,
-    0 0 42px #aaa9ffb8,
-    inset 0 0 24px #d6e8ffb0;
-  pointer-events: none;
-}
 .glass-demo,
 .glass-conversation {
   position: relative;
@@ -458,17 +444,6 @@ html:has(.glass-page) {
     radial-gradient(ellipse at 3% 54%, #dce1fa 0%, transparent 56%),
     linear-gradient(180deg, #f4f7ff, #e9e9fc 74%, #f0f2ff);
 }
-.glass-pricing::before {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  inset: 35% -3% 19%;
-  border: 2px solid #ffffffe0;
-  border-radius: 50%;
-  transform: rotate(-11deg);
-  box-shadow: 0 0 16px #fffc;
-  pointer-events: none;
-}
 .plan-section-intro {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 0.5fr);
@@ -532,20 +507,6 @@ html:has(.glass-page) {
     0 25px 56px -23px #263b9fa3,
     inset 0 0 16px #7eaaff57;
 }
-.plan-plus::before {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  inset: 88% -34% -49% 58%;
-  border-radius: 50%;
-  border-top: 2px solid #becfff;
-  transform: rotate(-20deg);
-  background: radial-gradient(ellipse at 45% 0%, #7987ea, #2b316f 55%);
-  box-shadow:
-    0 -4px 30px 6px #7191ffbf,
-    inset 0 5px 13px #a8c0ff9c;
-  pointer-events: none;
-}
 .plan-plus-art {
   position: absolute;
   z-index: -1;
@@ -554,23 +515,6 @@ html:has(.glass-page) {
   display: grid;
   place-items: center;
   pointer-events: none;
-}
-.plan-plus-art::before,
-.plan-plus-art::after {
-  content: "";
-  position: absolute;
-  inset: 23% 3%;
-  border: 1px solid #aabaff66;
-  border-radius: 50%;
-  transform: rotate(-28deg);
-  box-shadow:
-    0 0 18px #899fff38,
-    inset 0 0 18px #899fff24;
-}
-.plan-plus-art::after {
-  inset: 30% 5%;
-  transform: rotate(24deg);
-  border-color: #92a8ff55;
 }
 .plan-plus-art img {
   position: relative;
@@ -888,8 +832,5 @@ html:has(.glass-page) {
   .plan-plus h3 small {
     font-size: 0.56rem;
     padding: 5px 7px;
-  }
-  .plan-plus::before {
-    opacity: 0.52;
   }
 }

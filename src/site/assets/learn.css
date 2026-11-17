@@ -56,16 +56,6 @@
   position: relative;
   min-width: 0;
 }
-.learn-hero-stage::before {
-  content: "";
-  position: absolute;
-  inset: 12% -12% 6% -10%;
-  z-index: -1;
-  border: 1px solid #ffffffd6;
-  border-radius: 50%;
-  box-shadow: 0 0 24px #fff;
-  transform: rotate(-14deg);
-}
 .learn-workspace-figure {
   margin: 0;
   filter: drop-shadow(0 22px 22px #4366af29);

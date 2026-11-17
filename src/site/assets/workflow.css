@@ -55,17 +55,6 @@
   text-align: left;
   isolation: isolate;
 }
-.app-stage::before {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  inset: 11% -5%;
-  border: 2px solid #ffffffe5;
-  border-radius: 50%;
-  box-shadow: 0 0 14px #ffffffb0;
-  transform: rotate(-7deg);
-  pointer-events: none;
-}
 .app-window {
   container-type: inline-size;
   min-width: 0;
@@ -501,9 +490,6 @@
   .app-window-right {
     transform: none;
     align-self: stretch;
-  }
-  .app-stage::before {
-    inset: 20% -10% 5%;
   }
 }
 @media (max-width: 540px) {
