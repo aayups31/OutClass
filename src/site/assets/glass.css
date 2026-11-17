@@ -837,55 +837,93 @@ html:has(.glass-page) {
 .brand-finale {
   position: relative;
   isolation: isolate;
-  overflow: hidden;
+  overflow: clip;
   display: grid;
   place-items: center;
-  min-height: clamp(430px, 48vw, 740px);
-  padding: 100px 24px 120px;
-  background: radial-gradient(ellipse at 50% 68%, #d4dcff 0%, transparent 58%), radial-gradient(ellipse at 80% 80%, #eee0ff80, transparent 55%);
+  min-height: clamp(430px, 43vw, 680px);
+  padding: clamp(70px, 7vw, 110px) 24px clamp(112px, 12vw, 186px);
+  background:
+    radial-gradient(ellipse at 50% 100%, #cfd8ff 0%, transparent 63%),
+    radial-gradient(ellipse at 88% 74%, #ede2ff 0%, transparent 64%);
 }
-.brand-finale-content { position: relative; text-align: center; width: 100%; }
-.brand-finale .brand-finale-title {
-  margin: 0 0 52px;
-  padding: 0 0.09em 0.08em 0;
-  font-size: clamp(74px, 17.5vw, 270px);
-  line-height: 1.1;
-  font-weight: 800;
-  font-style: italic;
-  letter-spacing: -0.075em;
-  color: #101b40;
-  background: linear-gradient(164deg, #080f29 16%, #253c7a 43%, #7186bb 49%, #182653 55%, #0a122e 78%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 14px 22px #384f9720);
-}
-.glass-page .brand-finale .brand-finale-cta {
-  display: inline-flex;
+.brand-finale-content {
   position: relative;
+  z-index: 1;
+  display: grid;
+  justify-items: center;
+  text-align: center;
+  min-width: 0;
+}
+.brand-finale .brand-finale-label {
+  color: #3f5090;
+  font-size: clamp(10px, 1.2vw, 14px);
+  font-weight: 600;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+}
+.brand-finale .brand-finale-title {
+  margin: clamp(12px, 2vw, 24px) 0 clamp(25px, 4vw, 44px);
+  font-size: clamp(52px, 14vw, 186px);
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: -0.048em;
+  color: #111d3e;
+  text-shadow: 0 1px 0 #fff, 0 12px 42px #4d66ad26;
+}
+.glass-button.brand-finale-cta {
   align-items: center;
   justify-content: center;
-  gap: 32px;
-  padding: 21px 34px;
-  border-radius: 16px;
-  border: 1px solid #829aff;
-  color: white;
-  font-size: 17px;
+  gap: 20px;
+  min-width: 200px;
+  padding: 15px 24px;
+  border-radius: 12px;
+  border: 1px solid #707ee4;
+  font-size: 16px;
   font-weight: 700;
-  text-decoration: none;
-  background: linear-gradient(165deg, #576fea 0%, #263dbe 45%, #14278e 100%);
-  box-shadow: inset 0 2px 3px #ffffff65, inset 0 -2px 4px #06155a55, 0 12px 28px #354fc936, 0 0 60px #8799ff35;
+  background: linear-gradient(165deg, #3c51cb, #2738a8 52%, #152581);
+  box-shadow:
+    inset 0 1px 2px #ffffff55,
+    0 10px 28px #354fc943,
+    0 0 44px #8799ff38;
   transition: transform 250ms ease, box-shadow 250ms ease;
 }
-.brand-finale-cta:hover {
-  transform: translateY(-3px);
-  box-shadow: inset 0 2px 3px #ffffff65, 0 17px 35px #354fc94d, 0 0 70px #8799ff55;
+.glass-button.brand-finale-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: inset 0 1px 2px #ffffff55, 0 14px 34px #354fc956;
 }
-.brand-finale-cta:focus-visible { outline: 3px solid #5066dc; outline-offset: 6px; }
+.brand-finale-cta:focus-visible {
+  outline: 2px solid #263d9b;
+  outline-offset: 5px;
+}
+.brand-finale-horizon {
+  position: absolute;
+  inset: auto 0 0;
+  height: clamp(62px, 9vw, 148px);
+  overflow: clip;
+  pointer-events: none;
+  mask-image: linear-gradient(90deg, transparent 3%, #000 23% 77%, transparent 97%);
+}
+.brand-finale-horizon::before {
+  content: "";
+  position: absolute;
+  inset: 12px -5% auto;
+  height: 265%;
+  border-top: 2px solid #fffc;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 50% 0%, #c7cffb 0%, #dedaff80 30%, transparent 68%);
+  box-shadow: 0 -2px 12px #ffffffb3, inset 0 3px 10px #ffffff69;
+}
 @media (max-width: 550px) {
-  .brand-finale { min-height: 370px; padding: 80px 16px; }
-  .brand-finale .brand-finale-title { margin-bottom: 35px; }
+  .brand-finale {
+    min-height: 365px;
+    padding-inline: 16px;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
-  .brand-finale-cta { transition: none; }
+  .glass-button.brand-finale-cta {
+    transition: none;
+  }
+  .glass-button.brand-finale-cta:hover {
+    transform: none;
+  }
 }
