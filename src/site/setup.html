@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <meta name="theme-color" content="#080a10" />
+    <meta name="theme-color" content="#f4f7ff" />
     <title>Getting started · OutClass</title>
     <meta
       name="description"
@@ -28,12 +28,12 @@
       property="og:image"
       content="https://git-learn-black.vercel.app/assets/hero-tiles.webp"
     />
-    <script src="assets/vendor/gsap.min.js" defer=""></script>
-    <script src="assets/vendor/ScrollTrigger.min.js" defer=""></script>
     <script src="assets/site.js" defer=""></script>
     <link rel="stylesheet" href="assets/refinement.css" />
+    <link rel="stylesheet" href="assets/glass.css" />
+    <link rel="stylesheet" href="assets/support.css?v=light" />
   </head>
-  <body class="subpage">
+  <body class="glass-page subpage support-page setup-page">
     <a class="skip-link" href="#main">Skip to content</a>
     <header class="site-header">
       <a class="wordmark" href="./" aria-label="OutClass home"
@@ -53,7 +53,7 @@
         <span></span><span></span>
       </button>
       <nav id="site-navigation" aria-label="Main navigation">
-        <a href="product.html">Product</a><a href="agents.html">Agents</a
+        <a href="./#product">The apps</a><a href="agents.html">Agents</a
         ><a href="setup.html">How it works</a><a href="./#pricing">Pricing</a>
       </nav>
       <div class="header-actions">
@@ -66,217 +66,256 @@
       </div>
     </header>
     <main id="main" tabindex="-1">
-      <section class="page-hero wrap">
-        <h1>Your next chapter.<br /><span>Up and running.</span></h1>
-        <p>
-          A desktop workspace, a browser companion,<br />and a little room to
-          figure things out.
-        </p>
-        <a class="button primary" href="download.html"
-          >Get the downloads
-          <svg class="icon" aria-hidden="true">
-            <use href="assets/icons.svg#arrow"></use></svg
-        ></a>
-      </section>
-      <section id="guide" class="guide wrap">
-        <div class="guide-heading">
-          <h2>Less setup.<br /><span>More starting.</span></h2>
-          <p>
-            Follow these steps once. Your courses and projects have a home from
-            here.
-          </p>
-          <a class="text-link" href="#faq"
-            >Questions first?
-            <svg class="icon" aria-hidden="true">
-              <use href="assets/icons.svg#down"></use></svg
-          ></a>
-        </div>
-        <ol class="guide-list">
-          <li>
-            <span>01</span>
-            <div>
-              <h3>Install the Windows preview.</h3>
-              <p>
-                <a href="download.html">Download the Windows installer.</a>
-                Install
-                <a
-                  href="https://git-scm.com/downloads/win"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  >Git for Windows</a
-                >
-                if needed. JavaScript’s runtime comes with the app; install
-                Python only for Python lessons.
-              </p>
-            </div>
-          </li>
-          <li>
-            <span>02</span>
-            <div>
-              <h3>Choose your learning folder.</h3>
-              <p>
-                Open the app and follow setup. Use a parent folder such as
-                Desktop / My Learning. OutClass creates history and practice
-                folders inside it and organizes each course automatically.
-              </p>
-            </div>
-          </li>
-          <li>
-            <span>03</span>
-            <div>
-              <h3>Add AI help, if you want it.</h3>
-              <p>
-                Choose a personal OpenAI key or an installed local model in
-                setup or settings. Included AI is currently an owner-tested
-                preview, not yet open for public sign-ups. Local coding,
-                notebooks and checkpoints work without a key.
-              </p>
-            </div>
-          </li>
-          <li>
-            <span>04</span>
-            <div>
-              <h3>Connect the browser extension.</h3>
-              <p>
-                Until the Chrome store listing is published, use the included
-                extension folder from setup. Open
-                <code>chrome://extensions</code>, enable Developer mode, choose
-                Load unpacked, and select that folder. Enter the app’s
-                connection code in the extension.
-              </p>
-            </div>
-          </li>
-          <li>
-            <span>05</span>
-            <div>
-              <h3>Open a lesson. Make something.</h3>
-              <p>
-                Visit a Udemy course. In OutClass, choose the course, start a
-                lesson, and choose one project for the whole course. Open Code
-                &amp; learn, edit files, run your code, and keep notes. Your
-                existing coding folder works too. Continue building restores
-                your place when you return.
-              </p>
-            </div>
-          </li>
-          <li>
-            <span>06</span>
-            <div>
-              <h3>Ask, check, and save.</h3>
-              <p>
-                For course-specific answers, open Udemy’s transcript panel and
-                choose Import visible transcript in the extension. You can also
-                add permitted text in Sources. When a run fails, ask for a hint
-                using its recorded output. Review a checkpoint when you’re done,
-                then save locally. GitHub sync is optional in settings.
-              </p>
-            </div>
-          </li>
-          <li>
-            <span>07</span>
-            <div>
-              <h3>Step away from the example.</h3>
-              <p>
-                Open Learn by doing for a practical brief, write the solution,
-                run its checks, and explain your approach. Revisit it in
-                Reviews. The Project console can run tests or a development
-                server; React projects need Node/npm installed.
-              </p>
-            </div>
-          </li>
-          <li>
-            <span>08</span>
-            <div>
-              <h3>Try a real contribution.</h3>
-              <p>
-                Live work finds public issues in your stack and explains what
-                matches your recorded practice. Read the contributor rules,
-                choose a brief, and explicitly clone a separate workspace. The
-                assistant guides your investigation and review. You make the
-                changes and decide when to submit the local PR draft.
-              </p>
-            </div>
-          </li>
-        </ol>
-      </section>
-      <section id="faq" class="faq wrap">
-        <div>
-          <h2>A few details.<br /><span>No guesswork.</span></h2>
-        </div>
-        <div class="faq-list">
-          <details>
-            <summary>Do I need a GitHub repository?</summary>
+      <section class="support-hero">
+        <div class="wrap support-hero-inner">
+          <div>
+            <h1>Set up OutClass.</h1>
             <p>
-              No. OutClass creates local Git history when you choose your
-              learning folder. Later, you can connect one private repository for
-              all your courses. GitHub account connection uses GitHub CLI; setup
-              explains what to install.
+              Install the Windows app, connect your tools, and start your first
+              lesson.
             </p>
-          </details>
-          <details>
-            <summary>Can I keep using VS Code?</summary>
-            <p>
-              Yes. Choose an existing local coding folder when you start a
-              lesson, or use OutClass’s built-in editor. You’re working with
-              ordinary files on your computer. Install the OutClass editor
-              companion from Editors &amp; extensions to bring OffCourse and
-              recorded Quick Runs into VS Code or VSCodium, while keeping your
-              usual editor extensions and debugger.
-            </p>
-          </details>
-          <details>
-            <summary>
-              Does the assistant know the whole course automatically?
-            </summary>
-            <p>
-              No. Course answers use transcripts and material you explicitly
-              import. The extension imports the transcript currently visible on
-              the lesson page. If a source is missing, OutClass tells you rather
-              than claiming to know the lecture.
-            </p>
-          </details>
-          <details>
-            <summary>What can I run inside OutClass?</summary>
-            <p>
-              JavaScript and erasable TypeScript scripts come ready to run.
-              Python uses your installed interpreter or project environment;
-              install compatible libraries through requirements.txt. C/C++ need
-              GCC/G++ or Clang on PATH. React, Next.js and full Node/TypeScript
-              projects use Project console with installed Node.js/npm. Short
-              saved-file runs are limited to 10 seconds. The full desktop
-              terminal supports interactive programs, package installation and
-              long training jobs with your computer's normal permissions.
-              Closing OutClass stops its terminal sessions. A single HTML file
-              can also be previewed.
-            </p>
-          </details>
-          <details>
-            <summary>What leaves my computer?</summary>
-            <p>
-              Your files, notes, library, and history live locally. When you
-              enable and use AI, selected context goes to your chosen
-              connection. Your Blueprint notebook has separate project memory
-              and explicit sharing controls. GitHub receives reviewed
-              checkpoints only when you connect a repository and sync. OutClass
-              does not run a hosted workspace or collect analytics.
-              <a href="privacy.html">Read the privacy details.</a>
-            </p>
-          </details>
-          <details>
-            <summary>Is this the final public release?</summary>
-            <p>
-              This is a Windows preview. The installer is currently unsigned, so
-              Windows may show a publisher warning. The OutClass extension is
-              submitted for Chrome Web Store review. OutClass is independent of
-              Udemy and is not affiliated with or endorsed by Udemy, Linear, or
-              Anthropic.
-            </p>
-          </details>
+            <div class="support-actions">
+              <a class="glass-button" href="download.html"
+                >Get the downloads <span aria-hidden="true">↗</span></a
+              >
+              <a href="#guide"
+                >Go to the steps <span aria-hidden="true">↓</span></a
+              >
+            </div>
+          </div>
+          <div class="setup-hero-preview" aria-hidden="true">
+            <div class="setup-preview-bar">
+              <img
+                src="assets/orbital-logo.webp"
+                width="33"
+                height="24"
+                alt=""
+              /><b>OutClass</b><span>Workspace setup</span>
+            </div>
+            <div class="setup-preview-steps">
+              <div>
+                <svg class="icon">
+                  <use href="assets/icons.svg#windows"></use></svg
+                ><span
+                  ><b>Install the app</b
+                  ><small>OutClass for Windows</small></span
+                ><i>✓</i>
+              </div>
+              <div>
+                <svg class="icon">
+                  <use href="assets/icons.svg#folder"></use></svg
+                ><span
+                  ><b>Choose a workspace</b
+                  ><small>My Learning / Courses</small></span
+                ><i>✓</i>
+              </div>
+              <div>
+                <svg class="icon"><use href="assets/icons.svg#code"></use></svg
+                ><span
+                  ><b>Open your first lesson</b
+                  ><small>Python foundations</small></span
+                ><i>↗</i>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
-      <section class="subpage-cta wrap">
-        <h2>All set?<br /><span>Make your first move.</span></h2>
-        <a class="button primary" href="download.html"
+      <div class="support-docs wrap">
+        <nav class="support-contents" aria-label="Setup guide contents">
+          <a class="support-contents-title" href="#guide">On this page</a>
+          <a href="#install">Install OutClass</a
+          ><a href="#learning-folder">Choose a folder</a
+          ><a href="#ai-connection">Connect AI</a
+          ><a href="#browser-extension">Pair the extension</a
+          ><a href="#first-lesson">Open a lesson</a
+          ><a href="#first-checkpoint">Save a checkpoint</a
+          ><a href="#practice">Practice on your own</a
+          ><a href="#open-source">Try open source</a>
+          <a href="#faq">Common questions</a>
+        </nav>
+        <div class="support-reading">
+          <section id="guide" class="setup-guide" aria-labelledby="guide-title">
+            <h2 id="guide-title">Getting started</h2>
+            <ol class="guide-list">
+              <li id="install">
+                <div>
+                  <h3>Install the Windows preview.</h3>
+                  <p>
+                    <a href="download.html">Download the Windows installer.</a>
+                    Install
+                    <a
+                      href="https://git-scm.com/downloads/win"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      >Git for Windows</a
+                    >
+                    if needed. JavaScript’s runtime comes with the app; install
+                    Python only for Python lessons.
+                  </p>
+                </div>
+              </li>
+              <li id="learning-folder">
+                <div>
+                  <h3>Choose your learning folder.</h3>
+                  <p>
+                    Open the app and follow setup. Use a parent folder such as
+                    Desktop / My Learning. OutClass creates history and practice
+                    folders inside it and organizes each course automatically.
+                  </p>
+                </div>
+              </li>
+              <li id="ai-connection">
+                <div>
+                  <h3>Add AI help, if you want it.</h3>
+                  <p>
+                    Choose a personal OpenAI key or an installed local model in
+                    setup or settings. Included AI is currently an owner-tested
+                    preview, not yet open for public sign-ups. Local coding,
+                    notebooks and checkpoints work without a key.
+                  </p>
+                </div>
+              </li>
+              <li id="browser-extension">
+                <div>
+                  <h3>Connect the browser extension.</h3>
+                  <p>
+                    Until the Chrome store listing is published, use the
+                    included extension folder from setup. Open
+                    <code>chrome://extensions</code>, enable Developer mode,
+                    choose Load unpacked, and select that folder. Enter the
+                    app’s connection code in the extension.
+                  </p>
+                </div>
+              </li>
+              <li id="first-lesson">
+                <div>
+                  <h3>Open a lesson. Make something.</h3>
+                  <p>
+                    Visit a Udemy course. In OutClass, choose the course, start
+                    a lesson, and choose one project for the whole course. Open
+                    Code &amp; learn, edit files, run your code, and keep notes.
+                    Your existing coding folder works too. Continue building
+                    restores your place when you return.
+                  </p>
+                </div>
+              </li>
+              <li id="first-checkpoint">
+                <div>
+                  <h3>Ask, check, and save.</h3>
+                  <p>
+                    For course-specific answers, open Udemy’s transcript panel
+                    and choose Import visible transcript in the extension. You
+                    can also add permitted text in Sources. When a run fails,
+                    ask for a hint using its recorded output. Review a
+                    checkpoint when you’re done, then save locally. GitHub sync
+                    is optional in settings.
+                  </p>
+                </div>
+              </li>
+              <li id="practice">
+                <div>
+                  <h3>Step away from the example.</h3>
+                  <p>
+                    Open Learn by doing for a practical brief, write the
+                    solution, run its checks, and explain your approach. Revisit
+                    it in Reviews. The Project console can run tests or a
+                    development server; React projects need Node/npm installed.
+                  </p>
+                </div>
+              </li>
+              <li id="open-source">
+                <div>
+                  <h3>Try a real contribution.</h3>
+                  <p>
+                    Live work finds public issues in your stack and explains
+                    what matches your recorded practice. Read the contributor
+                    rules, choose a brief, and explicitly clone a separate
+                    workspace. The assistant guides your investigation and
+                    review. You make the changes and decide when to submit the
+                    local PR draft.
+                  </p>
+                </div>
+              </li>
+            </ol>
+          </section>
+          <section id="faq" class="setup-faq" aria-labelledby="faq-title">
+            <h2 id="faq-title">Common questions</h2>
+            <div class="faq-list">
+              <details>
+                <summary>Do I need a GitHub repository?</summary>
+                <p>
+                  No. OutClass creates local Git history when you choose your
+                  learning folder. Later, you can connect one private repository
+                  for all your courses. GitHub account connection uses GitHub
+                  CLI; setup explains what to install.
+                </p>
+              </details>
+              <details>
+                <summary>Can I keep using VS Code?</summary>
+                <p>
+                  Yes. Choose an existing local coding folder when you start a
+                  lesson, or use OutClass’s built-in editor. You’re working with
+                  ordinary files on your computer. Install the OutClass editor
+                  companion from Editors &amp; extensions to bring OffCourse and
+                  recorded Quick Runs into VS Code or VSCodium, while keeping
+                  your usual editor extensions and debugger.
+                </p>
+              </details>
+              <details>
+                <summary>
+                  Does the assistant know the whole course automatically?
+                </summary>
+                <p>
+                  No. Course answers use transcripts and material you explicitly
+                  import. The extension imports the transcript currently visible
+                  on the lesson page. If a source is missing, OutClass tells you
+                  rather than claiming to know the lecture.
+                </p>
+              </details>
+              <details>
+                <summary>What can I run inside OutClass?</summary>
+                <p>
+                  JavaScript and erasable TypeScript scripts come ready to run.
+                  Python uses your installed interpreter or project environment;
+                  install compatible libraries through requirements.txt. C/C++
+                  need GCC/G++ or Clang on PATH. React, Next.js and full
+                  Node/TypeScript projects use Project console with installed
+                  Node.js/npm. Short saved-file runs are limited to 10 seconds.
+                  The full desktop terminal supports interactive programs,
+                  package installation and long training jobs with your
+                  computer's normal permissions. Closing OutClass stops its
+                  terminal sessions. A single HTML file can also be previewed.
+                </p>
+              </details>
+              <details>
+                <summary>What leaves my computer?</summary>
+                <p>
+                  Your files, notes, library, and history live locally. When you
+                  enable and use AI, selected context goes to your chosen
+                  connection. Your Blueprint notebook has separate project
+                  memory and explicit sharing controls. GitHub receives reviewed
+                  checkpoints only when you connect a repository and sync.
+                  OutClass does not run a hosted workspace or collect analytics.
+                  <a href="privacy.html">Read the privacy details.</a>
+                </p>
+              </details>
+              <details>
+                <summary>Is this the final public release?</summary>
+                <p>
+                  This is a Windows preview. The installer is currently
+                  unsigned, so Windows may show a publisher warning. The
+                  OutClass extension is submitted for Chrome Web Store review.
+                  OutClass is independent of Udemy and is not affiliated with or
+                  endorsed by Udemy, Linear, or Anthropic.
+                </p>
+              </details>
+            </div>
+          </section>
+        </div>
+      </div>
+      <section class="support-close">
+        <h2>Ready to start?</h2>
+        <a class="glass-button" href="download.html"
           >Get OutClass
           <svg class="icon" aria-hidden="true">
             <use href="assets/icons.svg#arrow"></use></svg
@@ -298,8 +337,7 @@
           <a href="learn.html">Learn</a><a href="academy.html">Academy</a
           ><a href="creator-studio.html">Creator Studio</a
           ><a href="gtm.html">GTM</a> <a href="agents.html">Agents</a
-          ><a href="setup.html">Setup</a><a href="privacy.html">Privacy</a
-          >
+          ><a href="setup.html">Setup</a><a href="privacy.html">Privacy</a>
         </nav>
         <span class="footer-copyright">© 2026 OutClass</span>
       </div>

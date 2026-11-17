@@ -3,13 +3,16 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <meta name="theme-color" content="#101216" />
+    <meta name="theme-color" content="#f4f7ff" />
     <title>Privacy · OutClass</title>
     <link rel="icon" href="assets/orbital-logo.webp" />
     <link rel="stylesheet" href="assets/site.css" />
     <link rel="stylesheet" href="assets/refinement.css" />
+    <link rel="stylesheet" href="assets/glass.css" />
+    <link rel="stylesheet" href="assets/support.css?v=light" />
+    <script src="assets/site.js" defer></script>
   </head>
-  <body>
+  <body class="glass-page subpage support-page privacy-page">
     <a class="skip-link" href="#main">Skip to content</a>
     <header class="site-header">
       <a class="wordmark" href="./" aria-label="OutClass home"
@@ -29,7 +32,7 @@
         <span></span><span></span>
       </button>
       <nav id="site-navigation" aria-label="Main navigation">
-        <a href="product.html">Product</a><a href="agents.html">Agents</a
+        <a href="./#product">The apps</a><a href="agents.html">Agents</a
         ><a href="setup.html">How it works</a><a href="./#pricing">Pricing</a>
       </nav>
       <div class="header-actions">
@@ -41,186 +44,270 @@
         ></a>
       </div>
     </header>
-    <main id="main" tabindex="-1" class="legal wrap">
-      <h1>Your learning stays yours.</h1>
-      <p>
-        OutClass, previously GitLearn, is a local Windows learning workspace
-        with a Chrome extension for Udemy. Local features do not require an
-        OutClass account. It does not run a hosted coding workspace, sell
-        personal information, or collect product analytics.
-      </p>
-      <h2>Browser extension</h2>
-      <p>
-        On Udemy course pages, the extension reads course title, course URL,
-        lecture titles, sections, the current lesson, and visible completion
-        indicators. It sends that context only to your paired local OutClass
-        companion at 127.0.0.1:47831. Pending course updates and the pairing
-        token are stored in Chrome extension storage. The extension does not
-        read other sites, passwords, general browser history, cookies, or your
-        Udemy account credentials.
-      </p>
-      <p>
-        When you choose Import visible transcript, the extension reads text in
-        the lesson’s visible transcript panel and sends it to your local course
-        library. It does not automatically import transcripts or download course
-        videos. Only import material you have permission to use.
-      </p>
-      <p>
-        The extension's data disclosures cover local pairing authentication,
-        Udemy course-page URLs, current lesson and completion context, and
-        explicitly imported website text. They do not include access to your
-        Udemy login or tracking outside course pages. Removing the extension
-        removes its Chrome-local storage; your companion's learning records
-        remain on your computer.
-      </p>
-      <h2>Limited use</h2>
-      <p>
-        OutClass's use of information received through Chrome extension APIs
-        complies with the Chrome Web Store User Data Policy, including its
-        Limited Use requirements. Data supports the disclosed learning and
-        pairing features only. It is not sold, used for advertising or lending,
-        or transferred for unrelated purposes. An optional included-AI service,
-        when configured, processes the context you explicitly send for learning
-        help. Optional AI and GitHub processing in the companion is described
-        below and controlled by the features you choose to use.
-      </p>
-      <h2>Local files and saved state</h2>
-      <p>
-        Course data, session notes, imported text, search indexes, embedding
-        vectors, chat history, course project bindings, resume positions, and
-        bounded local run evidence, practical task attempts and saved source
-        snapshots, reflections, review schedules, project command records, and
-        contribution briefs, idea notebooks, project decisions and Blueprint
-        conversations are stored in OutClass’s SQLite database. Automatic
-        notebook notes are opt-in and use saved reflections from explicitly
-        linked courses. Your working code and reviewed checkpoints live in the
-        learning folders you choose. You can remove imported sources in the app.
-        Your course folders and app data are retained when you uninstall so your
-        learning is not discarded; you can delete them yourself after exporting
-        anything you need.
-      </p>
-      <h2>AI connections and project ideas</h2>
-      <p>
-        AI is optional. Choose a personal OpenAI key, an explicitly configured
-        local model, or included AI through a configured hosted service.
-        Included AI has been verified in an owner-only preview. Public sign-in
-        and live billing are not yet available. The desktop app stores your
-        personal OpenAI key and included-AI account session using Windows
-        encryption, outside course folders. The source-development companion can
-        read its own local .env instead. Keys are never shipped in downloads,
-        sent to GitHub, or passed to the extension.
-      </p>
-      <p>
-        When enabled, OffCourse can send your question, selected code, relevant
-        local code or notes, and bounded chat context to your selected AI
-        connection. Course mode sends your question and relevant imported course
-        passages. When you explicitly attach a recorded run or choose error
-        help, its saved entry-file source and bounded output are included.
-        During a practical task, Code help also includes its brief, checks,
-        reflection, and recorded help use. During contribution work it includes
-        the selected public issue, contributor instructions, your notes, and
-        bounded recorded command results. Personal learning search across
-        courses is a local, explicit search; it does not automatically add other
-        courses to chat. The Blueprint sends the selected project's notes and
-        linked course goals for requested conversations or reviews. Sharing a
-        notebook with OffCourse is optional and requires selecting it in a
-        question. Original thoughts remain separate from AI interpretations.
-        Editing or deleting a note clears derived local project history;
-        previously transmitted context cannot be recalled from a provider.
-        Semantic indexing in personal-key mode sends uncached source passages
-        for embeddings when you explicitly refresh the index; question retrieval
-        may send the question for an embedding. AI commit messages use a small
-        scanned diff when separately enabled. The app scans sources for
-        recognizable secrets before indexing or sending them. This does not
-        replace reviewing your own content.
-      </p>
-      <p>
-        OutClass requests no response storage when using the OpenAI Responses
-        API. OpenAI’s processing and retention are governed by its own terms and
-        the provider account settings. Personal-key charges are billed to your
-        OpenAI account. Included AI uses the service's account and allowance;
-        its service records account identity, request/usage counters and
-        subscription identifiers, without storing prompt text. A local model
-        receives context at the configured localhost endpoint. Local and
-        included modes use local keyword retrieval instead of sending embeddings
-        through a personal key. See
-        <a
-          href="https://platform.openai.com/docs/guides/your-data"
-          target="_blank"
-          rel="noopener noreferrer"
-          >OpenAI’s data controls</a
-        >.
-      </p>
-      <h2>GitHub</h2>
-      <p>
-        The desktop terminal is a full local shell with your account's
-        permissions. It can modify files, install packages and contact services
-        through commands you run. OutClass excludes its own provider/account
-        credentials from the shell environment. Shell sessions and their bounded
-        display history stay in memory and stop when the application closes.
-        Arbitrary terminal output is not automatically treated as verified
-        learning evidence.
-      </p>
-      <p>
-        The optional VS Code / Code OSS companion uses a separately paired,
-        course-scoped local credential held in the editor's SecretStorage. It
-        sends saved selected code and explicit questions to the local companion.
-        It cannot access local setup, notebook management or terminal APIs. Your
-        editor and other extensions have their own permissions and privacy
-        policies. You can revoke its pairing in OutClass.
-      </p>
-      <p>
-        GitHub is optional. OutClass uses Git and GitHub CLI to connect your
-        account and a repository you choose. Reviewed code and notes are
-        uploaded only when you configure a remote and sync. Repository access
-        and uploaded contents are governed by your GitHub account and repository
-        permissions. Live work makes read-only GitHub requests for public issue,
-        repository, contributor-guide, and discussion data. These requests
-        reveal your selected language or repository and ordinary connection
-        information to GitHub. Choosing a brief creates a local record; cloning
-        creates a separate local branch and folder. OutClass prepares a local
-        pull request draft and does not publish comments, forks, or pull
-        requests for you.
-      </p>
-      <h2>Public website and downloads</h2>
-      <p>
-        This static page includes no analytics, advertising, contact form, or
-        connection to your local workspace. Fonts and images are served with the
-        site. The hosting and download providers may process ordinary connection
-        information such as IP addresses under their own policies. External
-        resource links open the relevant provider’s website.
-      </p>
-      <p>
-        The account page sends your email and the code you enter to OutClass’s
-        hosted authentication service. Browser sign-in uses host-only Secure,
-        HttpOnly cookies with SameSite protections; authentication tokens are
-        not returned to page JavaScript. The access cookie follows the token’s
-        expiry, and the refresh cookie is retained for up to 30 days or until
-        you sign out. Account responses are not cached. Sign-out clears the
-        browser cookies and attempts to revoke only that browser’s provider
-        session. Desktop sign-in is separate.
-      </p>
-      <p>
-        The account page displays your allowance and can open Stripe Checkout or
-        the customer portal. OutClass does not receive card details. The
-        connected subscription is currently in Stripe test mode, and email
-        delivery is limited to the connected test account. Public learner access
-        and live payments are not enabled by this interface.
-      </p>
-      <h2>Questions and changes</h2>
-      <p>
-        For privacy questions,
-        <a
-          href="https://github.com/aayups31/OutClass/issues"
-          target="_blank"
-          rel="noopener noreferrer"
-          >open an issue in the OutClass repository</a
-        >
-        without including API keys, personal course transcripts, or private
-        code. Changes to data handling will be reflected here before a release
-        that introduces them.
-      </p>
-      <p><a href="./">← Back to OutClass</a></p>
+    <main id="main" tabindex="-1">
+      <section class="support-hero privacy-hero">
+        <div class="wrap support-hero-inner">
+          <div>
+            <h1>Your learning stays yours.</h1>
+            <p>
+              OutClass, previously GitLearn, is a local Windows learning
+              workspace with a Chrome extension for Udemy. Local features do not
+              require an OutClass account. It does not run a hosted coding
+              workspace, sell personal information, or collect product
+              analytics.
+            </p>
+          </div>
+          <div class="privacy-hero-visual" aria-hidden="true">
+            <svg class="icon"><use href="assets/icons.svg#folder"></use></svg>
+            <span
+              ><b>On this computer</b
+              ><small>Course files, notes, and checkpoints</small></span
+            >
+          </div>
+        </div>
+      </section>
+      <div class="support-docs wrap">
+        <nav class="support-contents" aria-label="Privacy policy contents">
+          <span class="support-contents-title">On this page</span>
+          <a href="#browser-extension">Browser extension</a
+          ><a href="#limited-use">Limited use</a
+          ><a href="#local-files">Local files</a
+          ><a href="#ai-connections">AI connections</a
+          ><a href="#github">GitHub and editor tools</a
+          ><a href="#website-and-downloads">Website and accounts</a
+          ><a href="#questions">Questions and changes</a>
+        </nav>
+        <div class="support-reading">
+          <section
+            class="privacy-topic"
+            id="browser-extension"
+            aria-labelledby="browser-extension-title"
+          >
+            <h2 id="browser-extension-title">Browser extension</h2>
+            <p>
+              On Udemy course pages, the extension reads course title, course
+              URL, lecture titles, sections, the current lesson, and visible
+              completion indicators. It sends that context only to your paired
+              local OutClass companion at 127.0.0.1:47831. Pending course
+              updates and the pairing token are stored in Chrome extension
+              storage. The extension does not read other sites, passwords,
+              general browser history, cookies, or your Udemy account
+              credentials.
+            </p>
+            <p>
+              When you choose Import visible transcript, the extension reads
+              text in the lesson’s visible transcript panel and sends it to your
+              local course library. It does not automatically import transcripts
+              or download course videos. Only import material you have
+              permission to use.
+            </p>
+            <p>
+              The extension's data disclosures cover local pairing
+              authentication, Udemy course-page URLs, current lesson and
+              completion context, and explicitly imported website text. They do
+              not include access to your Udemy login or tracking outside course
+              pages. Removing the extension removes its Chrome-local storage;
+              your companion's learning records remain on your computer.
+            </p>
+          </section>
+          <section
+            class="privacy-topic"
+            id="limited-use"
+            aria-labelledby="limited-use-title"
+          >
+            <h2 id="limited-use-title">Limited use</h2>
+            <p>
+              OutClass's use of information received through Chrome extension
+              APIs complies with the Chrome Web Store User Data Policy,
+              including its Limited Use requirements. Data supports the
+              disclosed learning and pairing features only. It is not sold, used
+              for advertising or lending, or transferred for unrelated purposes.
+              An optional included-AI service, when configured, processes the
+              context you explicitly send for learning help. Optional AI and
+              GitHub processing in the companion is described below and
+              controlled by the features you choose to use.
+            </p>
+          </section>
+          <section
+            class="privacy-topic"
+            id="local-files"
+            aria-labelledby="local-files-title"
+          >
+            <h2 id="local-files-title">Local files and saved state</h2>
+            <p>
+              Course data, session notes, imported text, search indexes,
+              embedding vectors, chat history, course project bindings, resume
+              positions, and bounded local run evidence, practical task attempts
+              and saved source snapshots, reflections, review schedules, project
+              command records, and contribution briefs, idea notebooks, project
+              decisions and Blueprint conversations are stored in OutClass’s
+              SQLite database. Automatic notebook notes are opt-in and use saved
+              reflections from explicitly linked courses. Your working code and
+              reviewed checkpoints live in the learning folders you choose. You
+              can remove imported sources in the app. Your course folders and
+              app data are retained when you uninstall so your learning is not
+              discarded; you can delete them yourself after exporting anything
+              you need.
+            </p>
+          </section>
+          <section
+            class="privacy-topic"
+            id="ai-connections"
+            aria-labelledby="ai-connections-title"
+          >
+            <h2 id="ai-connections-title">AI connections and project ideas</h2>
+            <p>
+              AI is optional. Choose a personal OpenAI key, an explicitly
+              configured local model, or included AI through a configured hosted
+              service. Included AI has been verified in an owner-only preview.
+              Public sign-in and live billing are not yet available. The desktop
+              app stores your personal OpenAI key and included-AI account
+              session using Windows encryption, outside course folders. The
+              source-development companion can read its own local .env instead.
+              Keys are never shipped in downloads, sent to GitHub, or passed to
+              the extension.
+            </p>
+            <p>
+              When enabled, OffCourse can send your question, selected code,
+              relevant local code or notes, and bounded chat context to your
+              selected AI connection. Course mode sends your question and
+              relevant imported course passages. When you explicitly attach a
+              recorded run or choose error help, its saved entry-file source and
+              bounded output are included. During a practical task, Code help
+              also includes its brief, checks, reflection, and recorded help
+              use. During contribution work it includes the selected public
+              issue, contributor instructions, your notes, and bounded recorded
+              command results. Personal learning search across courses is a
+              local, explicit search; it does not automatically add other
+              courses to chat. The Blueprint sends the selected project's notes
+              and linked course goals for requested conversations or reviews.
+              Sharing a notebook with OffCourse is optional and requires
+              selecting it in a question. Original thoughts remain separate from
+              AI interpretations. Editing or deleting a note clears derived
+              local project history; previously transmitted context cannot be
+              recalled from a provider. Semantic indexing in personal-key mode
+              sends uncached source passages for embeddings when you explicitly
+              refresh the index; question retrieval may send the question for an
+              embedding. AI commit messages use a small scanned diff when
+              separately enabled. The app scans sources for recognizable secrets
+              before indexing or sending them. This does not replace reviewing
+              your own content.
+            </p>
+            <p>
+              OutClass requests no response storage when using the OpenAI
+              Responses API. OpenAI’s processing and retention are governed by
+              its own terms and the provider account settings. Personal-key
+              charges are billed to your OpenAI account. Included AI uses the
+              service's account and allowance; its service records account
+              identity, request/usage counters and subscription identifiers,
+              without storing prompt text. A local model receives context at the
+              configured localhost endpoint. Local and included modes use local
+              keyword retrieval instead of sending embeddings through a personal
+              key. See
+              <a
+                href="https://platform.openai.com/docs/guides/your-data"
+                target="_blank"
+                rel="noopener noreferrer"
+                >OpenAI’s data controls</a
+              >.
+            </p>
+          </section>
+          <section
+            class="privacy-topic"
+            id="github"
+            aria-labelledby="github-title"
+          >
+            <h2 id="github-title">GitHub and editor tools</h2>
+            <p>
+              The desktop terminal is a full local shell with your account's
+              permissions. It can modify files, install packages and contact
+              services through commands you run. OutClass excludes its own
+              provider/account credentials from the shell environment. Shell
+              sessions and their bounded display history stay in memory and stop
+              when the application closes. Arbitrary terminal output is not
+              automatically treated as verified learning evidence.
+            </p>
+            <p>
+              The optional VS Code / Code OSS companion uses a separately
+              paired, course-scoped local credential held in the editor's
+              SecretStorage. It sends saved selected code and explicit questions
+              to the local companion. It cannot access local setup, notebook
+              management or terminal APIs. Your editor and other extensions have
+              their own permissions and privacy policies. You can revoke its
+              pairing in OutClass.
+            </p>
+            <p>
+              GitHub is optional. OutClass uses Git and GitHub CLI to connect
+              your account and a repository you choose. Reviewed code and notes
+              are uploaded only when you configure a remote and sync. Repository
+              access and uploaded contents are governed by your GitHub account
+              and repository permissions. Live work makes read-only GitHub
+              requests for public issue, repository, contributor-guide, and
+              discussion data. These requests reveal your selected language or
+              repository and ordinary connection information to GitHub. Choosing
+              a brief creates a local record; cloning creates a separate local
+              branch and folder. OutClass prepares a local pull request draft
+              and does not publish comments, forks, or pull requests for you.
+            </p>
+          </section>
+          <section
+            class="privacy-topic"
+            id="website-and-downloads"
+            aria-labelledby="website-and-downloads-title"
+          >
+            <h2 id="website-and-downloads-title">
+              Public website and downloads
+            </h2>
+            <p>
+              This static page includes no analytics, advertising, contact form,
+              or connection to your local workspace. Fonts and images are served
+              with the site. The hosting and download providers may process
+              ordinary connection information such as IP addresses under their
+              own policies. External resource links open the relevant provider’s
+              website.
+            </p>
+            <p>
+              The account page sends your email and the code you enter to
+              OutClass’s hosted authentication service. Browser sign-in uses
+              host-only Secure, HttpOnly cookies with SameSite protections;
+              authentication tokens are not returned to page JavaScript. The
+              access cookie follows the token’s expiry, and the refresh cookie
+              is retained for up to 30 days or until you sign out. Account
+              responses are not cached. Sign-out clears the browser cookies and
+              attempts to revoke only that browser’s provider session. Desktop
+              sign-in is separate.
+            </p>
+            <p>
+              The account page displays your allowance and can open Stripe
+              Checkout or the customer portal. OutClass does not receive card
+              details. The connected subscription is currently in Stripe test
+              mode, and email delivery is limited to the connected test account.
+              Public learner access and live payments are not enabled by this
+              interface.
+            </p>
+          </section>
+          <section
+            class="privacy-topic"
+            id="questions"
+            aria-labelledby="questions-title"
+          >
+            <h2 id="questions-title">Questions and changes</h2>
+            <p>
+              For privacy questions,
+              <a
+                href="https://github.com/aayups31/OutClass/issues"
+                target="_blank"
+                rel="noopener noreferrer"
+                >open an issue in the OutClass repository</a
+              >
+              without including API keys, personal course transcripts, or
+              private code. Changes to data handling will be reflected here
+              before a release that introduces them.
+            </p>
+          </section>
+          <p class="privacy-return"><a href="./">← Back to OutClass</a></p>
+        </div>
+      </div>
     </main>
     <footer class="site-footer wrap">
       <div class="footer-top">
@@ -237,8 +324,7 @@
           <a href="learn.html">Learn</a><a href="academy.html">Academy</a
           ><a href="creator-studio.html">Creator Studio</a
           ><a href="gtm.html">GTM</a> <a href="agents.html">Agents</a
-          ><a href="setup.html">Setup</a><a href="privacy.html">Privacy</a
-          >
+          ><a href="setup.html">Setup</a><a href="privacy.html">Privacy</a>
         </nav>
         <span class="footer-copyright">© 2026 OutClass</span>
       </div>
