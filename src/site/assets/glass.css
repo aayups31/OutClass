@@ -835,16 +835,13 @@ html:has(.glass-page) {
   }
 }
 .brand-finale {
-  position: relative;
-  isolation: isolate;
-  overflow: clip;
   display: grid;
   place-items: center;
   min-height: clamp(430px, 43vw, 680px);
   padding: clamp(70px, 7vw, 110px) 24px clamp(112px, 12vw, 186px);
   background:
-    radial-gradient(ellipse at 50% 100%, #cfd8ff 0%, transparent 63%),
-    radial-gradient(ellipse at 88% 74%, #ede2ff 0%, transparent 64%);
+    radial-gradient(ellipse 58% 39% at 49% 54%, #dce3ff 0%, transparent 100%),
+    radial-gradient(ellipse 48% 36% at 83% 60%, #ede4ff 0%, transparent 100%);
 }
 .brand-finale-content {
   position: relative;
@@ -895,23 +892,38 @@ html:has(.glass-page) {
   outline: 2px solid #263d9b;
   outline-offset: 5px;
 }
+.brand-finale-end {
+  position: relative;
+  --horizon-rise: clamp(72px, 10vw, 148px);
+}
+.brand-finale-end .site-footer {
+  border-top: 0;
+}
+.brand-finale-end::before {
+  content: "";
+  position: absolute;
+  inset: calc(-1.8 * var(--horizon-rise)) 0 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 50% 100%, #d9defb 0%, transparent 74%),
+    radial-gradient(ellipse at 86% 100%, #efe7fd 0%, transparent 78%);
+}
 .brand-finale-horizon {
   position: absolute;
-  inset: auto 0 0;
-  height: clamp(62px, 9vw, 148px);
+  inset: calc(-1 * var(--horizon-rise)) 0 0;
   overflow: clip;
   pointer-events: none;
-  mask-image: linear-gradient(90deg, transparent 3%, #000 23% 77%, transparent 97%);
 }
 .brand-finale-horizon::before {
   content: "";
   position: absolute;
-  inset: 12px -5% auto;
-  height: 265%;
+  inset: 12px 0 auto;
+  height: calc(200% - 24px);
   border-top: 2px solid #fffc;
   border-radius: 50%;
-  background: radial-gradient(ellipse at 50% 0%, #c7cffb 0%, #dedaff80 30%, transparent 68%);
-  box-shadow: 0 -2px 12px #ffffffb3, inset 0 3px 10px #ffffff69;
+  background: radial-gradient(ellipse at 50% 0%, #c6cef8 0%, #e0dcfa80 42%, transparent 72%);
+  box-shadow: 0 -2px 12px #ffffffa6, inset 0 3px 10px #ffffff69;
+  mask-image: linear-gradient(90deg, transparent, #000 11% 89%, transparent);
 }
 @media (max-width: 550px) {
   .brand-finale {

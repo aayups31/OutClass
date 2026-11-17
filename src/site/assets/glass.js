@@ -39,17 +39,31 @@ if (window.gsap && window.ScrollTrigger) {
   gsap.matchMedia().add("(prefers-reduced-motion: no-preference)", () => {
     const finale = document.querySelector(".brand-finale");
     if (finale) {
-      gsap.from(finale.querySelector(".brand-finale-title"), {
-        y: 22,
-        opacity: 0.85,
-        ease: "none",
-        scrollTrigger: {
-          trigger: finale,
-          start: "top 94%",
-          end: "center 78%",
-          scrub: 0.5,
-        },
-      });
+      gsap
+        .timeline({
+          defaults: { duration: 1, ease: "power2.out" },
+          scrollTrigger: {
+            trigger: finale,
+            start: "top 93%",
+            end: "clamp(center 58%)",
+            scrub: 0.45,
+          },
+        })
+        .from(finale.querySelector(".brand-finale-label"), {
+          y: 14,
+          opacity: 0.55,
+        })
+        .from(
+          finale.querySelector(".brand-finale-title"),
+          { y: 40, scale: 0.95, opacity: 0.66 },
+          0.18,
+        )
+        .fromTo(
+          finale.querySelector(".brand-finale-cta"),
+          { translate: "0px 24px" },
+          { translate: "0px 0px" },
+          0.36,
+        );
     }
     const headlines = document.querySelectorAll(
       ".glass-detail-hero .glass-scene-copy, .glass-agent-page > h1",
