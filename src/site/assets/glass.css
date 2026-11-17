@@ -449,11 +449,25 @@ html:has(.glass-page) {
   padding-block: clamp(64px, 10vw, 130px);
 }
 .glass-pricing {
+  position: relative;
+  isolation: isolate;
   scroll-margin-top: 72px;
   overflow: clip;
   background:
-    radial-gradient(ellipse at 84% 83%, #dce5ff, transparent 56%),
-    linear-gradient(180deg, #f5f7ff, #eef2fe);
+    radial-gradient(ellipse at 72% 76%, #bfcaf4 0%, transparent 55%),
+    radial-gradient(ellipse at 3% 54%, #dce1fa 0%, transparent 56%),
+    linear-gradient(180deg, #f4f7ff, #e9e9fc 74%, #f0f2ff);
+}
+.glass-pricing::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 35% -3% 19%;
+  border: 2px solid #ffffffe0;
+  border-radius: 50%;
+  transform: rotate(-11deg);
+  box-shadow: 0 0 16px #fffc;
+  pointer-events: none;
 }
 .plan-section-intro {
   display: grid;
@@ -485,8 +499,8 @@ html:has(.glass-page) {
 }
 .glass-plans {
   display: grid;
-  grid-template-columns: minmax(0, 0.77fr) minmax(0, 1.36fr);
-  gap: clamp(28px, 5vw, 78px);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.9fr);
+  gap: clamp(15px, 2vw, 28px);
   margin-top: clamp(36px, 5vw, 70px);
   align-items: stretch;
 }
@@ -494,41 +508,49 @@ html:has(.glass-page) {
   display: flex;
   flex-direction: column;
   min-width: 0;
+  border: 1px solid #ffffffc9;
+  border-radius: clamp(19px, 2.35vw, 32px);
 }
 .plan-free {
-  position: relative;
-  align-self: center;
-  padding: clamp(22px, 3vw, 39px) 0;
-  border-block: 1px solid #b9c8ec;
+  padding: clamp(23px, 3vw, 40px);
+  background: linear-gradient(135deg, #ffffff9c, #eeefffd9);
+  box-shadow:
+    0 23px 49px -30px #7789c4a3,
+    inset 0 1px 0 #fff;
 }
-.plan-free::before {
-  content: "";
-  position: absolute;
-  inset: -1px auto auto 0;
-  width: 52px;
-  height: 2px;
-  background: #4262c0;
-}
-.plan-plus {
+.glass-plans .plan-plus {
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  min-height: 350px;
-  padding: clamp(26px, 4vw, 56px);
-  border-radius: 16px clamp(36px, 5vw, 76px) 16px 16px;
+  padding: clamp(25px, 3.6vw, 48px);
+  border-color: #afc6ffc9;
   color: #edf2ff;
   background:
-    radial-gradient(ellipse at 83% 46%, #384d9c 0%, transparent 48%),
-    linear-gradient(139deg, #0f173d 17%, #151d48 52%, #252d61 100%);
+    radial-gradient(ellipse at 81% 61%, #323c90 0%, transparent 56%),
+    linear-gradient(140deg, #131a3b, #171c43 60%, #292d6b);
   box-shadow:
-    0 30px 56px -34px #263b9fb0,
-    inset 0 1px 0 #bbc6ff55;
+    0 25px 56px -23px #263b9fa3,
+    inset 0 0 16px #7eaaff57;
+}
+.plan-plus::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 88% -34% -49% 58%;
+  border-radius: 50%;
+  border-top: 2px solid #becfff;
+  transform: rotate(-20deg);
+  background: radial-gradient(ellipse at 45% 0%, #7987ea, #2b316f 55%);
+  box-shadow:
+    0 -4px 30px 6px #7191ffbf,
+    inset 0 5px 13px #a8c0ff9c;
+  pointer-events: none;
 }
 .plan-plus-art {
   position: absolute;
   z-index: -1;
-  inset: 0 -5% 0 auto;
-  width: 55%;
+  inset: 0 -1% 0 auto;
+  width: 49%;
   display: grid;
   place-items: center;
   pointer-events: none;
@@ -553,7 +575,7 @@ html:has(.glass-page) {
 .plan-plus-art img {
   position: relative;
   z-index: 1;
-  width: min(92%, 315px);
+  width: min(100%, 325px);
   height: auto;
   object-fit: contain;
   filter: drop-shadow(0 18px 29px #080d37) drop-shadow(0 0 19px #6494ff85);
@@ -562,11 +584,35 @@ html:has(.glass-page) {
 .glass-plans h3 {
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
-  gap: 6px 12px;
+  align-items: center;
+  gap: 8px 13px;
   margin: 0;
-  font-size: clamp(1.1rem, 2vw, 1.47rem);
+  font-size: clamp(1.03rem, 1.85vw, 1.4rem);
   letter-spacing: -0.03em;
+}
+.plan-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: clamp(36px, 4vw, 53px);
+  aspect-ratio: 1;
+  border-radius: 12px;
+  background: #dae2ffc9;
+  color: #2f4bc9;
+}
+.plan-icon .icon {
+  width: 57%;
+  height: 57%;
+}
+.plan-plus .plan-icon {
+  background: #444e8fbd;
+  color: #bb9dff;
+}
+.plan-plus h3 small {
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #414780b3;
+  font-size: 0.65rem;
 }
 .plan-price {
   display: flex;
@@ -583,14 +629,30 @@ html:has(.glass-page) {
 }
 .glass-plans ul {
   display: grid;
-  gap: 8px;
-  padding-inline-start: 1.1rem;
-  margin: 0 0 18px;
+  gap: 10px;
+  padding: 0;
+  margin: 0 0 16px;
+  list-style: none;
   line-height: 1.42;
   font-size: 0.95rem;
 }
-.glass-plans li::marker {
-  color: #4d64b6;
+.glass-plans li {
+  position: relative;
+  padding-inline-start: 1.45rem;
+}
+.glass-plans li::before {
+  content: "";
+  position: absolute;
+  top: 0.3em;
+  inset-inline-start: 0.12em;
+  width: 0.75em;
+  height: 0.42em;
+  border-inline-start: 2px solid #4d63cb;
+  border-bottom: 2px solid #4d63cb;
+  transform: rotate(-45deg);
+}
+.plan-plus li::before {
+  border-color: #b1b0ff;
 }
 .plan-note {
   margin: 0 0 21px;
@@ -599,8 +661,8 @@ html:has(.glass-page) {
 .glass-plans a {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 24px;
+  justify-content: start;
+  gap: 10px;
   min-height: 44px;
   margin-top: auto;
   font-weight: 680;
@@ -617,19 +679,22 @@ html:has(.glass-page) {
 .plan-plus :is(h3, .plan-price strong) {
   color: #fff;
 }
-.plan-plus :is(h3 small, .plan-note, .plan-price span),
-.plan-plus li::marker {
+.plan-plus :is(h3 small, .plan-note, .plan-price span) {
   color: #c0ccff;
 }
 .plan-plus > :is(ul, .plan-note) {
-  max-width: min(29ch, 64%);
+  max-width: min(43ch, 59%);
 }
 .glass-page .plan-plus a {
   align-self: start;
-  padding: 9px 13px;
-  border-inline-start: 2px solid #9cb3ff;
-  color: #f5f7ff;
-  background: linear-gradient(90deg, #abc0ff29, #abc0ff08);
+  padding: 10px 19px;
+  border: 1px solid #f8f9ff;
+  border-radius: 14px;
+  color: #1c2d7b;
+  background: linear-gradient(145deg, #fff, #e9edff);
+  box-shadow:
+    inset 0 1px 0 #fff,
+    0 6px 16px #0b123648;
 }
 .glass-page .plan-plus a:focus-visible {
   outline-color: #d5e0ff;
@@ -795,28 +860,36 @@ html:has(.glass-page) {
 @media (max-width: 850px) {
   .glass-plans {
     grid-template-columns: 1fr;
-    gap: 32px;
-  }
-  .plan-free {
-    align-self: auto;
+    gap: 20px;
   }
 }
 @media (max-width: 550px) {
   .plan-section-intro {
     grid-template-columns: 1fr;
   }
-  .plan-plus {
-    min-height: 0;
-  }
+
   .plan-plus-art {
-    inset: 6px -4% auto auto;
-    width: 39%;
-    height: 145px;
+    inset: 31px -5% auto auto;
+    width: 47%;
+    height: 119px;
   }
   .plan-plus-art img {
     width: 86%;
   }
   .plan-plus > :is(ul, .plan-note) {
     max-width: 29ch;
+  }
+  .plan-plus-art {
+    opacity: 0.75;
+  }
+  .plan-plus h3 {
+    gap: 6px 8px;
+  }
+  .plan-plus h3 small {
+    font-size: 0.56rem;
+    padding: 5px 7px;
+  }
+  .plan-plus::before {
+    opacity: 0.52;
   }
 }

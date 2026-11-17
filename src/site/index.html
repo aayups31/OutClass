@@ -36,7 +36,7 @@
     <script src="assets/site.js" defer=""></script>
     <link rel="stylesheet" href="assets/refinement.css" />
     <link rel="stylesheet" href="assets/launch.css" />
-    <link rel="stylesheet" href="assets/glass.css?v=hero-accents" />
+    <link rel="stylesheet" href="assets/glass.css?v=pricing-orbit" />
     <link rel="stylesheet" href="assets/showcase.css" />
     <link rel="stylesheet" href="assets/workflow.css" />
     <script src="assets/showcase.js" defer></script>
@@ -601,11 +601,18 @@
           </div>
           <div class="glass-plans">
             <article class="plan-free" aria-labelledby="free-plan-title">
-              <h3 id="free-plan-title">Learn and Educator</h3>
+              <h3 id="free-plan-title">
+                <span class="plan-icon" aria-hidden="true">
+                  <svg class="icon" viewBox="0 0 24 24">
+                    <path d="M2 9l10-5 10 5-10 5L2 9Zm4 2v5l6 3 6-3v-5m4-2v7" />
+                  </svg>
+                </span>
+                Learn and Educator
+              </h3>
               <p class="plan-price">
                 <strong>Free</strong> <span>Windows desktop</span>
               </p>
-              <ul>
+              <ul role="list">
                 <li>Local courses, code, and projects</li>
                 <li>Academy, Creator Studio, and GTM</li>
                 <li>Use a personal AI key or compatible local model</li>
@@ -628,18 +635,24 @@
                 />
               </div>
               <h3 id="plus-plan-title">
+                <span class="plan-icon" aria-hidden="true">
+                  <svg class="icon" viewBox="0 0 24 24">
+                    <path
+                      d="m12 3 9 5-9 5-9-5 9-5Zm-9 9 9 5 9-5m-18 4 9 5 9-5"
+                    />
+                  </svg>
+                </span>
                 OutClass Plus <small>Test preview</small>
               </h3>
               <p class="plan-price">
-                <strong>C$12</strong> <span>per month</span>
+                <strong>C$12</strong> <span>/ month</span>
               </p>
-              <ul>
+              <ul role="list">
                 <li>Up to 600 hosted AI answers per month</li>
                 <li>Available to approved test accounts</li>
+                <li>Stripe test checkout</li>
               </ul>
-              <p class="plan-note">
-                Stripe test checkout collects no real payment.
-              </p>
+              <p class="plan-note">Test checkout collects no real payment.</p>
               <a href="account.html"
                 >See the AI preview <span aria-hidden="true">↗</span></a
               >
