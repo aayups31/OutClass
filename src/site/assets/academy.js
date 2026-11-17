@@ -1,4 +1,5 @@
-const catalog = document.querySelector("#academy-catalog"),
+const section = document.querySelector("#catalog"),
+  catalog = document.querySelector("#academy-catalog"),
   notice = document.querySelector("#catalog-message");
 async function request(route, body, browser = false) {
   const response = await fetch(
@@ -43,15 +44,7 @@ async function load() {
     const { courses } = await request("catalog");
     catalog.replaceChildren();
     notice.textContent = "";
-    if (!courses.length) {
-      catalog.append(
-        element(
-          "p",
-          "The free catalog is open. No creators have published a course yet.",
-        ),
-      );
-      return;
-    }
+    if (!courses.length) return;
     for (const c of courses) {
       const card = element("article", null, "suite-course"),
         title = element("h3", c.title);
@@ -106,6 +99,7 @@ async function load() {
       card.append(enroll, lesson, launch, output);
       catalog.append(card);
     }
+    section.hidden = false;
   } catch (error) {
     notice.textContent = error.message;
   }

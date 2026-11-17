@@ -15,22 +15,16 @@ export function autoplay(demo, name, duration, render) {
   const control = demo.querySelector("[data-demo-pause]");
   const icon = control.firstElementChild;
   const label = control.lastElementChild;
-  const progress = demo.querySelector(".demo-progress > i");
   let inView = false;
   let paused = false;
   let frame = 0;
   let previous = null;
   let elapsed = 0;
 
-  function paint(time) {
-    render(time);
-    progress.style.transform = `scaleX(${time / duration})`;
-  }
-
   function tick(now) {
     if (previous !== null) elapsed = (elapsed + now - previous) % duration;
     previous = now;
-    paint(elapsed);
+    render(elapsed);
     frame = requestAnimationFrame(tick);
   }
 
@@ -45,7 +39,7 @@ export function autoplay(demo, name, duration, render) {
   function updateMotion() {
     control.hidden = !motion.matches;
     demo.classList.toggle("demo-animated", motion.matches);
-    if (!motion.matches) paint(duration);
+    if (!motion.matches) render(duration);
     sync();
   }
 

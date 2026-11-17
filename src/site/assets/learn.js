@@ -1,4 +1,4 @@
-import { autoplay, showText, typeText } from "./workspace-motion.js";
+import { autoplay, showText, typeText } from "./workspace-motion.js?v=clean-playback";
 
 const offcourse = document.querySelector("[data-offcourse]");
 if (offcourse) {

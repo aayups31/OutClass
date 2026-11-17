@@ -251,21 +251,6 @@
   white-space: nowrap;
 }
 
-.demo-progress {
-  width: clamp(46px, 10vw, 100px);
-  height: 3px;
-  border-radius: 2px;
-  background: #d6dff5;
-  overflow: hidden;
-}
-
-.demo-progress > i {
-  display: block;
-  height: 100%;
-  background: #6682d4;
-  transform-origin: left center;
-}
-
 .learn-demo-label {
   font-size: 0.82rem;
   font-weight: 700;
@@ -525,10 +510,6 @@
 }
 .blueprint-bar-fri {
   height: 22px;
-}
-
-.learn-blueprint .demo-progress > i {
-  background: #906ccb;
 }
 
 @media (max-width: 850px) {

@@ -21,9 +21,12 @@
     <link rel="stylesheet" href="assets/glass.css" />
     <link rel="stylesheet" href="assets/showcase.css" />
     <script src="assets/showcase.js" defer></script>
-    <link rel="stylesheet" href="assets/learn.css?v=workspace-scenes" />
-    <link rel="stylesheet" href="assets/educator.css?v=workspaces" />
-    <script src="assets/educator-scenes.js?v=workspaces" type="module"></script>
+    <link rel="stylesheet" href="assets/learn.css?v=clean-playback" />
+    <link rel="stylesheet" href="assets/educator.css?v=hero-workspaces" />
+    <script
+      src="assets/educator-scenes.js?v=clean-playback"
+      type="module"
+    ></script>
   </head>
   <body class="educator-page glass-page subpage suite-page">
     <a class="skip-link" href="#main">Skip to content</a>
@@ -74,63 +77,98 @@
         </div>
         <div class="learn-hero-stage wrap">
           <div
-            class="product-window glass-demo educator-hero-window"
-            aria-label="GTM concept interface"
+            class="educator-hero-window suite-preview suite-preview-gtm"
+            role="img"
+            aria-label="GTM campaign workspace showing a LinkedIn draft, attached Creator Studio preview and publishing review."
           >
-            <div class="product-titlebar">
-              <img
-                src="assets/orbital-logo.webp"
-                width="32"
-                height="24"
-                alt=""
-              /><b>OutClass</b><span>GTM / Activity API launch</span>
+            <div class="suite-preview-bar">
+              <span
+                ><img
+                  src="assets/orbital-logo.webp"
+                  alt=""
+                  width="25"
+                  height="19"
+                />
+                <b>OutClass</b></span
+              >
+              <span class="suite-preview-crumb"
+                >GTM <i>/</i> Campaign workspace</span
+              >
+              <span class="suite-preview-status"><i></i>In review</span>
             </div>
-            <div class="product-body">
-              <aside class="product-sidebar">
-                <span>Overview</span><span>Academy</span
-                ><span>Creator Studio</span><span>GTM</span><span>Assets</span>
+            <div class="suite-preview-grid gtm-preview-grid">
+              <aside class="suite-preview-rail">
+                <small>CAMPAIGNS</small><strong>Python Foundations</strong>
+                <span class="suite-preview-active">Course launch</span
+                ><span>Channel drafts</span><span>Publishing review</span
+                ><span>Campaign analytics</span>
+                <div class="suite-preview-agent">
+                  <img
+                    src="assets/emblem-signal.webp"
+                    alt=""
+                    width="25"
+                    height="19"
+                  /><b>Signal</b>
+                </div>
               </aside>
-              <div class="product-canvas">
-                <div class="app-breadcrumb">Campaigns / Activity API</div>
-                <h3>From the lesson to the launch.</h3>
-                <div class="campaign-heading">
-                  <span>Content from Creator Studio</span
-                  ><b>Ready for review</b>
+              <div class="suite-preview-main">
+                <div class="suite-preview-heading">
+                  <div>
+                    <small>Course launch</small>
+                    <h2>Channel drafts</h2>
+                  </div>
                 </div>
-                <div class="media-scene campaign-media">
-                  <span>PYTHON FOUNDATIONS</span
-                  ><strong>Your first API.<br />Built by you.</strong
-                  ><i>Preview · 00:24</i>
+                <div class="suite-preview-tabs">
+                  <b>LinkedIn</b><span>X</span><span>YouTube</span
+                  ><span>Instagram</span>
                 </div>
-                <div class="campaign-row">
-                  <b>𝕏　X</b
-                  ><span>One small API. One real skill. Start building.</span
-                  ><em>Draft</em>
-                </div>
-                <div class="campaign-row">
-                  <b>in　LinkedIn</b
-                  ><span
-                    >What changes when learners build during the lesson?</span
-                  ><em>Draft</em>
-                </div>
-                <div class="campaign-row">
-                  <b>▷　YouTube</b><span>Build an Activity API with Python</span
-                  ><em>Review</em>
+                <div class="gtm-hero-composer">
+                  <div>
+                    <small>POST COPY</small>
+                    <p>
+                      What can you build with a CSV and a few lines of Python?
+                    </p>
+                    <p>
+                      In Python Foundations, you’ll turn your own study log into
+                      a report you can run from the terminal.
+                    </p>
+                  </div>
+                  <div class="suite-preview-file">
+                    <svg class="icon" aria-hidden="true">
+                      <use href="assets/icons.svg#monitor"></use>
+                    </svg>
+                    <div>
+                      <b>study-report.mp4</b
+                      ><small>Creator Studio · 0:24</small>
+                    </div>
+                    <span>✓</span>
+                  </div>
                 </div>
               </div>
-              <aside class="product-assistant">
-                <div class="assistant-title">✧ Signal</div>
-                <div class="assistant-user">Help me take the next step.</div>
-                <p class="agent-reveal">
-                  Bring content over from Creator Studio.
-                </p>
-                <div class="assistant-evidence">
-                  Adapt copy and media for each channel
+              <aside class="suite-preview-inspector gtm-hero-inspector">
+                <small>LinkedIn preview</small>
+                <div class="gtm-hero-feed">
+                  <div class="suite-preview-agent">
+                    <img
+                      src="assets/orbital-logo.webp"
+                      alt=""
+                      width="25"
+                      height="19"
+                    />
+                    <div><b>OutClass</b><small>Course launch</small></div>
+                  </div>
+                  <p>
+                    What can you build with a CSV and a few lines of Python?
+                  </p>
+                  <div class="gtm-hero-media">
+                    <small>PYTHON FOUNDATIONS</small
+                    ><strong>Build a study report.</strong
+                    ><span>▷ &nbsp; 0:24</span>
+                  </div>
                 </div>
-                <p class="agent-reveal">
-                  Review the campaign and learn from results.
-                </p>
-                <div class="assistant-input">Ask Signal <span>↑</span></div>
+                <div class="suite-preview-note">
+                  ✓ Copy and media ready for review
+                </div>
               </aside>
             </div>
           </div>
@@ -395,7 +433,6 @@
               </div>
               <div class="learn-demo-footer" aria-hidden="true">
                 <p data-demo-caption>Example post published on X</p>
-                <span class="demo-progress"><i></i></span>
               </div>
             </div>
           </article>
@@ -515,7 +552,6 @@
               </div>
               <div class="learn-demo-footer" aria-hidden="true">
                 <p data-demo-caption>Next experiment recommended</p>
-                <span class="demo-progress"><i></i></span>
               </div>
             </div>
           </article>

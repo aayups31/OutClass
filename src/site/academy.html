@@ -18,13 +18,16 @@
     <script src="assets/vendor/ScrollTrigger.min.js" defer></script>
     <script src="assets/site.js" defer></script>
     <link rel="stylesheet" href="assets/launch.css" />
-    <script src="assets/academy.js" defer></script>
+    <script src="assets/academy.js?v=published-only" defer></script>
     <link rel="stylesheet" href="assets/glass.css" />
     <link rel="stylesheet" href="assets/showcase.css" />
     <script src="assets/showcase.js" defer></script>
-    <link rel="stylesheet" href="assets/learn.css?v=workspace-scenes" />
-    <link rel="stylesheet" href="assets/educator.css?v=workspaces" />
-    <script src="assets/educator-scenes.js?v=workspaces" type="module"></script>
+    <link rel="stylesheet" href="assets/learn.css?v=clean-playback" />
+    <link rel="stylesheet" href="assets/educator.css?v=hero-workspaces" />
+    <script
+      src="assets/educator-scenes.js?v=clean-playback"
+      type="module"
+    ></script>
   </head>
   <body class="educator-page glass-page subpage suite-page">
     <a class="skip-link" href="#main">Skip to content</a>
@@ -75,67 +78,109 @@
         </div>
         <div class="learn-hero-stage wrap">
           <div
-            class="product-window glass-demo educator-hero-window"
-            aria-label="Academy concept interface"
+            class="educator-hero-window suite-preview suite-preview-academy"
+            role="img"
+            aria-label="Academy workspace showing the curriculum, a lesson and Forge’s capstone checks."
           >
-            <div class="product-titlebar">
-              <img
-                src="assets/orbital-logo.webp"
-                width="32"
-                height="24"
-                alt=""
-              /><b>OutClass</b><span>Academy / Activity API</span>
+            <div class="suite-preview-bar">
+              <span
+                ><img
+                  src="assets/orbital-logo.webp"
+                  alt=""
+                  width="25"
+                  height="19"
+                />
+                <b>OutClass</b></span
+              >
+              <span class="suite-preview-crumb"
+                >Academy <i>/</i> Course builder</span
+              >
+              <span class="suite-preview-status"><i></i>Draft saved</span>
             </div>
-            <div class="product-body">
-              <aside class="product-sidebar">
-                <span>Overview</span><span>Academy</span
-                ><span>Creator Studio</span><span>GTM</span><span>Assets</span>
-              </aside>
-              <div class="product-canvas">
-                <div class="app-breadcrumb">
-                  Python foundations / Section 03
+            <div class="suite-preview-grid academy-preview-grid">
+              <aside class="suite-preview-rail">
+                <small>COURSE CONTENT</small>
+                <strong>Python Foundations</strong>
+                <div class="suite-preview-chapter">
+                  <svg class="icon" aria-hidden="true">
+                    <use href="assets/icons.svg#folder"></use></svg
+                  ><b>01 &nbsp; Foundations</b>
                 </div>
-                <h3>Working with real data</h3>
-                <div class="curriculum">
+                <span>Getting started</span><span>Variables and types</span>
+                <div class="suite-preview-chapter">
+                  <svg class="icon" aria-hidden="true">
+                    <use href="assets/icons.svg#folder"></use></svg
+                  ><b>02 &nbsp; Working with data</b>
+                </div>
+                <span>Read a CSV</span
+                ><span class="suite-preview-active">Group study sessions</span
+                ><span>Build a weekly report</span>
+                <div class="suite-preview-chapter">
+                  <svg class="icon" aria-hidden="true">
+                    <use href="assets/icons.svg#folder"></use></svg
+                  ><b>03 &nbsp; Capstone</b>
+                </div>
+              </aside>
+              <div class="suite-preview-main">
+                <div class="suite-preview-heading">
                   <div>
-                    <small>LESSONS</small>
-                    <p>01　Import and clean a dataset <em>08:24</em></p>
-                    <p class="active">02　Group records <em>12:06</em></p>
-                    <p>03　Build the report <em>09:18</em></p>
+                    <small>Working with data</small>
+                    <h2>Group study sessions</h2>
                   </div>
-                  <div class="lesson-canvas">
-                    <div class="media-scene">
-                      <span>PYTHON FOUNDATIONS</span
-                      ><strong>Make your data<br />tell a story.</strong
-                      ><i>▶　12:06</i>
-                    </div>
-                    <p>Lesson resources</p>
-                    <div class="resource-line">
-                      ▧ lesson-03.mp4　 ⌘ starter.zip　 ≡ notes.pdf
-                    </div>
-                    <div class="app-task">
-                      <b>Capstone · Activity API</b
-                      ><span
-                        >Validate inputs → Aggregate records → Test edge
-                        cases</span
-                      >
-                    </div>
+                  <span>Preview in Learn ↗</span>
+                </div>
+                <div class="suite-preview-tabs">
+                  <b>Teaching material</b><span>Resources</span
+                  ><span>Practice &amp; review</span>
+                </div>
+                <div class="academy-hero-data">
+                  <div>
+                    <small>Lesson objective</small
+                    ><strong>Turn rows into totals.</strong
+                    ><span
+                      >Group minutes by topic with a Python dictionary.</span
+                    >
                   </div>
+                  <div class="academy-hero-table">
+                    <span>Topic <b>Minutes</b></span
+                    ><span>Python <b>25</b></span
+                    ><span>Git <b>15</b></span
+                    ><span>Python <b>20</b></span>
+                  </div>
+                </div>
+                <div class="suite-preview-file">
+                  <svg class="icon" aria-hidden="true">
+                    <use href="assets/icons.svg#code"></use>
+                  </svg>
+                  <div>
+                    <b>starter.py</b
+                    ><small>Starter code · shared with learners</small>
+                  </div>
+                  <span>✓</span>
                 </div>
               </div>
-              <aside class="product-assistant">
-                <div class="assistant-title">✧ Forge</div>
-                <div class="assistant-user">
-                  Help me design a capstone for this section.
+              <aside class="suite-preview-inspector">
+                <div class="suite-preview-agent">
+                  <img
+                    src="assets/emblem-forge.webp"
+                    alt=""
+                    width="25"
+                    height="19"
+                  /><b>Forge</b>
                 </div>
-                <p class="agent-reveal">
-                  Connect objectives to practical tasks.
-                </p>
-                <div class="assistant-evidence">
-                  Build a scaffold with teaching notes
+                <small>Capstone draft</small
+                ><strong>Build a weekly activity report</strong>
+                <div class="academy-hero-checks">
+                  <span>✓ &nbsp; Combines repeated topics</span
+                  ><span>✓ &nbsp; Handles an empty week</span
+                  ><span>✓ &nbsp; Rejects invalid minutes</span>
                 </div>
-                <p class="agent-reveal">Preview the learner experience.</p>
-                <div class="assistant-input">Ask Forge <span>↑</span></div>
+                <div class="suite-preview-note">
+                  <svg class="icon" aria-hidden="true">
+                    <use href="assets/icons.svg#folder"></use>
+                  </svg>
+                  Starter files &amp; checks
+                </div>
               </aside>
             </div>
           </div>
@@ -337,7 +382,6 @@
               </div>
               <div class="learn-demo-footer" aria-hidden="true">
                 <p data-demo-caption>Curriculum draft ready</p>
-                <span class="demo-progress"><i></i></span>
               </div>
             </div>
           </article>
@@ -473,23 +517,20 @@
               </div>
               <div class="learn-demo-footer" aria-hidden="true">
                 <p data-demo-caption>Scaffold ready for review</p>
-                <span class="demo-progress"><i></i></span>
               </div>
             </div>
           </article>
         </div>
       </section>
 
-      <section class="suite-workflow wrap" id="catalog">
-        <h2>Choose your next build.</h2>
-        <p>
-          Free courses released by creators. Preview the curriculum before
-          enrolling. <a href="account.html">Sign in</a> to enroll, then use the
-          launch code in the OutClass app signed in to the same account.
-        </p>
-        <p id="catalog-message" role="status" tabindex="-1">
-          Loading the catalog…
-        </p>
+      <section
+        class="suite-workflow wrap"
+        id="catalog"
+        aria-labelledby="catalog-title"
+        hidden
+      >
+        <h2 id="catalog-title">Course catalog</h2>
+        <p id="catalog-message" role="status" tabindex="-1"></p>
         <div id="academy-catalog" class="suite-steps"></div>
       </section>
       <section class="learn-close" aria-labelledby="close-title">

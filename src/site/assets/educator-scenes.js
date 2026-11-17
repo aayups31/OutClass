@@ -1,4 +1,4 @@
-import { autoplay, showText, typeText } from "./workspace-motion.js";
+import { autoplay, showText, typeText } from "./workspace-motion.js?v=clean-playback";
 
 for (const demo of document.querySelectorAll("[data-educator-demo]")) {
   const name = demo.dataset.educatorDemo;

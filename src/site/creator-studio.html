@@ -24,9 +24,12 @@
     <link rel="stylesheet" href="assets/glass.css" />
     <link rel="stylesheet" href="assets/showcase.css" />
     <script src="assets/showcase.js" defer></script>
-    <link rel="stylesheet" href="assets/learn.css?v=workspace-scenes" />
-    <link rel="stylesheet" href="assets/educator.css?v=workspaces" />
-    <script src="assets/educator-scenes.js?v=workspaces" type="module"></script>
+    <link rel="stylesheet" href="assets/learn.css?v=clean-playback" />
+    <link rel="stylesheet" href="assets/educator.css?v=hero-workspaces" />
+    <script
+      src="assets/educator-scenes.js?v=clean-playback"
+      type="module"
+    ></script>
   </head>
   <body class="educator-page glass-page subpage suite-page">
     <a class="skip-link" href="#main">Skip to content</a>
@@ -77,60 +80,95 @@
         </div>
         <div class="learn-hero-stage wrap">
           <div
-            class="product-window glass-demo educator-hero-window"
-            aria-label="Creator Studio concept interface"
+            class="educator-hero-window suite-preview suite-preview-studio"
+            role="img"
+            aria-label="Creator Studio workspace showing scenes, the video preview, a timeline and Muse’s caption notes."
           >
-            <div class="product-titlebar">
-              <img
-                src="assets/orbital-logo.webp"
-                width="32"
-                height="24"
-                alt=""
-              /><b>OutClass</b
-              ><span>Creator Studio / Working with real data</span>
+            <div class="suite-preview-bar">
+              <span
+                ><img
+                  src="assets/orbital-logo.webp"
+                  alt=""
+                  width="25"
+                  height="19"
+                />
+                <b>OutClass</b></span
+              >
+              <span class="suite-preview-crumb"
+                >Creator Studio <i>/</i> Preview editor</span
+              >
+              <span class="suite-preview-status"><i></i>24-second cut</span>
             </div>
-            <div class="product-body">
-              <aside class="product-sidebar">
-                <span>Overview</span><span>Academy</span
-                ><span>Creator Studio</span><span>GTM</span><span>Assets</span>
+            <div class="suite-preview-grid studio-preview-grid">
+              <aside class="suite-preview-rail">
+                <small>SCENES</small><strong>Study Report</strong>
+                <div class="studio-hero-scene">
+                  <i></i>
+                  <div><b>Hook</b><small>0:00–0:03</small></div>
+                </div>
+                <div class="studio-hero-scene suite-preview-active">
+                  <i></i>
+                  <div><b>Show the report</b><small>0:03–0:17</small></div>
+                </div>
+                <div class="studio-hero-scene">
+                  <i></i>
+                  <div><b>Try it yourself</b><small>0:17–0:24</small></div>
+                </div>
               </aside>
-              <div class="product-canvas">
-                <div class="app-breadcrumb">Projects / Python foundations</div>
-                <h3>Working with real data</h3>
-                <div class="studio-canvas">
-                  <div class="media-scene">
-                    <span>PYTHON FOUNDATIONS</span
-                    ><strong>From raw data.<br />To something useful.</strong
-                    ><i>▶　00:18 / 01:24</i>
+              <div class="studio-hero-editor">
+                <div class="studio-hero-player">
+                  <div>
+                    <small>PYTHON FOUNDATIONS</small
+                    ><strong>Turn study time<br />into a report.</strong>
                   </div>
-                  <div class="caption-line">
-                    “Let’s see what happens with an empty dataset.”
+                  <div class="studio-hero-terminal">
+                    <span>••• &nbsp; report.py</span
+                    ><code
+                      >$ python report.py<br /><i>Python</i> &nbsp; 45 min<br /><i
+                        >Git</i
+                      >
+                      &nbsp;&nbsp;&nbsp;&nbsp; 15 min</code
+                    >
+                  </div>
+                  <div class="studio-hero-caption">
+                    Group your study minutes by topic.
                   </div>
                 </div>
-                <div class="timeline-ruler">
-                  00:00　　　　　00:20　　　　　00:40　　　　　01:00
+                <div class="studio-hero-ticks">
+                  <span>0:00</span><span>0:06</span><span>0:12</span
+                  ><span>0:18</span><span>0:24</span>
                 </div>
-                <div class="timeline-track">
-                  ▥　Lesson demonstration　▥　▥　▥　▥
+                <div class="studio-hero-track">
+                  <span>Hook</span><span>Demo · Study report</span
+                  ><span>Try it</span>
                 </div>
-                <div class="timeline-track audio-track">
-                  ⌁⌁⌁⌁⌁⌁⌁⌁ Voiceover ⌁⌁⌁⌁⌁⌁⌁
-                </div>
-                <div class="timeline-track caption-track">
-                  Opening　│　Demonstration　│　Try it yourself
-                </div>
+                <div class="studio-hero-wave"></div>
               </div>
-              <aside class="product-assistant">
-                <div class="assistant-title">✧ Muse</div>
-                <div class="assistant-user">Help me take the next step.</div>
-                <p class="agent-reveal">
-                  Find the demonstration in your footage.
-                </p>
-                <div class="assistant-evidence">
-                  Plan captions and visual explanations
+              <aside class="suite-preview-inspector">
+                <div class="suite-preview-agent">
+                  <img
+                    src="assets/emblem-muse.webp"
+                    alt=""
+                    width="25"
+                    height="19"
+                  /><b>Muse</b>
                 </div>
-                <p class="agent-reveal">Prepare a preview for GTM.</p>
-                <div class="assistant-input">Ask Muse <span>↑</span></div>
+                <small>Editing notes</small
+                ><strong>Open on the finished report.</strong>
+                <div class="studio-hero-script">
+                  <small>00:03</small
+                  ><span>See what your week looks like by topic.</span>
+                </div>
+                <div class="studio-hero-script">
+                  <small>00:17</small
+                  ><span>Try it with your own study log.</span>
+                </div>
+                <div class="suite-preview-note">
+                  <svg class="icon" aria-hidden="true">
+                    <use href="assets/icons.svg#book"></use>
+                  </svg>
+                  Captions attached
+                </div>
               </aside>
             </div>
           </div>
@@ -323,7 +361,6 @@
               </div>
               <div class="learn-demo-footer" aria-hidden="true">
                 <p data-demo-caption>Preview ready for review</p>
-                <span class="demo-progress"><i></i></span>
               </div>
             </div>
           </article>
