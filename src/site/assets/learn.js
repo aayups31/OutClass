@@ -10,6 +10,8 @@ function typeText(text, time, start, duration) {
 }
 
 function autoplay(demo, name, duration, render) {
+  if (!("IntersectionObserver" in window)) return;
+
   const control = demo.querySelector("[data-demo-pause]");
   const icon = control.firstElementChild;
   const label = control.lastElementChild;
@@ -78,6 +80,7 @@ if (offcourse) {
   const corrected = line.textContent;
   const original = "totals[day] += minutes";
   const question = offcourse.querySelector("[data-demo-question]");
+  const draft = offcourse.querySelector("[data-offcourse-draft]");
   const hint = offcourse.querySelector("[data-demo-hint]");
   const questionText = question.textContent.trim();
   const hintText = hint.textContent.trim();
@@ -98,9 +101,17 @@ if (offcourse) {
     showText(after, typeText(suffix, time, 1650, 420));
     line.classList.toggle("is-corrected", fixing);
 
-    question.toggleAttribute("data-visible", time >= 3170);
+    offcourse.toggleAttribute("data-chat-active", time >= 3150 && !passed);
+    offcourse.toggleAttribute("data-running", failed || (fixing && !passed));
+    question.toggleAttribute("data-visible", time >= 4350);
     hint.toggleAttribute("data-visible", time >= 4800);
-    showText(question, typeText(questionText, time, 3250, 1040));
+    showText(
+      draft,
+      time >= 3250 && time < 4350
+        ? typeText(questionText, time, 3250, 920)
+        : "Ask OffCourse",
+    );
+    showText(question, questionText);
     showText(hint, typeText(hintText, time, 4800, 1650));
 
     const result = passed ? "success" : failed ? "error" : "idle";
@@ -113,7 +124,9 @@ if (offcourse) {
           ? "KeyError: 'Mon'"
           : fixing
             ? "Checking the update…"
-            : "Running lesson.py…",
+            : time >= 2050
+              ? "Running lesson.py…"
+              : "Ready to run",
     );
 
     let stage = "Writing the example";
@@ -129,8 +142,10 @@ if (offcourse) {
 const blueprint = document.querySelector("[data-blueprint]");
 if (blueprint) {
   const prompt = blueprint.querySelector("[data-blueprint-prompt]");
+  const response = blueprint.querySelector("[data-blueprint-response]");
   const idea = prompt.textContent.trim();
-  const tiles = [...blueprint.querySelectorAll("[data-reveal]")];
+  const answer = response.textContent.trim();
+  const tiles = [...blueprint.querySelectorAll(".blueprint-map [data-reveal]")];
   const caption = blueprint.querySelector("[data-demo-caption]");
   const milestones = [
     ...blueprint.querySelectorAll(".blueprint-milestones li"),
@@ -139,6 +154,9 @@ if (blueprint) {
 
   autoplay(blueprint, "Blueprint", 14800, (time) => {
     showText(prompt, typeText(idea, time, 110, 1600));
+    blueprint.toggleAttribute("data-chat-active", time >= 200 && time < 2800);
+    response.toggleAttribute("data-visible", time >= 1770);
+    showText(response, typeText(answer, time, 1800, 1330));
     tiles.forEach((tile, index) => {
       tile.toggleAttribute("data-visible", time >= starts[index]);
     });
