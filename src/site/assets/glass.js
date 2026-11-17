@@ -78,15 +78,61 @@ if (window.gsap && window.ScrollTrigger) {
       });
     }
     for (const stage of document.querySelectorAll(".app-stage")) {
-      gsap.from(stage.querySelectorAll(".app-window"), {
-        opacity: 0.64,
-        y: 32,
-        duration: 0.9,
-        stagger: { each: 0.1, from: "center" },
-        ease: "power3.out",
-        clearProps: "opacity,transform",
-        scrollTrigger: { trigger: stage, start: "top 87%", once: true },
-      });
+      const center = stage.querySelector(".app-window-main");
+      const left = stage.querySelector(".app-window-left");
+      const right = stage.querySelector(".app-window-right");
+      const educator = stage.closest(".app-chapter-educator");
+      const spread = educator ? 32 : -46;
+      gsap
+        .timeline({
+          defaults: { ease: "none" },
+          scrollTrigger: {
+            trigger: stage,
+            start: "top 96%",
+            end: "bottom 12%",
+            scrub: 0.65,
+          },
+        })
+        .fromTo(
+          center,
+          { "--app-flow-y": "40px", "--app-flow-scale": 0.96 },
+          { "--app-flow-y": "-13px", "--app-flow-scale": 1 },
+          0,
+        )
+        .fromTo(
+          left,
+          { "--app-flow-x": `${-spread}px`, "--app-flow-y": "55px" },
+          { "--app-flow-x": "-13px", "--app-flow-y": "-37px" },
+          0,
+        )
+        .fromTo(
+          right,
+          { "--app-flow-x": `${spread}px`, "--app-flow-y": "66px" },
+          { "--app-flow-x": "13px", "--app-flow-y": "-40px" },
+          0,
+        )
+        .fromTo(
+          stage,
+          { "--app-orbit-drift": "24px" },
+          { "--app-orbit-drift": "-22px" },
+          0,
+        );
+      if (educator) {
+        gsap.fromTo(
+          educator,
+          { "--app-educator-wipe": "100%" },
+          {
+            "--app-educator-wipe": "0%",
+            ease: "none",
+            scrollTrigger: {
+              trigger: educator,
+              start: "top 97%",
+              end: "top 28%",
+              scrub: 0.55,
+            },
+          },
+        );
+      }
     }
     const motions = {
       lift: { y: 56, scale: 0.95 },
