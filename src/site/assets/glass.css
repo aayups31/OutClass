@@ -17,6 +17,10 @@ html:has(.glass-page) {
   border-color: var(--glass-rail);
   color: var(--glass-ink);
 }
+.glass-page.home-page .site-header {
+  background: transparent;
+  border-bottom: 0;
+}
 .glass-page .site-header .wordmark {
   color: var(--glass-ink);
 }
