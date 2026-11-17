@@ -860,7 +860,7 @@ html:has(.glass-page) {
   -webkit-text-fill-color: transparent;
   filter: drop-shadow(0 14px 22px #384f9720);
 }
-.glass-page .brand-finale-cta {
+.glass-page .brand-finale .brand-finale-cta {
   display: inline-flex;
   position: relative;
   align-items: center;
