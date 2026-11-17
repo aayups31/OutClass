@@ -37,6 +37,14 @@ if (glassAgentTabs) {
 if (window.gsap && window.ScrollTrigger) {
   gsap.registerPlugin(ScrollTrigger);
   gsap.matchMedia().add("(prefers-reduced-motion: no-preference)", () => {
+    const finale = document.querySelector(".brand-finale");
+    if (finale) {
+      gsap.fromTo(finale.querySelector(".brand-finale-content"),
+        { y: 44, scale: 0.94, opacity: 0.5 },
+        { y: 0, scale: 1, opacity: 1, ease: "none",
+          scrollTrigger: { trigger: finale, start: "top 95%", end: "center 75%", scrub: 0.6 } },
+      );
+    }
     const headlines = document.querySelectorAll(
       ".glass-detail-hero .glass-scene-copy, .glass-agent-page > h1",
     );
