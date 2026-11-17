@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <meta name="theme-color" content="#f4f7ff" />
-    <title>OutClass Learn · The workspace · OutClass</title>
+    <title>OutClass Learn · Build while you learn</title>
     <meta
       name="description"
       content="Explore OffCourse, course-aware help, practice breaks, evolving projects, learning evidence, and guided open-source contributions."
@@ -19,7 +19,10 @@
       crossorigin=""
     />
     <link rel="canonical" href="https://git-learn-black.vercel.app/learn" />
-    <meta property="og:title" content="The workspace · OutClass" />
+    <meta
+      property="og:title"
+      content="OutClass Learn · Build while you learn"
+    />
     <meta
       property="og:description"
       content="Explore OffCourse, course-aware help, practice breaks, evolving projects, learning evidence, and guided open-source contributions."
@@ -35,7 +38,8 @@
     <link rel="stylesheet" href="assets/suite.css" />
     <link rel="stylesheet" href="assets/glass.css" />
     <link rel="stylesheet" href="assets/showcase.css" />
-    <script src="assets/showcase.js" defer></script>
+    <link rel="stylesheet" href="assets/workflow.css" />
+    <link rel="stylesheet" href="assets/learn.css" />
     <script src="assets/glass.js" defer></script>
   </head>
   <body class="glass-page subpage">
@@ -63,91 +67,317 @@
       </nav>
       <div class="header-actions">
         <a class="sign-in-link" href="account.html">Sign in</a
-        ><a class="button small" href="download.html"
-          >Get OutClass
+        ><a class="button small" href="download.html#learn-download"
+          >Get Learn
           <svg class="icon" aria-hidden="true">
             <use href="assets/icons.svg#arrow"></use></svg
         ></a>
       </div>
     </header>
 
-    <main id="main" tabindex="-1">
-      <section class="glass-detail-hero glass-learn" data-glass="lift">
-        <div class="glass-scene-copy">
-          <span>OutClass Learn</span>
-          <h1>Build while you learn.</h1>
-          <p>Your lesson, editor, and AI teacher work side by side.</p>
-          <a class="glass-button" href="download.html#learn-download"
-            >Get Learn ↗</a
-          >
+    <main id="main" tabindex="-1" class="learn-landing">
+      <section class="learn-hero" aria-labelledby="learn-title">
+        <div class="wrap learn-hero-copy">
+          <span class="learn-kicker">OutClass Learn</span>
+          <h1 id="learn-title">Make the lesson<br />your own.</h1>
+          <p>
+            Follow a course, write code, and turn what you learn into projects
+            you can build yourself.
+          </p>
+          <div class="learn-actions">
+            <a class="glass-button" href="download.html#learn-download"
+              >Get Learn for Windows <span aria-hidden="true">↗</span></a
+            >
+            <a href="#workflow"
+              >See how it works <span aria-hidden="true">↓</span></a
+            >
+          </div>
         </div>
-        <div
-          class="product-window glass-demo"
-          aria-label="Learn concept interface"
-        >
-          <div class="product-titlebar">
+        <div class="learn-hero-stage wrap" data-glass="lift">
+          <figure class="learn-workspace-figure">
+            <article
+              class="app-window learn-workspace glass-demo"
+              aria-label="Learn editor and OffCourse preview"
+            >
+              <div class="app-window-bar">
+                <img
+                  src="assets/orbital-logo.webp"
+                  alt=""
+                  width="30"
+                  height="22"
+                /><b>OutClass</b><span>Learn</span
+                ><small>Python foundations</small>
+              </div>
+              <div class="learn-window-grid">
+                <aside class="app-window-rail">
+                  <strong>Python foundations</strong
+                  ><small>Lesson 4 of 12</small>
+                  <div class="app-course-progress"><span></span></div>
+                  <span>✓ &nbsp; Getting started</span
+                  ><span>✓ &nbsp; Variables</span
+                  ><span>✓ &nbsp; Control flow</span
+                  ><b>▷ &nbsp; Working with data</b
+                  ><span>○ &nbsp; Functions</span>
+                </aside>
+                <div class="app-window-body">
+                  <h3>Working with data</h3>
+                  <div class="app-preview-tabs">
+                    <span>Lesson</span><b>Code</b><span>Practice</span
+                    ><span>Project</span>
+                  </div>
+                  <div class="app-editor">
+                    <div><b>lesson.py</b><span>▷ Run</span></div>
+                    <pre><code><i>1</i>  <em>def</em> summarize(records):
+<i>2</i>      totals = {}
+<i>3</i>      <em>for</em> name, minutes <em>in</em> records:
+<i>4</i>          saved = totals.get(name, 0)
+<i>5</i>          totals[name] = saved + minutes
+<i>6</i>      <em>return</em> totals</code></pre>
+                  </div>
+                  <div class="app-output">
+                    <b>✓ All tests passed</b><span>3 / 3</span>
+                  </div>
+                </div>
+                <aside class="app-window-rail app-window-ai">
+                  <strong
+                    ><img
+                      src="assets/emblem-offcourse.webp"
+                      width="23"
+                      height="18"
+                      alt=""
+                    />OffCourse</strong
+                  >
+                  <p>
+                    What should the report return when there are no records?
+                  </p>
+                  <small>Hint from lesson 4</small>
+                </aside>
+              </div>
+            </article>
+            <figcaption>Product preview · Python foundations</figcaption>
+          </figure>
+          <aside class="learn-practice-note" aria-label="Example practice task">
             <img
-              src="assets/orbital-logo.webp"
-              width="32"
+              src="assets/emblem-offcourse.webp"
+              width="31"
               height="24"
               alt=""
-            /><b>OutClass</b><span>Learn / lesson.py</span
-            ><small>Concept preview</small>
+            />
+            <div>
+              <small>Practice break</small
+              ><strong>Build a weekly activity report.</strong>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section
+        class="learn-workflow wrap"
+        id="workflow"
+        aria-labelledby="learn-workflow-title"
+      >
+        <div class="learn-section-heading">
+          <h2 id="learn-workflow-title">Go from watching to doing.</h2>
+          <p>Here’s how one Python lesson becomes a working project.</p>
+        </div>
+        <div class="learn-workflow-stage">
+          <div
+            class="learn-step-tabs"
+            role="tablist"
+            aria-label="Example learning workflow"
+          >
+            <button
+              type="button"
+              role="tab"
+              id="step-lesson"
+              aria-controls="view-lesson"
+              aria-selected="true"
+            >
+              Follow the lesson <span aria-hidden="true">↗</span>
+            </button>
+            <button
+              type="button"
+              role="tab"
+              id="step-practice"
+              aria-controls="view-practice"
+              aria-selected="false"
+              tabindex="-1"
+            >
+              Put it into practice <span aria-hidden="true">↗</span>
+            </button>
+            <button
+              type="button"
+              role="tab"
+              id="step-checkpoint"
+              aria-controls="view-checkpoint"
+              aria-selected="false"
+              tabindex="-1"
+            >
+              Save what worked <span aria-hidden="true">↗</span>
+            </button>
           </div>
-          <div class="product-body">
-            <aside class="product-sidebar">
-              <span>Courses</span><span>Python foundations</span
-              ><span>Files</span><span>lesson.py</span
-              ><span>test_lesson.py</span>
-            </aside>
-            <div class="product-canvas">
-              <div class="app-breadcrumb">
-                Python foundations / Working with collections
+
+          <div
+            id="view-lesson"
+            class="learn-step"
+            role="tabpanel"
+            aria-labelledby="step-lesson"
+            tabindex="0"
+          >
+            <div class="app-video learn-example-video">
+              <b>Working<br />with data</b><span>▶ &nbsp; Lesson overview</span>
+            </div>
+            <div class="learn-step-copy">
+              <small>Python foundations / Working with data</small>
+              <h3>Keep the lesson close to the code.</h3>
+              <p>
+                Return to the lesson when you’re stuck, then try the idea in the
+                workspace. Use the Udemy companion to connect a course you’re
+                already taking.
+              </p>
+              <a href="setup.html">Set up the Udemy companion ↗</a>
+            </div>
+          </div>
+
+          <div
+            id="view-practice"
+            class="learn-step"
+            role="tabpanel"
+            aria-labelledby="step-practice"
+            tabindex="0"
+            hidden
+          >
+            <div class="learn-sample app-window">
+              <div class="app-window-bar">
+                <img
+                  src="assets/emblem-offcourse.webp"
+                  alt=""
+                  width="30"
+                  height="22"
+                /><b>OffCourse</b><span>Practice brief</span>
               </div>
-              <div class="editor-tab">lesson.py　×</div>
-              <pre class="real-code"><span>1</span>  def summarize(records):
-<span>2</span>      totals = {}
-<span>3</span>      for name, minutes in records:
-<span>4</span>          totals[name] = totals.get(name, 0) + minutes
-<span>5</span>      return totals
-<span>6</span>
-<span>7</span>  print(summarize(today))</pre>
-              <div class="run-output">
-                <small>TERMINAL　　OUTPUT</small>
-                <p>› python lesson.py</p>
-                <code>{ "reading": 45, "coding": 90 }</code>
-                <p>✓ Process finished</p>
+              <div class="app-window-body">
+                <h3>Build a weekly activity report</h3>
+                <p>Group activity records by name and add up the minutes.</p>
+                <ul class="learn-sample-list">
+                  <li>Test two records with the same name.</li>
+                  <li>Decide what to return for an empty list.</li>
+                </ul>
               </div>
             </div>
-            <aside class="product-assistant">
-              <div class="assistant-title">✧ OffCourse</div>
-              <div class="assistant-user">Help me take the next step.</div>
-              <p class="agent-reveal">Read the error with your code.</p>
-              <div class="assistant-evidence">
-                Get a hint grounded in the lesson
-              </div>
-              <p class="agent-reveal">
-                Test your understanding with a new requirement.
+            <div class="learn-step-copy">
+              <small>Practice / Working with collections</small>
+              <h3>Try a task before moving on.</h3>
+              <p>
+                Use a practice break to apply the concept. If you get stuck,
+                OffCourse can use the lesson, your code, and the last run to
+                guide your next attempt.
               </p>
-              <div class="assistant-input">Ask OffCourse <span>↑</span></div>
-            </aside>
+              <a href="agents-learn.html#offcourse">Explore OffCourse ↗</a>
+            </div>
+          </div>
+
+          <div
+            id="view-checkpoint"
+            class="learn-step"
+            role="tabpanel"
+            aria-labelledby="step-checkpoint"
+            tabindex="0"
+            hidden
+          >
+            <div class="learn-sample app-window">
+              <div class="app-window-bar">
+                <img
+                  src="assets/orbital-logo.webp"
+                  alt=""
+                  width="30"
+                  height="22"
+                /><b>Checkpoint</b><span>Weekly activity report</span>
+              </div>
+              <div class="app-window-body">
+                <h3>Group activity by name</h3>
+                <div class="app-output">
+                  <b>✓ All tests passed</b><span>3 / 3</span>
+                </div>
+                <p>
+                  <strong>Reflection</strong><br />I used a default of zero so a
+                  new activity can start accumulating immediately.
+                </p>
+              </div>
+            </div>
+            <div class="learn-step-copy">
+              <small>Project / Weekly activity report</small>
+              <h3>Keep evidence of what you learned.</h3>
+              <p>
+                Save the code and a short reflection at a checkpoint. When you
+                return, you can see what worked and why you made that choice.
+              </p>
+              <a href="setup.html">See the workspace setup ↗</a>
+            </div>
           </div>
         </div>
       </section>
-      <section
-        class="glass-detail-section wrap"
-        id="workflow"
-        data-glass="band"
-      >
-        <h2>Practice before the final lesson.</h2>
-        <p>
-          Use checkpoints to keep a record of the experiments that taught you
-          something.
-        </p>
-        <div class="glass-detail-flow">
-          <b>Watch a lesson</b><b>Try a small task</b><b>Save a checkpoint</b>
+
+      <section class="learn-agents" aria-labelledby="learn-agents-title">
+        <div class="wrap">
+          <div class="learn-section-heading">
+            <h2 id="learn-agents-title">
+              Get help in the lesson. Then build beyond it.
+            </h2>
+          </div>
+          <div class="learn-agent-pair">
+            <article>
+              <img
+                src="assets/emblem-offcourse.webp"
+                width="124"
+                height="96"
+                alt=""
+                loading="lazy"
+              />
+              <div>
+                <h3>OffCourse</h3>
+                <p>
+                  Ask why a test failed, get a hint based on the lesson and your
+                  code, or find a practical way to use the concept next.
+                </p>
+                <a href="agents-learn.html#offcourse">Meet OffCourse ↗</a>
+              </div>
+            </article>
+            <article>
+              <img
+                src="assets/emblem-blueprint.webp"
+                width="124"
+                height="96"
+                alt=""
+                loading="lazy"
+              />
+              <div>
+                <h3>Blueprint</h3>
+                <p>
+                  Bring an idea and turn it into a project plan with milestones,
+                  decisions, and a next step you can work on.
+                </p>
+                <a href="agents-learn.html#blueprint">Meet Blueprint ↗</a>
+              </div>
+            </article>
+          </div>
         </div>
-        <a href="agents.html#tab-learn">Meet the Learn agents ↗</a>
+      </section>
+
+      <section class="learn-close wrap" aria-labelledby="learn-close-title">
+        <div>
+          <h2 id="learn-close-title">Start with a course you already have.</h2>
+          <p>
+            Choose a local learning folder, connect your Udemy course, and try
+            the built-in editor or keep using VS Code.
+          </p>
+        </div>
+        <div class="learn-actions">
+          <a class="glass-button" href="download.html#learn-download"
+            >Get Learn for Windows ↗</a
+          >
+          <a href="setup.html">Read the setup guide ↗</a>
+        </div>
       </section>
     </main>
     <footer class="site-footer wrap">
