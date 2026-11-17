@@ -21,9 +21,11 @@
     <link rel="stylesheet" href="assets/glass.css" />
     <link rel="stylesheet" href="assets/showcase.css" />
     <script src="assets/showcase.js" defer></script>
-    <script src="assets/glass.js" defer></script>
+    <link rel="stylesheet" href="assets/learn.css?v=workspace-scenes" />
+    <link rel="stylesheet" href="assets/educator.css?v=workspaces" />
+    <script src="assets/educator-scenes.js?v=workspaces" type="module"></script>
   </head>
-  <body class="glass-page subpage suite-page">
+  <body class="educator-page glass-page subpage suite-page">
     <a class="skip-link" href="#main">Skip to content</a>
     <header class="site-header">
       <a class="wordmark" href="./" aria-label="OutClass home"
@@ -57,96 +59,481 @@
     </header>
 
     <main id="main" tabindex="-1">
-      <section class="glass-detail-hero glass-gtm" data-glass="stack">
-        <div class="glass-scene-copy">
-          <span>GTM</span>
-          <h1>Give your course a launch.</h1>
-          <p>
-            Adapt a post for each channel and review the media before
-            publishing.
-          </p>
-          <a class="glass-button" href="download.html#educator-download"
-            >Get Educator ↗</a
-          >
-        </div>
-        <div
-          class="product-window glass-demo"
-          aria-label="GTM concept interface"
-        >
-          <div class="product-titlebar">
-            <img
-              src="assets/orbital-logo.webp"
-              width="32"
-              height="24"
-              alt=""
-            /><b>OutClass</b><span>GTM / Activity API launch</span
-            ><small>Concept preview</small>
+      <section class="learn-hero educator-hero" aria-labelledby="product-title">
+        <div class="wrap learn-hero-copy">
+          <h1 id="product-title">OutClass GTM.</h1>
+          <p>Launch your course and see what brings learners in.</p>
+          <div class="learn-actions">
+            <a class="glass-button" href="download.html#educator-download"
+              >Get Educator for Windows <span aria-hidden="true">↗</span></a
+            >
+            <a href="#workflow"
+              >See how it works <span aria-hidden="true">↓</span></a
+            >
           </div>
-          <div class="product-body">
-            <aside class="product-sidebar">
-              <span>Overview</span><span>Academy</span
-              ><span>Creator Studio</span><span>GTM</span><span>Assets</span>
-            </aside>
-            <div class="product-canvas">
-              <div class="app-breadcrumb">Campaigns / Activity API</div>
-              <h3>From the lesson to the launch.</h3>
-              <div class="campaign-heading">
-                <span>Content from Creator Studio</span><b>Ready for review</b>
-              </div>
-              <div class="media-scene campaign-media">
-                <span>PYTHON FOUNDATIONS</span
-                ><strong>Your first API.<br />Built by you.</strong
-                ><i>Preview · 00:24</i>
-              </div>
-              <div class="campaign-row">
-                <b>𝕏　X</b
-                ><span>One small API. One real skill. Start building.</span
-                ><em>Draft</em>
-              </div>
-              <div class="campaign-row">
-                <b>in　LinkedIn</b
-                ><span>What changes when learners build during the lesson?</span
-                ><em>Draft</em>
-              </div>
-              <div class="campaign-row">
-                <b>▷　YouTube</b><span>Build an Activity API with Python</span
-                ><em>Review</em>
-              </div>
+        </div>
+        <div class="learn-hero-stage wrap">
+          <div
+            class="product-window glass-demo educator-hero-window"
+            aria-label="GTM concept interface"
+          >
+            <div class="product-titlebar">
+              <img
+                src="assets/orbital-logo.webp"
+                width="32"
+                height="24"
+                alt=""
+              /><b>OutClass</b><span>GTM / Activity API launch</span>
             </div>
-            <aside class="product-assistant">
-              <div class="assistant-title">✧ Signal</div>
-              <div class="assistant-user">Help me take the next step.</div>
-              <p class="agent-reveal">
-                Bring content over from Creator Studio.
-              </p>
-              <div class="assistant-evidence">
-                Adapt copy and media for each channel
+            <div class="product-body">
+              <aside class="product-sidebar">
+                <span>Overview</span><span>Academy</span
+                ><span>Creator Studio</span><span>GTM</span><span>Assets</span>
+              </aside>
+              <div class="product-canvas">
+                <div class="app-breadcrumb">Campaigns / Activity API</div>
+                <h3>From the lesson to the launch.</h3>
+                <div class="campaign-heading">
+                  <span>Content from Creator Studio</span
+                  ><b>Ready for review</b>
+                </div>
+                <div class="media-scene campaign-media">
+                  <span>PYTHON FOUNDATIONS</span
+                  ><strong>Your first API.<br />Built by you.</strong
+                  ><i>Preview · 00:24</i>
+                </div>
+                <div class="campaign-row">
+                  <b>𝕏　X</b
+                  ><span>One small API. One real skill. Start building.</span
+                  ><em>Draft</em>
+                </div>
+                <div class="campaign-row">
+                  <b>in　LinkedIn</b
+                  ><span
+                    >What changes when learners build during the lesson?</span
+                  ><em>Draft</em>
+                </div>
+                <div class="campaign-row">
+                  <b>▷　YouTube</b><span>Build an Activity API with Python</span
+                  ><em>Review</em>
+                </div>
               </div>
-              <p class="agent-reveal">
-                Review the campaign and learn from results.
-              </p>
-              <div class="assistant-input">
-                Ask Signal <span>↑</span>
-              </div>
-            </aside>
+              <aside class="product-assistant">
+                <div class="assistant-title">✧ Signal</div>
+                <div class="assistant-user">Help me take the next step.</div>
+                <p class="agent-reveal">
+                  Bring content over from Creator Studio.
+                </p>
+                <div class="assistant-evidence">
+                  Adapt copy and media for each channel
+                </div>
+                <p class="agent-reveal">
+                  Review the campaign and learn from results.
+                </p>
+                <div class="assistant-input">Ask Signal <span>↑</span></div>
+              </aside>
+            </div>
           </div>
         </div>
       </section>
       <section
-        class="glass-detail-section wrap"
+        class="learn-workflow wrap"
         id="workflow"
-        data-glass="band"
+        aria-labelledby="workflow-title"
       >
-        <h2>Preview the post before it goes out.</h2>
-        <p>
-          Connect an eligible account to publish reviewed drafts. Use campaign
-          evidence to plan what to try next.
-        </p>
-        <div class="glass-detail-flow">
-          <b>Draft for a channel</b><b>Review the preview</b
-          ><b>Measure the response</b>
+        <div class="learn-section-heading">
+          <h2 id="workflow-title">From draft to the next test.</h2>
         </div>
-        <a href="agents.html#tab-gtm">Meet the GTM agents ↗</a>
+        <div class="learn-flow">
+          <div class="learn-flow-bar">
+            <img
+              src="assets/orbital-logo.webp"
+              width="28"
+              height="22"
+              alt=""
+            /><strong>GTM</strong><small>Python Foundations launch</small>
+          </div>
+          <div class="learn-flow-panes">
+            <article class="learn-flow-pane">
+              <h3>
+                <svg class="icon" aria-hidden="true">
+                  <use href="assets/icons.svg#folder"></use>
+                </svg>
+                Adapt
+              </h3>
+              <div class="educator-flow-visual educator-flow-light">
+                <b>Course preview</b><span>LinkedIn · Draft</span
+                ><span>X · Draft</span>
+              </div>
+              <div class="learn-flow-evidence">Tailor copy and media</div>
+            </article>
+            <article class="learn-flow-pane">
+              <h3>
+                <svg class="icon" aria-hidden="true">
+                  <use href="assets/icons.svg#monitor"></use>
+                </svg>
+                Review
+              </h3>
+              <div class="educator-flow-visual educator-flow-dark">
+                <b>Post preview</b><span>OutClass · LinkedIn</span
+                ><span>Ready for approval</span>
+              </div>
+              <div class="learn-flow-evidence">Approve before publishing</div>
+            </article>
+            <article class="learn-flow-pane">
+              <h3>
+                <svg class="icon" aria-hidden="true">
+                  <use href="assets/icons.svg#code"></use>
+                </svg>
+                Measure
+              </h3>
+              <div class="educator-flow-visual educator-flow-light">
+                <b>Channel results</b><span>Impressions · Clicks</span
+                ><span>Compare click rates</span>
+              </div>
+              <div class="learn-flow-evidence">
+                Use results to plan a new test
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+      <section class="learn-agents" aria-labelledby="agent-title">
+        <div class="wrap">
+          <div class="learn-section-heading">
+            <h2 id="agent-title">The agents, at work.</h2>
+          </div>
+
+          <article
+            id="signal"
+            class="learn-agent-scene"
+            aria-labelledby="signal-title"
+          >
+            <div class="learn-agent-copy">
+              <div class="learn-agent-name">
+                <img
+                  src="assets/emblem-signal.webp"
+                  width="44"
+                  height="34"
+                  alt=""
+                /><strong>Signal</strong>
+              </div>
+              <h3 id="signal-title">Give every channel its own draft.</h3>
+              <p>
+                Signal turns course assets into channel-specific posts and
+                brings the copy and media together for review before publishing.
+              </p>
+            </div>
+            <div class="learn-demo educator-demo" data-educator-demo="Signal">
+              <div class="learn-demo-bar">
+                <span class="learn-demo-brand"
+                  ><img
+                    src="assets/orbital-logo.webp"
+                    width="26"
+                    height="20"
+                    alt=""
+                  /><span
+                    >Workspace <small>/ GTM / Campaigns</small></span
+                  ></span
+                >
+                <button
+                  class="learn-demo-pause"
+                  type="button"
+                  data-demo-pause
+                  hidden
+                >
+                  <span aria-hidden="true">Ⅱ</span
+                  ><span class="learn-sr-only">Pause Signal demo</span>
+                </button>
+              </div>
+              <p class="learn-sr-only">
+                Signal adapts a Creator Studio preview into an explanatory
+                LinkedIn draft and a shorter X draft. The example illustrates
+                approval and simulates posting to X.
+              </p>
+              <div class="educator-workspace" aria-hidden="true">
+                <aside class="learn-demo-rail">
+                  <strong>GTM</strong><small>Workspace</small
+                  ><span class="rail-active">Python Foundations launch</span
+                  ><span>Drafts</span><span>Media</span
+                  ><span>Publishing review</span>
+                </aside>
+                <div class="educator-canvas">
+                  <div class="learn-demo-pane-head">
+                    <strong>Python Foundations launch</strong
+                    ><span>Creator Studio preview</span>
+                  </div>
+                  <div class="educator-social-stage">
+                    <div
+                      class="educator-beat educator-social-beat"
+                      data-beat="1"
+                      data-caption="Drafting for LinkedIn"
+                    >
+                      <div class="educator-social linkedin-draft">
+                        <div class="educator-social-title">
+                          <b>LinkedIn</b><small>Draft preview</small>
+                        </div>
+                        <div class="educator-social-author">
+                          <img
+                            src="assets/orbital-logo.webp"
+                            width="33"
+                            height="26"
+                            alt=""
+                          />
+                          <div>
+                            <b>OutClass</b><small>Post to Anyone</small>
+                          </div>
+                        </div>
+                        <p data-educator-post>
+                          You can learn Python dictionaries by building
+                          something you’ll actually use. In Python Foundations,
+                          turn a study log into a weekly report you can run from
+                          the terminal.
+                        </p>
+                        <div class="educator-social-footer">
+                          <span
+                            ><svg class="icon" aria-hidden="true">
+                              <use href="assets/icons.svg#puzzle"></use>
+                            </svg>
+                            &nbsp;
+                            <svg class="icon" aria-hidden="true">
+                              <use
+                                href="assets/icons.svg#book"
+                              ></use></svg></span
+                          ><span>Post</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div
+                      class="educator-beat educator-social-beat"
+                      data-beat="2"
+                      data-caption="Adapting the draft for X"
+                    >
+                      <div class="educator-social x-draft">
+                        <div class="educator-social-title">
+                          <b>X</b><small>Draft preview</small>
+                        </div>
+                        <div class="educator-social-author">
+                          <img
+                            src="assets/orbital-logo.webp"
+                            width="33"
+                            height="26"
+                            alt=""
+                          />
+                          <div>
+                            <b>OutClass</b
+                            ><small>@OutClass · Everyone can reply</small>
+                          </div>
+                        </div>
+                        <p data-educator-post>
+                          Turn a study log into a weekly report with Python.
+                          Start with a CSV, group the minutes, and ship a tool
+                          you can use again.
+                        </p>
+                        <div class="educator-attachment">
+                          ▷ &nbsp; Preview · Build a study report
+                        </div>
+                        <div class="educator-social-footer">
+                          <span
+                            ><svg class="icon" aria-hidden="true">
+                              <use href="assets/icons.svg#puzzle"></use>
+                            </svg>
+                            &nbsp;
+                            <svg class="icon" aria-hidden="true">
+                              <use
+                                href="assets/icons.svg#book"
+                              ></use></svg></span
+                          ><span class="educator-sample-post">Post</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="educator-social-status">
+                    <div
+                      class="educator-beat"
+                      data-beat="3"
+                      data-caption="Two drafts ready for review"
+                    >
+                      <div class="educator-ready">
+                        ✓ LinkedIn and X drafts ready for approval
+                      </div>
+                    </div>
+                    <div
+                      class="educator-beat"
+                      data-beat="4"
+                      data-caption="Example post published on X"
+                    >
+                      <div class="educator-ready">
+                        ✓ X draft approved and posted in this example
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="educator-chat">
+                  <div class="learn-demo-pane-head">
+                    <strong
+                      ><img
+                        src="assets/emblem-signal.webp"
+                        width="24"
+                        height="19"
+                        alt=""
+                      />Signal</strong
+                    >
+                  </div>
+                  <p class="demo-user-message" data-educator-question>
+                    Use our course preview to draft a launch post for LinkedIn
+                    and X.
+                  </p>
+                  <p class="demo-agent-message" data-educator-answer>
+                    I’ll explain what learners will build on LinkedIn and give X
+                    the shorter version. Both stay in review until you approve.
+                  </p>
+                  <div class="learn-demo-composer">
+                    <span data-educator-draft>Ask Signal</span><span>↑</span>
+                  </div>
+                </div>
+              </div>
+              <div class="learn-demo-footer" aria-hidden="true">
+                <p data-demo-caption>Example post published on X</p>
+                <span class="demo-progress"><i></i></span>
+              </div>
+            </div>
+          </article>
+          <article
+            id="pulse"
+            class="learn-agent-scene"
+            aria-labelledby="pulse-title"
+          >
+            <div class="learn-agent-copy">
+              <div class="learn-agent-name">
+                <img
+                  src="assets/emblem-pulse.webp"
+                  width="44"
+                  height="34"
+                  alt=""
+                /><strong>Pulse</strong>
+              </div>
+              <h3 id="pulse-title">Know what to try next.</h3>
+              <p>
+                Pulse compares campaign results across channels and helps you
+                choose the next message or format to test.
+              </p>
+            </div>
+            <div class="learn-demo educator-demo" data-educator-demo="Pulse">
+              <div class="learn-demo-bar">
+                <span class="learn-demo-brand"
+                  ><img
+                    src="assets/orbital-logo.webp"
+                    width="26"
+                    height="20"
+                    alt=""
+                  /><span
+                    >Workspace <small>/ GTM / Campaign analytics</small></span
+                  ></span
+                >
+                <button
+                  class="learn-demo-pause"
+                  type="button"
+                  data-demo-pause
+                  hidden
+                >
+                  <span aria-hidden="true">Ⅱ</span
+                  ><span class="learn-sr-only">Pause Pulse demo</span>
+                </button>
+              </div>
+              <p class="learn-sr-only">
+                In the sample report, LinkedIn received 312 clicks from 8,200
+                impressions and X received 74 clicks from 4,200 impressions.
+                Pulse suggests testing a shorter preview on LinkedIn.
+              </p>
+              <div class="educator-workspace" aria-hidden="true">
+                <aside class="learn-demo-rail">
+                  <strong>GTM</strong><small>Workspace</small
+                  ><span class="rail-active">Campaign analytics</span
+                  ><span>Channel results</span><span>Next experiment</span>
+                </aside>
+                <div class="educator-canvas">
+                  <div class="learn-demo-pane-head">
+                    <strong>Python Foundations launch</strong
+                    ><span>Sample campaign results</span>
+                  </div>
+                  <div
+                    class="educator-beat"
+                    data-beat="1"
+                    data-caption="Comparing campaign totals"
+                  >
+                    <div class="educator-metrics">
+                      <div>
+                        <small>Impressions</small><strong>12,400</strong>
+                      </div>
+                      <div><small>Clicks</small><strong>386</strong></div>
+                      <div><small>Click rate</small><strong>3.1%</strong></div>
+                    </div>
+                  </div>
+                  <div
+                    class="educator-beat"
+                    data-beat="2"
+                    data-caption="Comparing channel click rates"
+                  >
+                    <div class="educator-chart">
+                      <div><b>LinkedIn</b><i></i><small>3.8%</small></div>
+                      <div><b>X</b><i></i><small>1.8%</small></div>
+                    </div>
+                  </div>
+                  <div
+                    class="educator-beat"
+                    data-beat="3"
+                    data-caption="Next experiment recommended"
+                  >
+                    <div class="educator-ready">
+                      Next test · Try a shorter preview on LinkedIn
+                    </div>
+                  </div>
+                </div>
+                <div class="educator-chat">
+                  <div class="learn-demo-pane-head">
+                    <strong
+                      ><img
+                        src="assets/emblem-pulse.webp"
+                        width="24"
+                        height="19"
+                        alt=""
+                      />Pulse</strong
+                    >
+                  </div>
+                  <p class="demo-user-message" data-educator-question>
+                    Which channel brought more people to the course?
+                  </p>
+                  <p class="demo-agent-message" data-educator-answer>
+                    LinkedIn drove more clicks and had a higher click rate in
+                    this sample. Test a shorter preview there first.
+                  </p>
+                  <div class="learn-demo-composer">
+                    <span data-educator-draft>Ask Pulse</span><span>↑</span>
+                  </div>
+                </div>
+              </div>
+              <div class="learn-demo-footer" aria-hidden="true">
+                <p data-demo-caption>Next experiment recommended</p>
+                <span class="demo-progress"><i></i></span>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="learn-close" aria-labelledby="close-title">
+        <div class="wrap">
+          <h2 id="close-title">Get GTM with OutClass Educator.</h2>
+          <div class="learn-actions">
+            <a class="glass-button" href="download.html#educator-download"
+              >Get Educator for Windows <span aria-hidden="true">↗</span></a
+            >
+            <a href="setup.html"
+              >Read the setup guide <span aria-hidden="true">↗</span></a
+            >
+          </div>
+        </div>
       </section>
     </main>
     <footer class="site-footer wrap">
@@ -164,8 +551,7 @@
           <a href="learn.html">Learn</a><a href="academy.html">Academy</a
           ><a href="creator-studio.html">Creator Studio</a
           ><a href="gtm.html">GTM</a> <a href="agents.html">Agents</a
-          ><a href="setup.html">Setup</a><a href="privacy.html">Privacy</a
-          >
+          ><a href="setup.html">Setup</a><a href="privacy.html">Privacy</a>
         </nav>
         <span class="footer-copyright">© 2026 OutClass</span>
       </div>

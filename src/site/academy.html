@@ -22,9 +22,11 @@
     <link rel="stylesheet" href="assets/glass.css" />
     <link rel="stylesheet" href="assets/showcase.css" />
     <script src="assets/showcase.js" defer></script>
-    <script src="assets/glass.js" defer></script>
+    <link rel="stylesheet" href="assets/learn.css?v=workspace-scenes" />
+    <link rel="stylesheet" href="assets/educator.css?v=workspaces" />
+    <script src="assets/educator-scenes.js?v=workspaces" type="module"></script>
   </head>
-  <body class="glass-page subpage suite-page">
+  <body class="educator-page glass-page subpage suite-page">
     <a class="skip-link" href="#main">Skip to content</a>
     <header class="site-header">
       <a class="wordmark" href="./" aria-label="OutClass home"
@@ -58,95 +60,426 @@
     </header>
 
     <main id="main" tabindex="-1">
-      <section class="glass-detail-hero glass-academy" data-glass="wipe">
-        <div class="glass-scene-copy">
-          <span>Academy</span>
-          <h1>Teach through real projects.</h1>
-          <p>Turn chapters into exercises and capstones with Forge.</p>
-          <a class="glass-button" href="download.html#educator-download"
-            >Get Educator ↗</a
-          >
-        </div>
-        <div
-          class="product-window glass-demo"
-          aria-label="Academy concept interface"
-        >
-          <div class="product-titlebar">
-            <img
-              src="assets/orbital-logo.webp"
-              width="32"
-              height="24"
-              alt=""
-            /><b>OutClass</b><span>Academy / Activity API</span
-            ><small>Concept preview</small>
+      <section class="learn-hero educator-hero" aria-labelledby="product-title">
+        <div class="wrap learn-hero-copy">
+          <h1 id="product-title">OutClass Academy.</h1>
+          <p>Build courses around what students will do.</p>
+          <div class="learn-actions">
+            <a class="glass-button" href="download.html#educator-download"
+              >Get Educator for Windows <span aria-hidden="true">↗</span></a
+            >
+            <a href="#workflow"
+              >See how it works <span aria-hidden="true">↓</span></a
+            >
           </div>
-          <div class="product-body">
-            <aside class="product-sidebar">
-              <span>Overview</span><span>Academy</span
-              ><span>Creator Studio</span><span>GTM</span><span>Assets</span>
-            </aside>
-            <div class="product-canvas">
-              <div class="app-breadcrumb">Python foundations / Section 03</div>
-              <h3>Working with real data</h3>
-              <div class="curriculum">
-                <div>
-                  <small>LESSONS</small>
-                  <p>01　Import and clean a dataset <em>08:24</em></p>
-                  <p class="active">02　Group records <em>12:06</em></p>
-                  <p>03　Build the report <em>09:18</em></p>
-                </div>
-                <div class="lesson-canvas">
-                  <div class="media-scene">
-                    <span>PYTHON FOUNDATIONS</span
-                    ><strong>Make your data<br />tell a story.</strong
-                    ><i>▶　12:06</i>
-                  </div>
-                  <p>Lesson resources</p>
-                  <div class="resource-line">
-                    ▧ lesson-03.mp4　 ⌘ starter.zip　 ≡ notes.pdf
-                  </div>
-                  <div class="app-task">
-                    <b>Capstone · Activity API</b
-                    ><span
-                      >Validate inputs → Aggregate records → Test edge
-                      cases</span
-                    >
-                  </div>
-                </div>
-              </div>
+        </div>
+        <div class="learn-hero-stage wrap">
+          <div
+            class="product-window glass-demo educator-hero-window"
+            aria-label="Academy concept interface"
+          >
+            <div class="product-titlebar">
+              <img
+                src="assets/orbital-logo.webp"
+                width="32"
+                height="24"
+                alt=""
+              /><b>OutClass</b><span>Academy / Activity API</span>
             </div>
-            <aside class="product-assistant">
-              <div class="assistant-title">✧ Forge</div>
-              <div class="assistant-user">
-                Help me design a capstone for this section.
+            <div class="product-body">
+              <aside class="product-sidebar">
+                <span>Overview</span><span>Academy</span
+                ><span>Creator Studio</span><span>GTM</span><span>Assets</span>
+              </aside>
+              <div class="product-canvas">
+                <div class="app-breadcrumb">
+                  Python foundations / Section 03
+                </div>
+                <h3>Working with real data</h3>
+                <div class="curriculum">
+                  <div>
+                    <small>LESSONS</small>
+                    <p>01　Import and clean a dataset <em>08:24</em></p>
+                    <p class="active">02　Group records <em>12:06</em></p>
+                    <p>03　Build the report <em>09:18</em></p>
+                  </div>
+                  <div class="lesson-canvas">
+                    <div class="media-scene">
+                      <span>PYTHON FOUNDATIONS</span
+                      ><strong>Make your data<br />tell a story.</strong
+                      ><i>▶　12:06</i>
+                    </div>
+                    <p>Lesson resources</p>
+                    <div class="resource-line">
+                      ▧ lesson-03.mp4　 ⌘ starter.zip　 ≡ notes.pdf
+                    </div>
+                    <div class="app-task">
+                      <b>Capstone · Activity API</b
+                      ><span
+                        >Validate inputs → Aggregate records → Test edge
+                        cases</span
+                      >
+                    </div>
+                  </div>
+                </div>
               </div>
-              <p class="agent-reveal">Connect objectives to practical tasks.</p>
-              <div class="assistant-evidence">
-                Build a scaffold with teaching notes
-              </div>
-              <p class="agent-reveal">Preview the learner experience.</p>
-              <div class="assistant-input">
-                Ask Forge <span>↑</span>
-              </div>
-            </aside>
+              <aside class="product-assistant">
+                <div class="assistant-title">✧ Forge</div>
+                <div class="assistant-user">
+                  Help me design a capstone for this section.
+                </div>
+                <p class="agent-reveal">
+                  Connect objectives to practical tasks.
+                </p>
+                <div class="assistant-evidence">
+                  Build a scaffold with teaching notes
+                </div>
+                <p class="agent-reveal">Preview the learner experience.</p>
+                <div class="assistant-input">Ask Forge <span>↑</span></div>
+              </aside>
+            </div>
           </div>
         </div>
       </section>
       <section
-        class="glass-detail-section wrap"
+        class="learn-workflow wrap"
         id="workflow"
-        data-glass="band"
+        aria-labelledby="workflow-title"
       >
-        <h2>From course outline to capstone.</h2>
-        <p>
-          Group lessons in chapters, attach resources, and review your course in
-          the built-in learner preview.
-        </p>
-        <div class="glass-detail-flow">
-          <b>Group lessons</b><b>Design a capstone</b><b>Preview in Learn</b>
+        <div class="learn-section-heading">
+          <h2 id="workflow-title">From outline to capstone.</h2>
         </div>
-        <a href="agents.html#tab-academy">Meet the Academy agents ↗</a>
+        <div class="learn-flow">
+          <div class="learn-flow-bar">
+            <img
+              src="assets/orbital-logo.webp"
+              width="28"
+              height="22"
+              alt=""
+            /><strong>Academy</strong><small>Python Foundations</small>
+          </div>
+          <div class="learn-flow-panes">
+            <article class="learn-flow-pane">
+              <h3>
+                <svg class="icon" aria-hidden="true">
+                  <use href="assets/icons.svg#folder"></use>
+                </svg>
+                Curriculum
+              </h3>
+              <div class="educator-flow-visual educator-flow-light">
+                <b>Python Foundations</b><span>Prepare data</span
+                ><span>Group records</span><span>Build the report</span>
+              </div>
+              <div class="learn-flow-evidence">
+                Chapter and lesson structure
+              </div>
+            </article>
+            <article class="learn-flow-pane">
+              <h3>
+                <svg class="icon" aria-hidden="true">
+                  <use href="assets/icons.svg#code"></use>
+                </svg>
+                Capstone
+              </h3>
+              <div class="educator-flow-visual educator-flow-dark">
+                <code>README.md<br />report.py<br />test_report.py</code>
+              </div>
+              <div class="learn-flow-evidence">Starter files and checks</div>
+            </article>
+            <article class="learn-flow-pane">
+              <h3>
+                <svg class="icon" aria-hidden="true">
+                  <use href="assets/icons.svg#monitor"></use>
+                </svg>
+                Preview in Learn
+              </h3>
+              <div class="educator-flow-visual educator-flow-light">
+                <b>Build a weekly report</b><span>Lesson guide</span
+                ><span>Starter files</span><span>Acceptance checks</span>
+              </div>
+              <div class="learn-flow-evidence">
+                Review the learner experience
+              </div>
+            </article>
+          </div>
+        </div>
       </section>
+      <section class="learn-agents" aria-labelledby="agent-title">
+        <div class="wrap">
+          <div class="learn-section-heading">
+            <h2 id="agent-title">The agents, at work.</h2>
+          </div>
+
+          <article
+            id="atlas"
+            class="learn-agent-scene"
+            aria-labelledby="atlas-title"
+          >
+            <div class="learn-agent-copy">
+              <div class="learn-agent-name">
+                <img
+                  src="assets/emblem-atlas.webp"
+                  width="44"
+                  height="34"
+                  alt=""
+                /><strong>Atlas</strong>
+              </div>
+              <h3 id="atlas-title">Give your course a clear path.</h3>
+              <p>
+                Atlas helps sequence chapters, define learning objectives, and
+                connect each lesson to something students can do.
+              </p>
+            </div>
+            <div class="learn-demo educator-demo" data-educator-demo="Atlas">
+              <div class="learn-demo-bar">
+                <span class="learn-demo-brand"
+                  ><img
+                    src="assets/orbital-logo.webp"
+                    width="26"
+                    height="20"
+                    alt=""
+                  /><span
+                    >Workspace <small>/ Academy / Curriculum</small></span
+                  ></span
+                >
+                <button
+                  class="learn-demo-pause"
+                  type="button"
+                  data-demo-pause
+                  hidden
+                >
+                  <span aria-hidden="true">Ⅱ</span
+                  ><span class="learn-sr-only">Pause Atlas demo</span>
+                </button>
+              </div>
+              <p class="learn-sr-only">
+                Atlas proposes three chapters for Python Foundations: prepare
+                the input, group study minutes, then build and test a weekly
+                report.
+              </p>
+              <div class="educator-workspace" aria-hidden="true">
+                <aside class="learn-demo-rail">
+                  <strong>Academy</strong><small>Workspace</small
+                  ><span>Courses</span
+                  ><span class="rail-active">Curriculum</span
+                  ><span>Lessons</span><span>Resources</span
+                  ><span>Learner preview</span>
+                </aside>
+                <div class="educator-canvas">
+                  <div class="learn-demo-pane-head">
+                    <strong>Python Foundations</strong><span>Course draft</span>
+                  </div>
+                  <div
+                    class="educator-beat"
+                    data-beat="1"
+                    data-caption="Outlining the first chapter"
+                  >
+                    <div class="educator-row">
+                      <div>
+                        <b>Prepare the input</b
+                        ><small>Read a CSV and validate study sessions</small>
+                      </div>
+                      Chapter 1
+                    </div>
+                  </div>
+                  <div
+                    class="educator-beat"
+                    data-beat="2"
+                    data-caption="Linking the lesson to practice"
+                  >
+                    <div class="educator-row">
+                      <div>
+                        <b>Group study minutes</b
+                        ><small
+                          >Use dictionaries to total minutes by topic</small
+                        >
+                      </div>
+                      Chapter 2
+                    </div>
+                  </div>
+                  <div
+                    class="educator-beat"
+                    data-beat="3"
+                    data-caption="Curriculum draft ready"
+                  >
+                    <div class="educator-row">
+                      <div>
+                        <b>Build the weekly report</b
+                        ><small>Test a repeated topic and an empty week</small>
+                      </div>
+                      Capstone
+                    </div>
+                  </div>
+                </div>
+                <div class="educator-chat">
+                  <div class="learn-demo-pane-head">
+                    <strong
+                      ><img
+                        src="assets/emblem-atlas.webp"
+                        width="24"
+                        height="19"
+                        alt=""
+                      />Atlas</strong
+                    >
+                  </div>
+                  <p class="demo-user-message" data-educator-question>
+                    Help me structure a course around one project: a weekly
+                    study report.
+                  </p>
+                  <p class="demo-agent-message" data-educator-answer>
+                    Start with the CSV, practice grouping on a tiny dataset,
+                    then bring both skills together in the report.
+                  </p>
+                  <div class="learn-demo-composer">
+                    <span data-educator-draft>Ask Atlas</span><span>↑</span>
+                  </div>
+                </div>
+              </div>
+              <div class="learn-demo-footer" aria-hidden="true">
+                <p data-demo-caption>Curriculum draft ready</p>
+                <span class="demo-progress"><i></i></span>
+              </div>
+            </div>
+          </article>
+          <article
+            id="forge"
+            class="learn-agent-scene"
+            aria-labelledby="forge-title"
+          >
+            <div class="learn-agent-copy">
+              <div class="learn-agent-name">
+                <img
+                  src="assets/emblem-forge.webp"
+                  width="44"
+                  height="34"
+                  alt=""
+                /><strong>Forge</strong>
+              </div>
+              <h3 id="forge-title">Turn a lesson into a build.</h3>
+              <p>
+                Forge drafts exercises and capstones with starter files,
+                instructions, and checks you can review before students open
+                them in Learn.
+              </p>
+            </div>
+            <div class="learn-demo educator-demo" data-educator-demo="Forge">
+              <div class="learn-demo-bar">
+                <span class="learn-demo-brand"
+                  ><img
+                    src="assets/orbital-logo.webp"
+                    width="26"
+                    height="20"
+                    alt=""
+                  /><span
+                    >Workspace <small>/ Academy / Capstone</small></span
+                  ></span
+                >
+                <button
+                  class="learn-demo-pause"
+                  type="button"
+                  data-demo-pause
+                  hidden
+                >
+                  <span aria-hidden="true">Ⅱ</span
+                  ><span class="learn-sr-only">Pause Forge demo</span>
+                </button>
+              </div>
+              <p class="learn-sr-only">
+                Forge drafts a weekly report project with a build guide, Python
+                starter file and checks for repeated topics, empty weeks, and
+                invalid input.
+              </p>
+              <div class="educator-workspace" aria-hidden="true">
+                <aside class="learn-demo-rail">
+                  <strong>Academy</strong><small>Workspace</small
+                  ><span>Overview</span><span>Starter files</span
+                  ><span>Acceptance checks</span><span>Learner preview</span>
+                </aside>
+                <div class="educator-canvas">
+                  <div class="learn-demo-pane-head">
+                    <strong>Build a weekly report</strong
+                    ><span>Capstone · draft</span>
+                  </div>
+                  <div
+                    class="educator-beat"
+                    data-beat="1"
+                    data-caption="Creating the starter scaffold"
+                  >
+                    <div class="educator-row">
+                      <div>
+                        <b><code>README.md</code></b
+                        ><small>Task, sample input, and setup</small>
+                      </div>
+                      <small>Guide</small>
+                    </div>
+                    <div class="educator-row">
+                      <div>
+                        <b><code>report.py</code></b
+                        ><small
+                          >Starter function with implementation TODOs</small
+                        >
+                      </div>
+                      <small>Python</small>
+                    </div>
+                  </div>
+                  <div
+                    class="educator-beat"
+                    data-beat="2"
+                    data-caption="Adding acceptance checks"
+                  >
+                    <div class="educator-row">
+                      <div>
+                        <b><code>test_report.py</code></b
+                        ><small
+                          >Repeated topic · empty week · invalid minutes</small
+                        >
+                      </div>
+                      <small>Checks</small>
+                    </div>
+                  </div>
+                  <div
+                    class="educator-beat"
+                    data-beat="3"
+                    data-caption="Scaffold ready for review"
+                  >
+                    <div class="educator-ready">
+                      ✓ Starter files ready for learner preview
+                    </div>
+                  </div>
+                </div>
+                <div class="educator-chat">
+                  <div class="learn-demo-pane-head">
+                    <strong
+                      ><img
+                        src="assets/emblem-forge.webp"
+                        width="24"
+                        height="19"
+                        alt=""
+                      />Forge</strong
+                    >
+                  </div>
+                  <p class="demo-user-message" data-educator-question>
+                    Create a capstone for the dictionaries lesson. Leave the
+                    implementation to the learner.
+                  </p>
+                  <p class="demo-agent-message" data-educator-answer>
+                    I’ll draft a starter function and three checks, so students
+                    can write the solution and verify their result.
+                  </p>
+                  <div class="learn-demo-composer">
+                    <span data-educator-draft>Ask Forge</span><span>↑</span>
+                  </div>
+                </div>
+              </div>
+              <div class="learn-demo-footer" aria-hidden="true">
+                <p data-demo-caption>Scaffold ready for review</p>
+                <span class="demo-progress"><i></i></span>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
       <section class="suite-workflow wrap" id="catalog">
         <h2>Choose your next build.</h2>
         <p>
@@ -158,6 +491,19 @@
           Loading the catalog…
         </p>
         <div id="academy-catalog" class="suite-steps"></div>
+      </section>
+      <section class="learn-close" aria-labelledby="close-title">
+        <div class="wrap">
+          <h2 id="close-title">Get Academy with OutClass Educator.</h2>
+          <div class="learn-actions">
+            <a class="glass-button" href="download.html#educator-download"
+              >Get Educator for Windows <span aria-hidden="true">↗</span></a
+            >
+            <a href="setup.html"
+              >Read the setup guide <span aria-hidden="true">↗</span></a
+            >
+          </div>
+        </div>
       </section>
     </main>
     <footer class="site-footer wrap">
@@ -175,8 +521,7 @@
           <a href="learn.html">Learn</a><a href="academy.html">Academy</a
           ><a href="creator-studio.html">Creator Studio</a
           ><a href="gtm.html">GTM</a> <a href="agents.html">Agents</a
-          ><a href="setup.html">Setup</a><a href="privacy.html">Privacy</a
-          >
+          ><a href="setup.html">Setup</a><a href="privacy.html">Privacy</a>
         </nav>
         <span class="footer-copyright">© 2026 OutClass</span>
       </div>

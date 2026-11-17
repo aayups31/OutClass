@@ -24,9 +24,11 @@
     <link rel="stylesheet" href="assets/glass.css" />
     <link rel="stylesheet" href="assets/showcase.css" />
     <script src="assets/showcase.js" defer></script>
-    <script src="assets/glass.js" defer></script>
+    <link rel="stylesheet" href="assets/learn.css?v=workspace-scenes" />
+    <link rel="stylesheet" href="assets/educator.css?v=workspaces" />
+    <script src="assets/educator-scenes.js?v=workspaces" type="module"></script>
   </head>
-  <body class="glass-page subpage suite-page">
+  <body class="educator-page glass-page subpage suite-page">
     <a class="skip-link" href="#main">Skip to content</a>
     <header class="site-header">
       <a class="wordmark" href="./" aria-label="OutClass home"
@@ -60,95 +62,286 @@
     </header>
 
     <main id="main" tabindex="-1">
-      <section class="glass-detail-hero glass-creator-studio" data-glass="pan">
-        <div class="glass-scene-copy">
-          <span>Creator Studio</span>
-          <h1>Show what learners will build.</h1>
-          <p>
-            Turn course material into a preview with a clear hook, a
-            demonstration, and captions.
-          </p>
-          <a class="glass-button" href="download.html#educator-download"
-            >Get Educator ↗</a
-          >
-        </div>
-        <div
-          class="product-window glass-demo"
-          aria-label="Creator Studio concept interface"
-        >
-          <div class="product-titlebar">
-            <img
-              src="assets/orbital-logo.webp"
-              width="32"
-              height="24"
-              alt=""
-            /><b>OutClass</b><span>Creator Studio / Working with real data</span
-            ><small>Concept preview</small>
+      <section class="learn-hero educator-hero" aria-labelledby="product-title">
+        <div class="wrap learn-hero-copy">
+          <h1 id="product-title">OutClass Creator Studio.</h1>
+          <p>Turn lessons into previews worth watching.</p>
+          <div class="learn-actions">
+            <a class="glass-button" href="download.html#educator-download"
+              >Get Educator for Windows <span aria-hidden="true">↗</span></a
+            >
+            <a href="#workflow"
+              >See how it works <span aria-hidden="true">↓</span></a
+            >
           </div>
-          <div class="product-body">
-            <aside class="product-sidebar">
-              <span>Overview</span><span>Academy</span
-              ><span>Creator Studio</span><span>GTM</span><span>Assets</span>
-            </aside>
-            <div class="product-canvas">
-              <div class="app-breadcrumb">Projects / Python foundations</div>
-              <h3>Working with real data</h3>
-              <div class="studio-canvas">
-                <div class="media-scene">
-                  <span>PYTHON FOUNDATIONS</span
-                  ><strong>From raw data.<br />To something useful.</strong
-                  ><i>▶　00:18 / 01:24</i>
-                </div>
-                <div class="caption-line">
-                  “Let’s see what happens with an empty dataset.”
-                </div>
-              </div>
-              <div class="timeline-ruler">
-                00:00　　　　　00:20　　　　　00:40　　　　　01:00
-              </div>
-              <div class="timeline-track">
-                ▥　Lesson demonstration　▥　▥　▥　▥
-              </div>
-              <div class="timeline-track audio-track">
-                ⌁⌁⌁⌁⌁⌁⌁⌁ Voiceover ⌁⌁⌁⌁⌁⌁⌁
-              </div>
-              <div class="timeline-track caption-track">
-                Opening　│　Demonstration　│　Try it yourself
-              </div>
+        </div>
+        <div class="learn-hero-stage wrap">
+          <div
+            class="product-window glass-demo educator-hero-window"
+            aria-label="Creator Studio concept interface"
+          >
+            <div class="product-titlebar">
+              <img
+                src="assets/orbital-logo.webp"
+                width="32"
+                height="24"
+                alt=""
+              /><b>OutClass</b
+              ><span>Creator Studio / Working with real data</span>
             </div>
-            <aside class="product-assistant">
-              <div class="assistant-title">✧ Muse</div>
-              <div class="assistant-user">Help me take the next step.</div>
-              <p class="agent-reveal">
-                Find the demonstration in your footage.
-              </p>
-              <div class="assistant-evidence">
-                Plan captions and visual explanations
+            <div class="product-body">
+              <aside class="product-sidebar">
+                <span>Overview</span><span>Academy</span
+                ><span>Creator Studio</span><span>GTM</span><span>Assets</span>
+              </aside>
+              <div class="product-canvas">
+                <div class="app-breadcrumb">Projects / Python foundations</div>
+                <h3>Working with real data</h3>
+                <div class="studio-canvas">
+                  <div class="media-scene">
+                    <span>PYTHON FOUNDATIONS</span
+                    ><strong>From raw data.<br />To something useful.</strong
+                    ><i>▶　00:18 / 01:24</i>
+                  </div>
+                  <div class="caption-line">
+                    “Let’s see what happens with an empty dataset.”
+                  </div>
+                </div>
+                <div class="timeline-ruler">
+                  00:00　　　　　00:20　　　　　00:40　　　　　01:00
+                </div>
+                <div class="timeline-track">
+                  ▥　Lesson demonstration　▥　▥　▥　▥
+                </div>
+                <div class="timeline-track audio-track">
+                  ⌁⌁⌁⌁⌁⌁⌁⌁ Voiceover ⌁⌁⌁⌁⌁⌁⌁
+                </div>
+                <div class="timeline-track caption-track">
+                  Opening　│　Demonstration　│　Try it yourself
+                </div>
               </div>
-              <p class="agent-reveal">Prepare a preview for GTM.</p>
-              <div class="assistant-input">
-                Ask Muse <span>↑</span>
-              </div>
-            </aside>
+              <aside class="product-assistant">
+                <div class="assistant-title">✧ Muse</div>
+                <div class="assistant-user">Help me take the next step.</div>
+                <p class="agent-reveal">
+                  Find the demonstration in your footage.
+                </p>
+                <div class="assistant-evidence">
+                  Plan captions and visual explanations
+                </div>
+                <p class="agent-reveal">Prepare a preview for GTM.</p>
+                <div class="assistant-input">Ask Muse <span>↑</span></div>
+              </aside>
+            </div>
           </div>
         </div>
       </section>
       <section
-        class="glass-detail-section wrap"
+        class="learn-workflow wrap"
         id="workflow"
-        data-glass="band"
+        aria-labelledby="workflow-title"
       >
-        <h2>Show the useful part.</h2>
-        <p>
-          Build around one example, then review the cut and captions before
-          exporting.
-        </p>
-        <div class="glass-detail-flow">
-          <b>Choose a lesson</b><b>Cut a preview</b><b>Review & export</b>
+        <div class="learn-section-heading">
+          <h2 id="workflow-title">From lesson to finished preview.</h2>
         </div>
-        <a href="agents.html#tab-creator-studio"
-          >Meet the Creator Studio agents ↗</a
-        >
+        <div class="learn-flow">
+          <div class="learn-flow-bar">
+            <img
+              src="assets/orbital-logo.webp"
+              width="28"
+              height="22"
+              alt=""
+            /><strong>Creator Studio</strong><small>Python Foundations</small>
+          </div>
+          <div class="learn-flow-panes">
+            <article class="learn-flow-pane">
+              <h3>
+                <svg class="icon" aria-hidden="true">
+                  <use href="assets/icons.svg#folder"></use>
+                </svg>
+                Source
+              </h3>
+              <div class="educator-flow-visual educator-flow-light">
+                <b>Build a study report</b><span>Lesson recording</span
+                ><span>Teaching script</span>
+              </div>
+              <div class="learn-flow-evidence">Start with course material</div>
+            </article>
+            <article class="learn-flow-pane">
+              <h3>
+                <svg class="icon" aria-hidden="true">
+                  <use href="assets/icons.svg#monitor"></use>
+                </svg>
+                Cut
+              </h3>
+              <div class="educator-flow-visual educator-flow-dark">
+                <b>From CSV to a report</b><span>00:00 ━━━━━ 00:24</span
+                ><span>Hook · Demo · Try it</span>
+              </div>
+              <div class="learn-flow-evidence">
+                Shape the preview on a timeline
+              </div>
+            </article>
+            <article class="learn-flow-pane">
+              <h3>
+                <svg class="icon" aria-hidden="true">
+                  <use href="assets/icons.svg#book"></use>
+                </svg>
+                Caption & export
+              </h3>
+              <div class="educator-flow-visual educator-flow-light">
+                <b>Preview package</b><span>study-report.mp4</span
+                ><span>captions.vtt</span>
+              </div>
+              <div class="learn-flow-evidence">Review files before handoff</div>
+            </article>
+          </div>
+        </div>
+      </section>
+      <section class="learn-agents" aria-labelledby="agent-title">
+        <div class="wrap">
+          <div class="learn-section-heading">
+            <h2 id="agent-title">Your production assistant.</h2>
+          </div>
+
+          <article
+            id="muse"
+            class="learn-agent-scene"
+            aria-labelledby="muse-title"
+          >
+            <div class="learn-agent-copy">
+              <div class="learn-agent-name">
+                <img
+                  src="assets/emblem-muse.webp"
+                  width="44"
+                  height="34"
+                  alt=""
+                /><strong>Muse</strong>
+              </div>
+              <h3 id="muse-title">Find the moment worth showing.</h3>
+              <p>
+                Muse helps turn teaching material into scripts, clip plans,
+                captions, and previews you can review before exporting.
+              </p>
+            </div>
+            <div class="learn-demo educator-demo" data-educator-demo="Muse">
+              <div class="learn-demo-bar">
+                <span class="learn-demo-brand"
+                  ><img
+                    src="assets/orbital-logo.webp"
+                    width="26"
+                    height="20"
+                    alt=""
+                  /><span
+                    >Workspace <small>/ Creator Studio / Timeline</small></span
+                  ></span
+                >
+                <button
+                  class="learn-demo-pause"
+                  type="button"
+                  data-demo-pause
+                  hidden
+                >
+                  <span aria-hidden="true">Ⅱ</span
+                  ><span class="learn-sr-only">Pause Muse demo</span>
+                </button>
+              </div>
+              <p class="learn-sr-only">
+                Muse identifies a demonstration clip, drafts its caption, and
+                prepares a short preview for creator review.
+              </p>
+              <div class="educator-workspace" aria-hidden="true">
+                <aside class="learn-demo-rail">
+                  <strong>Creator Studio</strong><small>Workspace</small
+                  ><span>Learning assets</span><span>Script</span
+                  ><span class="rail-active">Timeline</span><span>Captions</span
+                  ><span>Exports</span>
+                </aside>
+                <div class="educator-canvas">
+                  <div class="learn-demo-pane-head">
+                    <strong>Build a study report</strong
+                    ><span>Course preview</span>
+                  </div>
+                  <div class="educator-player">
+                    <small>PYTHON FOUNDATIONS</small
+                    ><strong>From CSV to a weekly report.</strong
+                    ><code>python report.py sessions.csv</code>
+                  </div>
+                  <div class="educator-time-ruler">
+                    <span>00:00</span><span>00:12</span><span>00:24</span>
+                  </div>
+                  <div class="educator-timeline">
+                    <i class="educator-playhead" data-educator-playhead></i>
+                    <div
+                      class="educator-beat educator-clips"
+                      data-beat="1"
+                      data-caption="Selecting the demonstration"
+                    >
+                      <span>Hook</span><span>Show the report</span
+                      ><span>Try it</span>
+                    </div>
+                    <div
+                      class="educator-beat educator-captions"
+                      data-beat="2"
+                      data-caption="Drafting the captions"
+                    >
+                      <span>Group study time by topic.</span>
+                    </div>
+                  </div>
+                  <div
+                    class="educator-beat"
+                    data-beat="3"
+                    data-caption="Preview ready for review"
+                  >
+                    <div class="educator-ready">
+                      ✓ Cut and captions ready to review
+                    </div>
+                  </div>
+                </div>
+                <div class="educator-chat">
+                  <div class="learn-demo-pane-head">
+                    <strong
+                      ><img
+                        src="assets/emblem-muse.webp"
+                        width="24"
+                        height="19"
+                        alt=""
+                      />Muse</strong
+                    >
+                  </div>
+                  <p class="demo-user-message" data-educator-question>
+                    Turn the report lesson into a short preview with captions.
+                  </p>
+                  <p class="demo-agent-message" data-educator-answer>
+                    Open on the finished report, then show the line that groups
+                    the study minutes. End with one task to try.
+                  </p>
+                  <div class="learn-demo-composer">
+                    <span data-educator-draft>Ask Muse</span><span>↑</span>
+                  </div>
+                </div>
+              </div>
+              <div class="learn-demo-footer" aria-hidden="true">
+                <p data-demo-caption>Preview ready for review</p>
+                <span class="demo-progress"><i></i></span>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="learn-close" aria-labelledby="close-title">
+        <div class="wrap">
+          <h2 id="close-title">Get Creator Studio with OutClass Educator.</h2>
+          <div class="learn-actions">
+            <a class="glass-button" href="download.html#educator-download"
+              >Get Educator for Windows <span aria-hidden="true">↗</span></a
+            >
+            <a href="setup.html"
+              >Read the setup guide <span aria-hidden="true">↗</span></a
+            >
+          </div>
+        </div>
       </section>
     </main>
     <footer class="site-footer wrap">
@@ -166,8 +359,7 @@
           <a href="learn.html">Learn</a><a href="academy.html">Academy</a
           ><a href="creator-studio.html">Creator Studio</a
           ><a href="gtm.html">GTM</a> <a href="agents.html">Agents</a
-          ><a href="setup.html">Setup</a><a href="privacy.html">Privacy</a
-          >
+          ><a href="setup.html">Setup</a><a href="privacy.html">Privacy</a>
         </nav>
         <span class="footer-copyright">© 2026 OutClass</span>
       </div>
