@@ -23,16 +23,6 @@
     radial-gradient(ellipse at 12% 39%, #dee7fc, transparent 55%),
     linear-gradient(180deg, #f7f8ff, #eceffe 61%, #f4f7ff);
 }
-.app-chapter-educator::before {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  inset: 0 0 auto;
-  height: min(52vw, 520px);
-  background: radial-gradient(ellipse at 58% 90%, #d8ddffd9, transparent 72%);
-  clip-path: inset(var(--app-educator-wipe, 0%) 0 0);
-  pointer-events: none;
-}
 .app-chapter-heading > span {
   color: #3049a7;
   font-size: 0.77rem;
@@ -57,7 +47,6 @@
   text-wrap: pretty;
 }
 .app-stage {
-  --app-motion-range: 1;
   position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.65fr) minmax(0, 1fr);
@@ -74,7 +63,7 @@
   border: 2px solid #ffffffe5;
   border-radius: 50%;
   box-shadow: 0 0 14px #ffffffb0;
-  transform: translateY(var(--app-orbit-drift, 0px)) rotate(-7deg);
+  transform: rotate(-7deg);
   pointer-events: none;
 }
 .app-window {
@@ -90,10 +79,10 @@
     0 28px 60px -34px #465ab585,
     0 2px 6px #5266bd18;
 }
-.app-stage .app-window {
-  translate: calc(var(--app-flow-x, 0px) * var(--app-motion-range))
-    calc(var(--app-flow-y, 0px) * var(--app-motion-range));
-  scale: var(--app-flow-scale, 1);
+@media (prefers-reduced-motion: no-preference) {
+  .app-stage-moving .app-window {
+    will-change: translate;
+  }
 }
 .app-window-left {
   transform: perspective(920px) rotateY(12deg) rotate(-3deg);
@@ -500,7 +489,6 @@
 }
 @media (max-width: 930px) {
   .app-stage {
-    --app-motion-range: 0.2;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     gap: 13px;
   }

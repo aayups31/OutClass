@@ -77,12 +77,15 @@ if (window.gsap && window.ScrollTrigger) {
         },
       });
     }
+    const wideShowcase = matchMedia("(min-width: 931px)");
+    const panelOffset = (x, y) => () =>
+      wideShowcase.matches ? `${x}px ${y}px` : `0px ${Math.round(y * 0.25)}px`;
     for (const stage of document.querySelectorAll(".app-stage")) {
       const center = stage.querySelector(".app-window-main");
       const left = stage.querySelector(".app-window-left");
       const right = stage.querySelector(".app-window-right");
-      const educator = stage.closest(".app-chapter-educator");
-      const spread = educator ? 32 : -46;
+      const spread = stage.closest(".app-chapter-educator") ? 15 : -21;
+      // Translate the panels directly so their contents and static tilt can be composited together.
       gsap
         .timeline({
           defaults: { ease: "none" },
@@ -90,49 +93,29 @@ if (window.gsap && window.ScrollTrigger) {
             trigger: stage,
             start: "top 96%",
             end: "bottom 12%",
-            scrub: 0.65,
+            scrub: 0.2,
+            invalidateOnRefresh: true,
+            toggleClass: "app-stage-moving",
           },
         })
         .fromTo(
           center,
-          { "--app-flow-y": "40px", "--app-flow-scale": 0.96 },
-          { "--app-flow-y": "-13px", "--app-flow-scale": 1 },
+          { translate: panelOffset(0, 21) },
+          { translate: panelOffset(0, -9) },
           0,
         )
         .fromTo(
           left,
-          { "--app-flow-x": `${-spread}px`, "--app-flow-y": "55px" },
-          { "--app-flow-x": "-13px", "--app-flow-y": "-37px" },
+          { translate: panelOffset(-spread, 30) },
+          { translate: panelOffset(-7, -19) },
           0,
         )
         .fromTo(
           right,
-          { "--app-flow-x": `${spread}px`, "--app-flow-y": "66px" },
-          { "--app-flow-x": "13px", "--app-flow-y": "-40px" },
-          0,
-        )
-        .fromTo(
-          stage,
-          { "--app-orbit-drift": "24px" },
-          { "--app-orbit-drift": "-22px" },
+          { translate: panelOffset(spread, 35) },
+          { translate: panelOffset(7, -21) },
           0,
         );
-      if (educator) {
-        gsap.fromTo(
-          educator,
-          { "--app-educator-wipe": "100%" },
-          {
-            "--app-educator-wipe": "0%",
-            ease: "none",
-            scrollTrigger: {
-              trigger: educator,
-              start: "top 97%",
-              end: "top 28%",
-              scrub: 0.55,
-            },
-          },
-        );
-      }
     }
     const motions = {
       lift: { y: 56, scale: 0.95 },
