@@ -39,10 +39,11 @@
     <link rel="stylesheet" href="assets/glass.css?v=background" />
     <link rel="stylesheet" href="assets/showcase.css" />
     <link rel="stylesheet" href="assets/workflow.css?v=background" />
-    <link rel="stylesheet" href="assets/learn.css?v=background" />
+    <link rel="stylesheet" href="assets/learn.css?v=interactive" />
     <script src="assets/glass.js" defer></script>
+    <script src="assets/learn.js" type="module"></script>
   </head>
-  <body class="glass-page subpage">
+  <body class="glass-page subpage learn-page">
     <a class="skip-link" href="#main">Skip to content</a>
     <header class="site-header">
       <a class="wordmark" href="./" aria-label="OutClass home"
@@ -78,11 +79,10 @@
     <main id="main" tabindex="-1" class="learn-landing">
       <section class="learn-hero" aria-labelledby="learn-title">
         <div class="wrap learn-hero-copy">
-          <span class="learn-kicker">OutClass Learn</span>
-          <h1 id="learn-title">Make the lesson<br />your own.</h1>
+          <h1 id="learn-title">OutClass Learn.</h1>
           <p>
-            Follow a course, write code, and turn what you learn into projects
-            you can build yourself.
+            Keep your lesson, code, and AI tutor together. Turn what you learn
+            into projects you can build yourself.
           </p>
           <div class="learn-actions">
             <a class="glass-button" href="download.html#learn-download"
@@ -93,7 +93,7 @@
             >
           </div>
         </div>
-        <div class="learn-hero-stage wrap" data-glass="lift">
+        <div class="learn-hero-stage wrap">
           <figure class="learn-workspace-figure">
             <article
               class="app-window learn-workspace glass-demo"
@@ -156,18 +156,6 @@
             </article>
             <figcaption>Product preview · Python foundations</figcaption>
           </figure>
-          <aside class="learn-practice-note" aria-label="Example practice task">
-            <img
-              src="assets/emblem-offcourse.webp"
-              width="31"
-              height="24"
-              alt=""
-            />
-            <div>
-              <small>Practice break</small
-              ><strong>Build a weekly activity report.</strong>
-            </div>
-          </aside>
         </div>
       </section>
 
@@ -225,7 +213,7 @@
             tabindex="0"
           >
             <div class="app-video learn-example-video">
-              <b>Working<br />with data</b><span>▶ &nbsp; Lesson overview</span>
+              <b>Working<br />with data</b><span>Lesson overview</span>
             </div>
             <div class="learn-step-copy">
               <small>Python foundations / Working with data</small>
@@ -273,7 +261,7 @@
                 OffCourse can use the lesson, your code, and the last run to
                 guide your next attempt.
               </p>
-              <a href="agents-learn.html#offcourse">Explore OffCourse ↗</a>
+              <a href="learn.html#offcourse">Explore OffCourse ↗</a>
             </div>
           </div>
 
@@ -316,67 +304,217 @@
             </div>
           </div>
         </div>
+        <div class="learn-capabilities">
+          <article>
+            <svg class="icon" aria-hidden="true">
+              <use href="assets/icons.svg#folder"></use>
+            </svg>
+            <h3>A workspace on your computer</h3>
+            <p>
+              Keep your courses, files, and projects together. Work in the
+              built-in editor or connect VS Code.
+            </p>
+          </article>
+          <article>
+            <svg class="icon" aria-hidden="true">
+              <use href="assets/icons.svg#code"></use>
+            </svg>
+            <h3>A record of what you built</h3>
+            <p>
+              Save Git checkpoints with code, test output, and reflections you
+              can revisit alongside the lesson.
+            </p>
+          </article>
+          <article>
+            <svg class="icon" aria-hidden="true">
+              <use href="assets/icons.svg#github"></use>
+            </svg>
+            <h3>Practice beyond the course</h3>
+            <p>
+              Find open-source issues that match what you’ve practiced and work
+              through contributor guidance.
+            </p>
+          </article>
+        </div>
       </section>
 
       <section class="learn-agents" aria-labelledby="learn-agents-title">
         <div class="wrap">
           <div class="learn-section-heading">
-            <h2 id="learn-agents-title">
-              Get help in the lesson. Then build beyond it.
-            </h2>
+            <h2 id="learn-agents-title">The agents, at work.</h2>
+            <p>Try two guided examples in the workspace.</p>
           </div>
-          <div class="learn-agent-pair">
-            <article>
-              <img
-                src="assets/emblem-offcourse.webp"
-                width="124"
-                height="96"
-                alt=""
-                loading="lazy"
-              />
-              <div>
-                <h3>OffCourse</h3>
-                <p>
-                  Ask why a test failed, get a hint based on the lesson and your
-                  code, or find a practical way to use the concept next.
-                </p>
-                <a href="agents-learn.html#offcourse">Meet OffCourse ↗</a>
+
+          <article
+            id="offcourse"
+            class="learn-agent-scene"
+            aria-labelledby="offcourse-title"
+          >
+            <div class="learn-agent-copy">
+              <div class="learn-agent-name">
+                <img
+                  src="assets/emblem-offcourse.webp"
+                  width="44"
+                  height="34"
+                  alt=""
+                  loading="lazy"
+                />
+                <strong>OffCourse</strong>
               </div>
-            </article>
-            <article>
-              <img
-                src="assets/emblem-blueprint.webp"
-                width="124"
-                height="96"
-                alt=""
-                loading="lazy"
-              />
-              <div>
-                <h3>Blueprint</h3>
-                <p>
-                  Bring an idea and turn it into a project plan with milestones,
-                  decisions, and a next step you can work on.
-                </p>
-                <a href="agents-learn.html#blueprint">Meet Blueprint ↗</a>
+              <h3 id="offcourse-title">Get unstuck in your own code.</h3>
+              <p>
+                Run a Python example, ask about the error, and use the hint to
+                make your next edit.
+              </p>
+            </div>
+            <div class="learn-demo offcourse-demo" data-offcourse>
+              <div class="learn-demo-bar">
+                <span>Python foundations</span><small>Working with data</small>
               </div>
-            </article>
-          </div>
+              <div class="offcourse-workspace">
+                <div class="offcourse-editor">
+                  <div class="learn-demo-label">lesson.py</div>
+                  <pre
+                    tabindex="0"
+                    aria-label="Example Python code"
+                  ><code data-demo-code># Group study minutes by day</code></pre>
+                  <div class="offcourse-output">
+                    <div class="learn-demo-label">Test output</div>
+                    <p data-demo-output>Ready to run.</p>
+                  </div>
+                </div>
+                <div class="offcourse-chat">
+                  <div class="learn-demo-label">OffCourse</div>
+                  <p class="offcourse-context">
+                    Lesson 4 · Python dictionaries
+                  </p>
+                  <p class="demo-user-message" data-demo-question hidden></p>
+                  <p class="demo-agent-message" data-demo-hint hidden></p>
+                </div>
+              </div>
+              <div class="learn-demo-controls">
+                <p data-offcourse-status role="status">Guided example</p>
+                <button
+                  type="button"
+                  class="learn-demo-action"
+                  data-offcourse-next
+                  hidden
+                >
+                  Run example
+                </button>
+              </div>
+              <noscript>
+                <p class="learn-demo-static">
+                  Adding minutes directly to a missing dictionary key raises a
+                  KeyError. Use <code>totals.get(day, 0)</code> to start at zero
+                  and keep adding to the total.
+                </p>
+              </noscript>
+            </div>
+          </article>
+
+          <article
+            id="blueprint"
+            class="learn-agent-scene learn-blueprint"
+            aria-labelledby="blueprint-title"
+          >
+            <div class="learn-agent-copy">
+              <div class="learn-agent-name">
+                <img
+                  src="assets/emblem-blueprint.webp"
+                  width="44"
+                  height="34"
+                  alt=""
+                  loading="lazy"
+                />
+                <strong>Blueprint</strong>
+              </div>
+              <h3 id="blueprint-title">Give your idea a first build.</h3>
+              <p>
+                See how a study tracker becomes a small Python project with a
+                scope, file structure, and milestones.
+              </p>
+            </div>
+            <div class="learn-demo blueprint-demo" data-blueprint>
+              <div class="learn-demo-bar">
+                <span>Project notebook</span><small>Study Tracker</small>
+              </div>
+              <div class="blueprint-workspace">
+                <div class="learn-demo-label">Project brief</div>
+                <p class="demo-user-message" data-blueprint-prompt>
+                  I want to track how long I study and see a weekly total.
+                </p>
+                <div class="blueprint-plan" data-blueprint-plan>
+                  <details>
+                    <summary>Scope <span>What to build</span></summary>
+                    <p>
+                      Log the date, topic, and minutes for each session. Show a
+                      weekly total in the terminal. Leave accounts and charts
+                      for a later version.
+                    </p>
+                  </details>
+                  <details>
+                    <summary>
+                      Architecture <span>Three Python files</span>
+                    </summary>
+                    <ul>
+                      <li>
+                        <code>tracker.py</code> — adds sessions and stores them
+                        in a CSV file.
+                      </li>
+                      <li>
+                        <code>report.py</code> — groups minutes and prints a
+                        weekly total.
+                      </li>
+                      <li>
+                        <code>test_report.py</code> — checks repeated topics and
+                        an empty week.
+                      </li>
+                    </ul>
+                  </details>
+                  <details>
+                    <summary>Milestones <span>Where to start</span></summary>
+                    <ol>
+                      <li>Start with one session and save it to a CSV file.</li>
+                      <li>Read the file and total the minutes for one week.</li>
+                      <li>
+                        Test an empty week and two sessions on the same topic.
+                      </li>
+                    </ol>
+                  </details>
+                </div>
+              </div>
+              <div class="learn-demo-controls">
+                <p data-blueprint-status role="status">Guided example</p>
+                <button
+                  type="button"
+                  class="learn-demo-action"
+                  data-blueprint-generate
+                  hidden
+                >
+                  Ask Blueprint
+                </button>
+              </div>
+            </div>
+          </article>
         </div>
       </section>
 
-      <section class="learn-close wrap" aria-labelledby="learn-close-title">
-        <div>
+      <section class="learn-close" aria-labelledby="learn-close-title">
+        <div class="wrap">
           <h2 id="learn-close-title">Start with a course you already have.</h2>
           <p>
             Choose a local learning folder, connect your Udemy course, and try
             the built-in editor or keep using VS Code.
           </p>
-        </div>
-        <div class="learn-actions">
-          <a class="glass-button" href="download.html#learn-download"
-            >Get Learn for Windows ↗</a
-          >
-          <a href="setup.html">Read the setup guide ↗</a>
+          <div class="learn-actions">
+            <a class="glass-button" href="download.html#learn-download"
+              >Get Learn for Windows <span aria-hidden="true">↗</span></a
+            >
+            <a href="setup.html"
+              >Read the setup guide <span aria-hidden="true">↗</span></a
+            >
+          </div>
         </div>
       </section>
     </main>
@@ -395,8 +533,7 @@
           <a href="learn.html">Learn</a><a href="academy.html">Academy</a
           ><a href="creator-studio.html">Creator Studio</a
           ><a href="gtm.html">GTM</a> <a href="agents.html">Agents</a
-          ><a href="setup.html">Setup</a><a href="privacy.html">Privacy</a
-          >
+          ><a href="setup.html">Setup</a><a href="privacy.html">Privacy</a>
         </nav>
         <span class="footer-copyright">© 2026 OutClass</span>
       </div>
