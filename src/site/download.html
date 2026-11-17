@@ -31,7 +31,7 @@
     <script src="assets/site.js" defer=""></script>
     <link rel="stylesheet" href="assets/refinement.css" />
     <link rel="stylesheet" href="assets/glass.css" />
-    <link rel="stylesheet" href="assets/download.css" />
+    <link rel="stylesheet" href="assets/download.css?v=suite-refined" />
   </head>
   <body class="glass-page subpage download-page">
     <a class="skip-link" href="#main">Skip to content</a>
@@ -69,28 +69,23 @@
       <section class="download-stage" aria-labelledby="download-title">
         <div class="download-layout">
           <div class="download-intro">
-            <p class="download-eyebrow">The OutClass Suite</p>
             <h1 id="download-title">Choose your OutClass.</h1>
-            <p>Two Windows apps. Pick the workspace that fits.</p>
+            <p>Two workspaces for Windows.</p>
           </div>
 
           <div class="download-options">
             <article class="download-card">
               <div class="download-card-content">
-                <h2>
-                  <span class="download-mark" aria-hidden="true">
-                    <svg class="icon" viewBox="0 0 24 24">
-                      <use href="assets/icons.svg#orbit"></use>
-                    </svg>
-                  </span>
-                  <span>OutClass <strong>Learn</strong></span>
-                </h2>
+                <h2>OutClass Learn</h2>
+                <p>Code alongside your courses.</p>
                 <a
                   class="download-action"
                   id="learn-download"
                   href="https://github.com/aayups31/OutClass/releases/download/v0.8.0-apps/OutClass-Learn-Setup-0.8.0.exe"
-                  >Download Learn <span aria-hidden="true">↗</span></a
-                >
+                  >Download Learn
+                  <svg class="icon" aria-hidden="true">
+                    <use href="assets/icons.svg#down"></use></svg
+                ></a>
               </div>
               <div class="download-art" aria-hidden="true">
                 <div class="download-art-face">
@@ -100,22 +95,18 @@
                 </div>
               </div>
             </article>
-            <article class="download-card">
+            <article class="download-card download-card-educator">
               <div class="download-card-content">
-                <h2>
-                  <span class="download-mark" aria-hidden="true">
-                    <svg class="icon" viewBox="0 0 24 24">
-                      <use href="assets/icons.svg#orbit"></use>
-                    </svg>
-                  </span>
-                  <span>OutClass <strong>Educator</strong></span>
-                </h2>
+                <h2>OutClass Educator</h2>
+                <p>Build courses and hands-on projects.</p>
                 <a
                   class="download-action"
                   id="educator-download"
                   href="https://github.com/aayups31/OutClass/releases/download/v0.8.0-apps/OutClass-Educator-Setup-0.8.0.exe"
-                  >Download Educator <span aria-hidden="true">↗</span></a
-                >
+                  >Download Educator
+                  <svg class="icon" aria-hidden="true">
+                    <use href="assets/icons.svg#down"></use></svg
+                ></a>
               </div>
               <div class="download-art" aria-hidden="true">
                 <div class="download-art-face">
@@ -127,42 +118,45 @@
             </article>
           </div>
 
-          <nav class="download-accessories" aria-label="Extensions and setup">
-            <a
-              id="extension-download"
-              href="https://github.com/aayups31/OutClass/releases/download/v0.8.0/OutClass-Chrome-0.8.0.zip"
-              ><svg class="icon" aria-hidden="true">
-                <use href="assets/icons.svg#puzzle"></use>
-              </svg>
-              Udemy extension <span aria-hidden="true">↗</span></a
-            >
-            <a
-              id="editor-download"
-              href="https://github.com/aayups31/OutClass/releases/download/v0.8.0/OutClass-Editor-0.8.0.vsix"
-              ><svg class="icon" aria-hidden="true">
-                <use href="assets/icons.svg#vscode"></use>
-              </svg>
-              VS Code companion <span aria-hidden="true">↗</span></a
-            >
-            <a href="setup.html"
-              ><svg class="icon" aria-hidden="true">
-                <use href="assets/icons.svg#book"></use>
-              </svg>
-              Setup guide <span aria-hidden="true">↗</span></a
-            >
-          </nav>
-          <div class="download-notes">
-            <p>
-              Windows x64 · v0.8.0 · Unsigned preview ·
+          <div class="download-support">
+            <nav class="download-accessories" aria-label="Extensions and setup">
               <a
-                href="https://github.com/aayups31/OutClass/releases/tag/v0.8.0-apps"
-                >Release notes &amp; checksums</a
+                id="extension-download"
+                href="https://github.com/aayups31/OutClass/releases/download/v0.8.0/OutClass-Chrome-0.8.0.zip"
+                ><svg class="icon" aria-hidden="true">
+                  <use href="assets/icons.svg#puzzle"></use>
+                </svg>
+                Udemy extension</a
               >
-            </p>
-            <p id="extension-status">
-              The Udemy and VS Code companions connect to Learn. Use Load
-              unpacked for the browser ZIP.
-            </p>
+              <a
+                id="editor-download"
+                href="https://github.com/aayups31/OutClass/releases/download/v0.8.0/OutClass-Editor-0.8.0.vsix"
+                ><svg class="icon" aria-hidden="true">
+                  <use href="assets/icons.svg#vscode"></use>
+                </svg>
+                VS Code companion</a
+              >
+              <a href="setup.html"
+                ><svg class="icon" aria-hidden="true">
+                  <use href="assets/icons.svg#book"></use>
+                </svg>
+                Setup guide</a
+              >
+            </nav>
+            <details class="download-notes">
+              <summary>Installation details</summary>
+              <p>
+                Windows x64 · v0.8.0 · Unsigned preview ·
+                <a
+                  href="https://github.com/aayups31/OutClass/releases/tag/v0.8.0-apps"
+                  >Release notes &amp; checksums</a
+                >
+              </p>
+              <p id="extension-status">
+                The Udemy and VS Code companions connect to Learn. Use Load
+                unpacked for the browser ZIP.
+              </p>
+            </details>
           </div>
         </div>
       </section>
@@ -182,8 +176,7 @@
           <a href="learn.html">Learn</a><a href="academy.html">Academy</a
           ><a href="creator-studio.html">Creator Studio</a
           ><a href="gtm.html">GTM</a> <a href="agents.html">Agents</a
-          ><a href="setup.html">Setup</a><a href="privacy.html">Privacy</a
-          >
+          ><a href="setup.html">Setup</a><a href="privacy.html">Privacy</a>
         </nav>
         <span class="footer-copyright">© 2026 OutClass</span>
       </div>
