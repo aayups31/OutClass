@@ -1,0 +1,317 @@
+.glass-page.download-page .site-header {
+  background: transparent;
+  border-bottom: 0;
+}
+
+.download-stage {
+  --download-ink: #101a42;
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
+  background:
+    radial-gradient(ellipse at 95% 10%, #cad3fa, transparent 56%),
+    radial-gradient(ellipse at 74% 73%, #d8dcfb, transparent 70%),
+    linear-gradient(157deg, #f2f3ff, #edf0fc 70%, #e4e8fc);
+}
+
+.download-stage::before,
+.download-stage::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  width: 72%;
+  height: 29%;
+  border-top: 2px solid #ffffffe6;
+  border-radius: 50%;
+  box-shadow: 0 -5px 22px #fffc;
+  background: radial-gradient(ellipse at 50% 0%, #a0aae95c, transparent 65%);
+  mask-image: linear-gradient(90deg, transparent, #000 28%, #000 87%, transparent);
+  pointer-events: none;
+}
+
+.download-stage::before {
+  top: 9%;
+  right: -25%;
+  transform: rotate(-17deg);
+}
+
+.download-stage::after {
+  right: -8%;
+  bottom: -14%;
+  transform: rotate(-11deg);
+}
+
+.download-layout {
+  width: min(1480px, 100% - clamp(44px, 10vw, 180px));
+  margin-inline: auto;
+  padding-block: clamp(126px, 10vw, 174px) clamp(48px, 6vw, 96px);
+}
+
+.download-intro {
+  padding-inline: clamp(0px, 1.5vw, 24px);
+  margin-bottom: clamp(30px, 3.8vw, 60px);
+}
+
+.download-intro .download-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 14px;
+  color: var(--download-ink);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.17em;
+  text-transform: uppercase;
+}
+
+.download-eyebrow::before {
+  content: "";
+  width: 42px;
+  height: 1px;
+  background: #526394;
+}
+
+.download-intro h1 {
+  color: var(--download-ink);
+  font-size: clamp(2.9rem, 5.15vw, 5.9rem);
+  font-weight: 700;
+  line-height: 1.02;
+  text-wrap: balance;
+}
+
+.download-intro h1 + p {
+  margin-top: 15px;
+  color: #344779;
+  font-size: clamp(1rem, 1.25vw, 1.35rem);
+}
+
+.download-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(14px, 1.5vw, 24px);
+}
+
+.download-card {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: grid;
+  align-items: center;
+  min-height: clamp(290px, 24.5vw, 415px);
+  padding: clamp(24px, 3.4vw, 58px);
+  border: 1px solid #adbaf0;
+  border-radius: clamp(20px, 2.2vw, 36px);
+  background:
+    radial-gradient(ellipse at 86% 78%, #becaf674, transparent 60%),
+    linear-gradient(138deg, #ffffff47, #f4f5ff19 70%);
+  box-shadow: inset 0 0 0 1px #ffffffd9, 0 18px 50px #5268ba0d;
+}
+
+.download-card::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: auto -22% -35% 8%;
+  height: 68%;
+  transform: rotate(-14deg);
+  border-radius: 50%;
+  border-top: 2px solid #ffffffe0;
+  box-shadow: 0 -3px 13px #fff9;
+  mask-image: linear-gradient(90deg, transparent, #000 23% 60%, transparent 88%);
+  pointer-events: none;
+}
+
+.download-card-content {
+  position: relative;
+  z-index: 1;
+  width: fit-content;
+}
+
+.download-card h2 {
+  display: flex;
+  align-items: center;
+  gap: clamp(10px, 1.5vw, 24px);
+  margin-bottom: clamp(28px, 3vw, 52px);
+  color: var(--download-ink);
+  font-size: clamp(1.45rem, 2.2vw, 2.7rem);
+  font-weight: 500;
+  letter-spacing: -0.055em;
+}
+
+.download-card h2 > span,
+.download-card h2 strong {
+  color: inherit;
+}
+
+.download-card h2 strong {
+  font-weight: 700;
+}
+
+.download-mark {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: clamp(38px, 4vw, 64px);
+  aspect-ratio: 1;
+  border: 1px solid #b6c3f0;
+  border-radius: 19%;
+  background: linear-gradient(155deg, #ffffff8c, #f3f5ff26);
+  box-shadow: inset 0 1px 2px #fff9, 0 5px 12px #5268ba0a;
+}
+
+.download-mark .icon {
+  width: 63%;
+  height: 63%;
+}
+
+.download-page .download-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 18px;
+  min-height: 44px;
+  padding: 10px clamp(16px, 1.55vw, 26px);
+  border: 1px solid #b1bdf2;
+  border-radius: 999px;
+  background: linear-gradient(165deg, #ffffffbc, #e9edffbf);
+  box-shadow: inset 0 1px 0 #fff, 0 8px 18px #536aca19;
+  color: var(--download-ink);
+  font-weight: 600;
+  transition: background-color 180ms ease, box-shadow 180ms ease;
+}
+
+.download-page .download-action:hover {
+  background-color: #fff;
+  box-shadow: inset 0 1px 0 #fff, 0 10px 24px #536aca2e;
+}
+
+.download-art {
+  position: absolute;
+  z-index: 0;
+  right: 4%;
+  bottom: 13%;
+  width: 38%;
+  aspect-ratio: 1 / 0.93;
+  pointer-events: none;
+}
+
+.download-art::before,
+.download-art::after,
+.download-art-face {
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 66%;
+  aspect-ratio: 1 / 1.06;
+  transform: matrix(1, -0.32, -0.32, 1, 0, 0);
+  border: 1px solid #f8faff;
+  border-radius: 9%;
+}
+
+.download-art::before,
+.download-art::after {
+  content: "";
+}
+
+.download-art::before {
+  top: 31%;
+  left: 31%;
+  border-color: #f8faff9e;
+  background: linear-gradient(158deg, #e2e8ff35, #a2b1ef4d);
+}
+
+.download-art::after {
+  top: 17%;
+  left: 17%;
+  background: linear-gradient(147deg, #faffff80, #91a5eb50 65%, #e7eeff9c);
+  box-shadow: inset 1px 0 4px #fff6, 0 9px 24px #728bdb27;
+}
+
+.download-art-face {
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: linear-gradient(133deg, #fbfcfff2, #bccaf37a 45%, #90a6ea88 75%, #e3ebffa6);
+  box-shadow: inset 1px 1px 8px #fff9, 0 12px 32px #6f86d632;
+}
+
+.download-art-face .icon {
+  width: 35%;
+  height: 35%;
+  stroke-width: 1.45;
+  filter: drop-shadow(0 2px 4px #738ac9);
+}
+
+.download-accessories {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 20px;
+  margin-top: clamp(25px, 4.3vw, 66px);
+}
+
+.download-page .download-accessories a {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  color: var(--download-ink);
+  font-size: 0.92rem;
+  font-weight: 500;
+}
+
+.download-accessories a + a::before {
+  content: "";
+  width: 1px;
+  height: 12px;
+  margin-right: 5px;
+  background: #aebadd;
+}
+
+.download-accessories a:hover,
+.download-notes a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.download-notes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 18px;
+  margin-top: 8px;
+  font-size: 0.8rem;
+}
+
+@media (max-width: 800px) {
+  .download-intro h1 {
+    text-wrap: wrap;
+  }
+  .download-options {
+    grid-template-columns: 1fr;
+  }
+  .download-card {
+    min-height: clamp(218px, 42vw, 305px);
+  }
+  .download-art {
+    width: min(39%, 235px);
+  }
+}
+
+@media (max-width: 450px) {
+  .download-accessories {
+    gap: 0 18px;
+  }
+  .download-accessories a + a::before {
+    content: none;
+  }
+  .download-art {
+    bottom: 11%;
+    right: 4%;
+    width: 36%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .download-page .download-action {
+    transition: none;
+  }
+}
