@@ -400,45 +400,114 @@ html:has(.glass-page) {
 }
 .glass-pricing {
   scroll-margin-top: 72px;
-  background: linear-gradient(160deg, #f8faff 12%, #e9eeff 100%);
+  overflow: clip;
+  background:
+    radial-gradient(ellipse at 84% 83%, #dce5ff, transparent 56%),
+    linear-gradient(180deg, #f5f7ff, #eef2fe);
 }
 .plan-section-intro {
-  max-width: 32rem;
-  margin-inline: auto;
-  text-align: center;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.5fr);
+  align-items: end;
+  gap: 14px clamp(25px, 5vw, 72px);
 }
 .plan-section-intro small,
 .glass-plans h3 small {
   color: #40598e;
   font-size: 0.73rem;
   font-weight: 720;
-  letter-spacing: 0.085em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
 }
+.plan-section-intro small {
+  grid-column: 1 / -1;
+}
 .plan-section-intro h2 {
-  margin-top: 10px;
+  font-size: clamp(3.6rem, 8vw, 7.25rem);
+  line-height: 0.92;
 }
 .plan-section-intro p {
-  margin-bottom: 0;
+  max-width: 28ch;
+  margin: 0;
+  padding-bottom: 4px;
+  font-size: clamp(1rem, 1.6vw, 1.2rem);
+  line-height: 1.5;
 }
 .glass-plans {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  margin-top: clamp(30px, 5vw, 66px);
-  border-block: 1px solid var(--glass-rail);
+  grid-template-columns: minmax(0, 0.77fr) minmax(0, 1.36fr);
+  gap: clamp(28px, 5vw, 78px);
+  margin-top: clamp(36px, 5vw, 70px);
+  align-items: stretch;
 }
 .glass-plans article {
   display: flex;
   flex-direction: column;
   min-width: 0;
-  padding: clamp(26px, 4vw, 49px) clamp(16px, 4vw, 52px);
 }
-.glass-plans article:first-child {
-  padding-inline-start: 0;
+.plan-free {
+  position: relative;
+  align-self: center;
+  padding: clamp(22px, 3vw, 39px) 0;
+  border-block: 1px solid #b9c8ec;
 }
-.glass-plans article + article {
-  border-inline-start: 1px solid var(--glass-rail);
-  padding-inline-end: 0;
+.plan-free::before {
+  content: "";
+  position: absolute;
+  inset: -1px auto auto 0;
+  width: 52px;
+  height: 2px;
+  background: #4262c0;
+}
+.plan-plus {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-height: 350px;
+  padding: clamp(26px, 4vw, 56px);
+  border-radius: 16px clamp(36px, 5vw, 76px) 16px 16px;
+  color: #edf2ff;
+  background:
+    radial-gradient(ellipse at 83% 46%, #384d9c 0%, transparent 48%),
+    linear-gradient(139deg, #0f173d 17%, #151d48 52%, #252d61 100%);
+  box-shadow:
+    0 30px 56px -34px #263b9fb0,
+    inset 0 1px 0 #bbc6ff55;
+}
+.plan-plus-art {
+  position: absolute;
+  z-index: -1;
+  inset: 0 -5% 0 auto;
+  width: 55%;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+.plan-plus-art::before,
+.plan-plus-art::after {
+  content: "";
+  position: absolute;
+  inset: 23% 3%;
+  border: 1px solid #aabaff66;
+  border-radius: 50%;
+  transform: rotate(-28deg);
+  box-shadow:
+    0 0 18px #899fff38,
+    inset 0 0 18px #899fff24;
+}
+.plan-plus-art::after {
+  inset: 30% 5%;
+  transform: rotate(24deg);
+  border-color: #92a8ff55;
+}
+.plan-plus-art img {
+  position: relative;
+  z-index: 1;
+  width: min(92%, 315px);
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 18px 29px #080d37) drop-shadow(0 0 19px #6494ff85);
+  rotate: -8deg;
 }
 .glass-plans h3 {
   display: flex;
@@ -446,7 +515,7 @@ html:has(.glass-page) {
   align-items: baseline;
   gap: 6px 12px;
   margin: 0;
-  font-size: clamp(1.1rem, 2vw, 1.45rem);
+  font-size: clamp(1.1rem, 2vw, 1.47rem);
   letter-spacing: -0.03em;
 }
 .plan-price {
@@ -454,42 +523,66 @@ html:has(.glass-page) {
   flex-wrap: wrap;
   align-items: baseline;
   gap: 4px 12px;
-  margin: 16px 0 24px;
+  margin: 14px 0 23px;
 }
 .plan-price strong {
-  font-size: clamp(3rem, 6vw, 5.25rem);
-  font-weight: 650;
+  font-size: clamp(3.1rem, 6vw, 5.45rem);
+  font-weight: 640;
   letter-spacing: -0.065em;
   line-height: 1;
 }
 .glass-plans ul {
   display: grid;
-  gap: 9px;
+  gap: 8px;
   padding-inline-start: 1.1rem;
-  line-height: 1.48;
   margin: 0 0 18px;
+  line-height: 1.42;
+  font-size: 0.95rem;
 }
 .glass-plans li::marker {
   color: #4d64b6;
 }
 .plan-note {
-  margin: 0 0 22px;
-  font-size: 0.82rem;
+  margin: 0 0 21px;
+  font-size: 0.8rem;
 }
 .glass-plans a {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
+  gap: 24px;
   min-height: 44px;
   margin-top: auto;
-  padding-block: 12px 0;
-  border-top: 1px solid var(--glass-rail);
-  font-weight: 690;
+  font-weight: 680;
   text-decoration: none;
+}
+.plan-free a {
+  border-top: 1px solid #c2cff0;
+  padding-block: 9px 0;
 }
 .glass-plans a:hover {
   text-decoration: underline;
   text-underline-offset: 4px;
+}
+.plan-plus :is(h3, .plan-price strong) {
+  color: #fff;
+}
+.plan-plus :is(h3 small, .plan-note, .plan-price span),
+.plan-plus li::marker {
+  color: #c0ccff;
+}
+.plan-plus > :is(ul, .plan-note) {
+  max-width: min(29ch, 64%);
+}
+.glass-page .plan-plus a {
+  align-self: start;
+  padding: 9px 13px;
+  border-inline-start: 2px solid #9cb3ff;
+  color: #f5f7ff;
+  background: linear-gradient(90deg, #abc0ff29, #abc0ff08);
+}
+.glass-page .plan-plus a:focus-visible {
+  outline-color: #d5e0ff;
 }
 .glass-agent-page {
   padding-top: clamp(120px, 15vw, 190px);
@@ -647,11 +740,33 @@ html:has(.glass-page) {
   .glass-editor pre {
     margin: 12px 0;
   }
-  .glass-plans article {
-    padding-inline: 0;
+}
+
+@media (max-width: 850px) {
+  .glass-plans {
+    grid-template-columns: 1fr;
+    gap: 32px;
   }
-  .glass-plans article + article {
-    border-inline-start: 0;
-    border-top: 1px solid var(--glass-rail);
+  .plan-free {
+    align-self: auto;
+  }
+}
+@media (max-width: 550px) {
+  .plan-section-intro {
+    grid-template-columns: 1fr;
+  }
+  .plan-plus {
+    min-height: 0;
+  }
+  .plan-plus-art {
+    inset: 6px -4% auto auto;
+    width: 39%;
+    height: 145px;
+  }
+  .plan-plus-art img {
+    width: 86%;
+  }
+  .plan-plus > :is(ul, .plan-note) {
+    max-width: 29ch;
   }
 }

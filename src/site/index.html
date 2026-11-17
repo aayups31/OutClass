@@ -36,7 +36,7 @@
     <script src="assets/site.js" defer=""></script>
     <link rel="stylesheet" href="assets/refinement.css" />
     <link rel="stylesheet" href="assets/launch.css" />
-    <link rel="stylesheet" href="assets/glass.css" />
+    <link rel="stylesheet" href="assets/glass.css?v=pricing" />
     <link rel="stylesheet" href="assets/showcase.css" />
     <link rel="stylesheet" href="assets/workflow.css" />
     <script src="assets/showcase.js" defer></script>
@@ -595,11 +595,14 @@
           <div class="plan-section-intro">
             <small>Pricing</small>
             <h2 id="pricing-title">Start free.</h2>
-            <p>Choose how you connect AI.</p>
+            <p>
+              Get Learn and Educator for Windows. Add hosted AI with OutClass
+              Plus.
+            </p>
           </div>
           <div class="glass-plans">
-            <article>
-              <h3>Learn and Educator</h3>
+            <article class="plan-free" aria-labelledby="free-plan-title">
+              <h3 id="free-plan-title">Learn and Educator</h3>
               <p class="plan-price">
                 <strong>Free</strong> <span>Windows desktop</span>
               </p>
@@ -615,8 +618,19 @@
                 >Get the free apps <span aria-hidden="true">↗</span></a
               >
             </article>
-            <article>
-              <h3>OutClass Plus <small>Test preview</small></h3>
+            <article class="plan-plus" aria-labelledby="plus-plan-title">
+              <div class="plan-plus-art" aria-hidden="true">
+                <img
+                  src="assets/orbital-logo.webp"
+                  alt=""
+                  width="320"
+                  height="216"
+                  loading="lazy"
+                />
+              </div>
+              <h3 id="plus-plan-title">
+                OutClass Plus <small>Test preview</small>
+              </h3>
               <p class="plan-price">
                 <strong>C$12</strong> <span>per month</span>
               </p>
