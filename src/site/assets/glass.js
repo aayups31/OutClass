@@ -52,7 +52,7 @@ if (window.gsap && window.ScrollTrigger) {
     if (hero) {
       gsap.fromTo(
         hero.querySelector(".glass-demo"),
-        { rotateX: 11, scale: 0.94, y: 26 },
+        { rotateX: 8, scale: 0.97, y: 34 },
         {
           rotateX: 0,
           scale: 1,
@@ -62,29 +62,19 @@ if (window.gsap && window.ScrollTrigger) {
             trigger: hero,
             start: "top top",
             end: "bottom 59%",
-            scrub: 0.65,
+            scrub: 0.22,
           },
         },
       );
-      gsap.to(".glass-float", {
-        y: -38,
-        ease: "none",
-        scrollTrigger: {
-          trigger: hero,
-          start: "top top",
-          end: "bottom 38%",
-          scrub: 0.7,
-        },
-      });
     }
     const wideShowcase = matchMedia("(min-width: 931px)");
     const panelOffset = (x, y) => () =>
-      wideShowcase.matches ? `${x}px ${y}px` : `0px ${Math.round(y * 0.25)}px`;
+      wideShowcase.matches ? `${x}px ${y}px` : `0px ${Math.round(y * 0.32)}px`;
     for (const stage of document.querySelectorAll(".app-stage")) {
       const center = stage.querySelector(".app-window-main");
       const left = stage.querySelector(".app-window-left");
       const right = stage.querySelector(".app-window-right");
-      const spread = stage.closest(".app-chapter-educator") ? 15 : -21;
+      const spread = stage.closest(".app-chapter-educator") ? 34 : -30;
       // Translate the panels directly so their contents and static tilt can be composited together.
       gsap
         .timeline({
@@ -100,20 +90,20 @@ if (window.gsap && window.ScrollTrigger) {
         })
         .fromTo(
           center,
-          { translate: panelOffset(0, 21) },
-          { translate: panelOffset(0, -9) },
+          { translate: panelOffset(0, 29) },
+          { translate: panelOffset(0, -14) },
           0,
         )
         .fromTo(
           left,
-          { translate: panelOffset(-spread, 30) },
-          { translate: panelOffset(-7, -19) },
+          { translate: panelOffset(-spread, 49) },
+          { translate: panelOffset(-16, -32) },
           0,
         )
         .fromTo(
           right,
-          { translate: panelOffset(spread, 35) },
-          { translate: panelOffset(7, -21) },
+          { translate: panelOffset(spread, 60) },
+          { translate: panelOffset(16, -38) },
           0,
         );
     }

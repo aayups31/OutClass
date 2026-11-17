@@ -115,7 +115,8 @@
 <span>4</span>          totals[name] = totals.get(name, 0) + minutes
 <span>5</span>      return totals
 <span>6</span>
-<span>7</span>  print(summarize(today))</pre>
+<span>7</span>  today = [("reading", 45), ("coding", 90)]
+<span>8</span>  print(summarize(today))</pre>
                 <div class="run-output">
                   <small>TERMINAL　　OUTPUT</small>
                   <p>› python lesson.py</p>
@@ -124,22 +125,27 @@
                 </div>
               </div>
               <aside class="product-assistant">
-                <div class="assistant-title">✧ OffCourse</div>
-                <div class="assistant-user">Help me take the next step.</div>
-                <p class="agent-reveal">Read the error with your code.</p>
-                <div class="assistant-evidence">
-                  Get a hint grounded in the lesson
+                <div class="assistant-title">
+                  <img
+                    src="assets/emblem-offcourse.webp"
+                    alt=""
+                    width="26"
+                    height="20"
+                  />
+                  OffCourse
                 </div>
-                <p class="agent-reveal">
-                  Test your understanding with a new requirement.
+                <div class="assistant-user">How can I practice this?</div>
+                <p>
+                  Try grouping a week’s worth of activities. What should your
+                  report show on a day with no entries?
                 </p>
+                <div class="hero-practice-task">
+                  <small>Practice break · 20 min</small>
+                  <strong>Build an activity report</strong>
+                </div>
                 <div class="assistant-input">Ask OffCourse <span>↑</span></div>
               </aside>
             </div>
-          </div>
-          <div class="glass-float">
-            <span>Learn by doing</span><strong>Build the activity report</strong
-            ><small>Practice · 20 min</small>
           </div>
         </div>
       </section>
@@ -580,37 +586,53 @@
           </a>
         </div>
       </section>
-      <section id="pricing" class="glass-pricing wrap">
-        <h2>Start free.</h2>
-        <p>Choose how you connect AI.</p>
-        <div class="glass-plans">
-          <article>
-            <small>WINDOWS DESKTOP</small>
-            <h3>Free</h3>
-            <p>Learn and Educator</p>
-            <ul>
-              <li>Local courses, code, and projects</li>
-              <li>Academy, Creator Studio, and GTM</li>
-              <li>Use a personal AI key or compatible local model</li>
-            </ul>
-            <a class="glass-button" href="download.html">Get the free apps ↗</a>
-          </article>
-          <article>
-            <small>INCLUDED AI · TEST PREVIEW</small>
-            <h3>C$12 <span>/ month</span></h3>
-            <p>OutClass Plus</p>
-            <ul>
-              <li>Up to 600 AI answers per month in the paid test plan</li>
-              <li>Available to approved test accounts</li>
-              <li>Stripe test checkout</li>
-            </ul>
-            <a class="glass-button" href="account.html">See the AI preview ↗</a>
-          </article>
+      <section
+        id="pricing"
+        class="glass-pricing"
+        aria-labelledby="pricing-title"
+      >
+        <div class="wrap">
+          <div class="plan-section-intro">
+            <small>Pricing</small>
+            <h2 id="pricing-title">Start free.</h2>
+            <p>Choose how you connect AI.</p>
+          </div>
+          <div class="glass-plans">
+            <article>
+              <h3>Learn and Educator</h3>
+              <p class="plan-price">
+                <strong>Free</strong> <span>Windows desktop</span>
+              </p>
+              <ul>
+                <li>Local courses, code, and projects</li>
+                <li>Academy, Creator Studio, and GTM</li>
+                <li>Use a personal AI key or compatible local model</li>
+              </ul>
+              <p class="plan-note">
+                Personal AI providers may charge separately.
+              </p>
+              <a href="download.html"
+                >Get the free apps <span aria-hidden="true">↗</span></a
+              >
+            </article>
+            <article>
+              <h3>OutClass Plus <small>Test preview</small></h3>
+              <p class="plan-price">
+                <strong>C$12</strong> <span>per month</span>
+              </p>
+              <ul>
+                <li>Up to 600 hosted AI answers per month</li>
+                <li>Available to approved test accounts</li>
+              </ul>
+              <p class="plan-note">
+                Stripe test checkout collects no real payment.
+              </p>
+              <a href="account.html"
+                >See the AI preview <span aria-hidden="true">↗</span></a
+              >
+            </article>
+          </div>
         </div>
-        <p class="glass-note">
-          Personal AI providers may charge separately. Test checkout collects no
-          real payment.
-        </p>
       </section>
     </main>
     <footer class="site-footer wrap">

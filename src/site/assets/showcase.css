@@ -399,6 +399,52 @@
   line-height: 1.65;
   margin: 20px 0;
 }
+.glass-hero .assistant-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.hero-practice-task {
+  display: grid;
+  gap: 5px;
+  padding: 9px 0 8px 10px;
+  border-inline-start: 2px solid #8298e3;
+}
+.hero-practice-task small {
+  color: #516688;
+}
+@media (min-width: 931px) {
+  .glass-hero .product-body {
+    grid-template-columns: clamp(135px, 15%, 200px) minmax(0, 1fr) clamp(
+        230px,
+        24%,
+        335px
+      );
+    min-height: clamp(410px, 34vw, 525px);
+  }
+  .glass-hero :is(.product-canvas, .product-assistant, .product-sidebar) {
+    padding-inline: clamp(17px, 2.25vw, 37px);
+  }
+  .glass-hero .product-titlebar {
+    height: 50px;
+    padding-inline: clamp(17px, 2.25vw, 37px);
+  }
+  .glass-hero
+    :is(
+      .real-code,
+      .app-breadcrumb,
+      .product-sidebar,
+      .run-output,
+      .assistant-user,
+      .product-assistant p,
+      .product-titlebar
+    ) {
+    font-size: clamp(11px, 1vw, 15px);
+  }
+  .glass-hero .assistant-input {
+    inset-inline: clamp(17px, 2.25vw, 37px);
+  }
+}
 .assistant-evidence {
   border-left: 2px solid #8aa7e8;
   padding: 4px 10px;
