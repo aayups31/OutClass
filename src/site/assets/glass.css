@@ -56,8 +56,11 @@ html:has(.glass-page) {
   overflow: clip;
   text-align: center;
   background:
-    radial-gradient(ellipse at 15% 72%, #cad8ff, transparent 57%),
-    radial-gradient(ellipse at 94% 83%, #e5d8fa, transparent 58%), #f8faff;
+    radial-gradient(ellipse at 48% 14%, #fffbff 0%, transparent 49%),
+    radial-gradient(ellipse at 13% 59%, #a6d2fbac 0%, transparent 36%),
+    radial-gradient(ellipse at 90% 65%, #ceb4f49c 0%, transparent 41%),
+    radial-gradient(ellipse at 50% 87%, #aebcfa88 0%, transparent 69%),
+    linear-gradient(180deg, #f3f5ff, #e9eaff 68%, #f2f5ff);
   padding: clamp(116px, 13vw, 188px) 0 clamp(65px, 8vw, 115px);
 }
 .glass-hero h1,
@@ -71,7 +74,40 @@ html:has(.glass-page) {
   word-spacing: 0.025em;
   text-wrap: balance;
 }
-.glass-hero-heading p,
+.glass-hero-heading {
+  z-index: 1;
+}
+.hero-lesson {
+  position: relative;
+  display: inline-block;
+  color: inherit;
+  white-space: nowrap;
+}
+.hero-lesson::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 -0.19em;
+  height: 0.18em;
+  background: linear-gradient(
+    90deg,
+    #9638f0,
+    #8dafff 50%,
+    #3e64f5 82%,
+    #7895ff
+  );
+  mask-image:
+    radial-gradient(
+      ellipse 100% 230% at 50% 245%,
+      transparent 86%,
+      #000 89% 99%,
+      transparent 102%
+    ),
+    linear-gradient(90deg, transparent, #000 13% 85%, transparent);
+  mask-composite: intersect;
+}
+.glass-hero .glass-actions {
+  margin-top: clamp(34px, 4vw, 52px);
+}
 .glass-agent-page > p {
   margin: 22px auto;
   font-size: clamp(1rem, 2vw, 1.3rem);
@@ -105,6 +141,20 @@ html:has(.glass-page) {
   margin-top: clamp(35px, 5vw, 78px);
   text-align: left;
   perspective: 1200px;
+}
+.glass-hero-visual::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: -1% -1.5% 10%;
+  border: 2px solid #fffffff2;
+  border-radius: 50%;
+  transform: rotate(-13deg);
+  box-shadow:
+    0 0 10px #ffffffc7,
+    0 0 42px #aaa9ffb8,
+    inset 0 0 24px #d6e8ffb0;
+  pointer-events: none;
 }
 .glass-demo,
 .glass-conversation {
