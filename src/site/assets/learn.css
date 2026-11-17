@@ -308,7 +308,7 @@
 }
 
 .learn-demo-bar,
-.learn-demo-controls {
+.learn-demo-footer {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -327,37 +327,55 @@
   color: #435b83;
 }
 
-.learn-demo-controls {
-  min-height: 63px;
+.learn-demo-footer {
+  min-height: 41px;
   border-top: 1px solid #cfd9ef;
 }
 
-.learn-demo-controls p {
-  flex: 1 1 155px;
-  font-size: 0.85rem;
+.learn-demo-footer p {
+  font-size: 0.79rem;
   line-height: 1.4;
 }
 
-.learn-demo-action {
-  min-height: 40px;
-  padding: 8px 14px;
-  border: 1px solid #384f9b;
-  border-radius: 8px;
-  background: #273f8e;
-  color: #fff;
-  font-weight: 600;
-  line-height: 1.2;
+.learn-demo-pause {
+  display: grid;
+  width: 32px;
+  height: 30px;
+  place-items: center;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: #425981;
+  font-size: 0.92rem;
+  line-height: 1;
 }
 
-.learn-demo-action:hover {
-  background: #182b70;
+.learn-demo-pause:hover {
+  background: #dce5fa;
 }
 
-.learn-demo-action[aria-disabled="true"] {
-  cursor: default;
-  background: #e2eafd;
-  color: #38527c;
-  border-color: #cad7f4;
+.learn-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  clip-path: inset(50%);
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.demo-progress {
+  width: clamp(46px, 10vw, 100px);
+  height: 3px;
+  border-radius: 2px;
+  background: #d6dff5;
+  overflow: hidden;
+}
+
+.demo-progress > i {
+  display: block;
+  height: 100%;
+  background: #6682d4;
+  transform-origin: left center;
 }
 
 .learn-demo-label {
@@ -380,18 +398,15 @@
 .offcourse-editor pre {
   min-height: 8em;
   margin: 12px 0;
-  overflow-x: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
   tab-size: 4;
   font-size: clamp(0.72rem, 1vw, 0.88rem);
   line-height: 1.6;
 }
 
-.offcourse-editor pre:focus-visible {
-  outline-color: #b8ceff;
-  outline-offset: -2px;
-}
-
-.offcourse-fix {
+.offcourse-fix.is-corrected,
+.offcourse-demo:not(.demo-animated) .offcourse-fix {
   color: #a3efcf;
   background: #284444;
 }
@@ -450,54 +465,193 @@
 }
 
 .learn-blueprint .learn-demo-bar,
-.learn-blueprint .learn-demo-controls {
+.learn-blueprint .learn-demo-footer {
   background: #f0edfc;
 }
 
+.offcourse-chat {
+  min-height: 228px;
+}
+
+.demo-animated :is(.demo-user-message, .demo-agent-message, [data-reveal]) {
+  transition:
+    opacity 320ms ease,
+    transform 320ms ease;
+}
+
+.demo-animated
+  :is(.demo-user-message, .demo-agent-message, [data-reveal]):not(
+    [data-visible]
+  ) {
+  opacity: 0;
+  transform: translateY(7px);
+}
+
 .blueprint-workspace {
-  min-height: 148px;
+  background:
+    linear-gradient(0deg, #f9f7ffcc, #faf8ffcc),
+    radial-gradient(circle, #a597d0 0.7px, transparent 1.2px) 0 0 / 14px 14px;
 }
 
-.blueprint-demo .demo-user-message {
-  background: #f0ecfc;
-  color: #4d3b71;
+.blueprint-brief {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 46px;
+  padding: 8px 12px;
+  border: 1px solid #e0d9f3;
+  border-radius: 9px;
+  background: #f0eafd;
+  color: #493a72;
+  line-height: 1.35;
 }
 
-.blueprint-plan {
-  margin-top: 13px;
+.blueprint-brief img {
+  flex: none;
+  object-fit: contain;
 }
 
-.blueprint-plan details {
-  border-top: 1px solid #dcd9ed;
-  padding: 7px 0;
+.blueprint-map {
+  display: grid;
+  gap: 14px;
+  margin-top: 16px;
 }
 
-.blueprint-plan summary {
-  cursor: pointer;
+.blueprint-scope {
+  display: grid;
+  justify-items: center;
+  text-align: center;
+}
+
+.blueprint-scope span,
+.blueprint-report small {
+  color: #5f5181;
+  font-size: 0.76rem;
+}
+
+.blueprint-scope strong {
+  color: #332450;
   font-weight: 700;
 }
 
-.blueprint-plan summary span {
-  margin-left: 6px;
-  color: #515c7b;
-  font-weight: 400;
-  font-size: 0.83rem;
+.blueprint-flow {
+  --node-gap: clamp(13px, 2.7vw, 32px);
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--node-gap);
 }
 
-.blueprint-plan :is(p, ul, ol) {
-  margin: 7px 0 5px;
-  padding-left: 16px;
-  color: #39486b;
-  font-size: 0.87rem;
-  line-height: 1.5;
+.blueprint-node {
+  display: grid;
+  position: relative;
+  align-content: start;
+  gap: 4px;
+  min-width: 0;
+  padding: 9px clamp(6px, 1.4vw, 15px);
+  border: 1px solid #dcd5ee;
+  border-radius: 9px;
+  background: linear-gradient(146deg, #fff, #f2eefc);
+  box-shadow: 0 4px 11px #55428210;
+  font-size: clamp(0.72rem, 1.1vw, 0.95rem);
+  line-height: 1.25;
 }
 
-.blueprint-plan :is(ol, ul) {
-  padding-left: 29px;
+.blueprint-node + .blueprint-node::before {
+  content: "→";
+  position: absolute;
+  right: 100%;
+  top: 45%;
+  width: var(--node-gap);
+  color: #725abd;
+  text-align: center;
 }
 
-.learn-demo-static {
-  padding: 0 14px 14px;
+.blueprint-node .icon {
+  width: 17px;
+  height: 17px;
+  margin-bottom: 2px;
+  color: #6346b5;
+}
+
+.blueprint-node code {
+  color: #58487a;
+  font-size: 0.82em;
+  overflow-wrap: anywhere;
+}
+
+.blueprint-outcome {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(6px, 2vw, 24px);
+  padding-top: 12px;
+  border-top: 1px solid #e1dbf2;
+  font-size: 0.8rem;
+}
+
+.blueprint-milestones ol {
+  margin: 5px 0 0;
+  padding-inline-start: 17px;
+  color: #594d73;
+  line-height: 1.57;
+}
+
+.blueprint-milestones .is-current {
+  color: #4e3196;
+  font-weight: 650;
+}
+
+.blueprint-report {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-content: center;
+  column-gap: 6px;
+  padding: 6px 9px;
+  border-radius: 8px;
+  background: #eee8fb;
+  line-height: 1.1;
+}
+
+.blueprint-report strong {
+  grid-column: 1;
+  color: #34225c;
+  font-size: clamp(0.95rem, 2vw, 1.4rem);
+}
+
+.blueprint-chart {
+  grid-area: 1 / 2 / span 2;
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  color: #564979;
+  font-size: 0.62rem;
+}
+
+.blueprint-chart span {
+  display: grid;
+  justify-items: center;
+  gap: 3px;
+  flex: 1;
+}
+
+.blueprint-chart i {
+  display: block;
+  width: 70%;
+  border-radius: 3px 3px 0 0;
+  background: linear-gradient(#9272d1, #b69ce6);
+}
+
+.blueprint-bar-mon {
+  height: 12px;
+}
+.blueprint-bar-wed {
+  height: 19px;
+}
+.blueprint-bar-fri {
+  height: 22px;
+}
+
+.learn-blueprint .demo-progress > i {
+  background: #906ccb;
 }
 
 @media (max-width: 850px) {
@@ -520,5 +674,18 @@
 @media (max-width: 460px) {
   .offcourse-workspace {
     grid-template-columns: 1fr;
+  }
+
+  .offcourse-chat {
+    min-height: 191px;
+  }
+
+  .blueprint-report {
+    grid-template-columns: 1fr;
+    gap: 5px;
+  }
+
+  .blueprint-chart {
+    grid-area: auto;
   }
 }

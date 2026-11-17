@@ -39,9 +39,9 @@
     <link rel="stylesheet" href="assets/glass.css?v=background" />
     <link rel="stylesheet" href="assets/showcase.css" />
     <link rel="stylesheet" href="assets/workflow.css?v=background" />
-    <link rel="stylesheet" href="assets/learn.css?v=interactive" />
+    <link rel="stylesheet" href="assets/learn.css?v=live-demos" />
     <script src="assets/glass.js" defer></script>
-    <script src="assets/learn.js" type="module"></script>
+    <script src="assets/learn.js?v=live-demos" type="module"></script>
   </head>
   <body class="glass-page subpage learn-page">
     <a class="skip-link" href="#main">Skip to content</a>
@@ -342,7 +342,7 @@
         <div class="wrap">
           <div class="learn-section-heading">
             <h2 id="learn-agents-title">The agents, at work.</h2>
-            <p>Try two guided examples in the workspace.</p>
+            <p>Watch two examples unfold in the Learn workspace.</p>
           </div>
 
           <article
@@ -363,24 +363,41 @@
               </div>
               <h3 id="offcourse-title">Get unstuck in your own code.</h3>
               <p>
-                Run a Python example, ask about the error, and use the hint to
-                make your next edit.
+                A learner hits a Python error, asks OffCourse for a hint, and
+                uses it to fix the code.
               </p>
             </div>
             <div class="learn-demo offcourse-demo" data-offcourse>
               <div class="learn-demo-bar">
-                <span>Python foundations</span><small>Working with data</small>
+                <span>Python foundations</span>
+                <button
+                  class="learn-demo-pause"
+                  type="button"
+                  data-demo-pause
+                  hidden
+                >
+                  <span aria-hidden="true">Ⅱ</span
+                  ><span class="learn-sr-only">Pause OffCourse demo</span>
+                </button>
               </div>
-              <div class="offcourse-workspace">
+              <p class="learn-sr-only">
+                OffCourse explains that Monday is missing from the dictionary.
+                The learner starts each new day at zero using totals.get(day,
+                0). The updated code passes the three example checks.
+              </p>
+              <div class="offcourse-workspace" aria-hidden="true">
                 <div class="offcourse-editor">
                   <div class="learn-demo-label">lesson.py</div>
-                  <pre
-                    tabindex="0"
-                    aria-label="Example Python code"
-                  ><code data-demo-code># Group study minutes by day</code></pre>
+                  <pre><code data-demo-code>def summarize(records):
+    totals = {}
+    for day, minutes in records:
+        <span class="offcourse-fix">totals[day] = totals.get(day, 0) + minutes</span>
+    return totals</code></pre>
                   <div class="offcourse-output">
                     <div class="learn-demo-label">Test output</div>
-                    <p data-demo-output>Ready to run.</p>
+                    <p data-demo-output data-result="success">
+                      3 / 3 checks passed
+                    </p>
                   </div>
                 </div>
                 <div class="offcourse-chat">
@@ -388,28 +405,19 @@
                   <p class="offcourse-context">
                     Lesson 4 · Python dictionaries
                   </p>
-                  <p class="demo-user-message" data-demo-question hidden></p>
-                  <p class="demo-agent-message" data-demo-hint hidden></p>
+                  <p class="demo-user-message" data-demo-question>
+                    Why does this fail on the first Monday?
+                  </p>
+                  <p class="demo-agent-message" data-demo-hint>
+                    Monday has no entry yet. Use .get(day, 0) from the
+                    dictionary lesson so a new day starts at zero.
+                  </p>
                 </div>
               </div>
-              <div class="learn-demo-controls">
-                <p data-offcourse-status role="status">Guided example</p>
-                <button
-                  type="button"
-                  class="learn-demo-action"
-                  data-offcourse-next
-                  hidden
-                >
-                  Run example
-                </button>
+              <div class="learn-demo-footer" aria-hidden="true">
+                <p data-demo-caption>Checks passed</p>
+                <span class="demo-progress"><i></i></span>
               </div>
-              <noscript>
-                <p class="learn-demo-static">
-                  Adding minutes directly to a missing dictionary key raises a
-                  KeyError. Use <code>totals.get(day, 0)</code> to start at zero
-                  and keep adding to the total.
-                </p>
-              </noscript>
             </div>
           </article>
 
@@ -437,63 +445,84 @@
             </div>
             <div class="learn-demo blueprint-demo" data-blueprint>
               <div class="learn-demo-bar">
-                <span>Project notebook</span><small>Study Tracker</small>
-              </div>
-              <div class="blueprint-workspace">
-                <div class="learn-demo-label">Project brief</div>
-                <p class="demo-user-message" data-blueprint-prompt>
-                  I want to track how long I study and see a weekly total.
-                </p>
-                <div class="blueprint-plan" data-blueprint-plan>
-                  <details>
-                    <summary>Scope <span>What to build</span></summary>
-                    <p>
-                      Log the date, topic, and minutes for each session. Show a
-                      weekly total in the terminal. Leave accounts and charts
-                      for a later version.
-                    </p>
-                  </details>
-                  <details>
-                    <summary>
-                      Architecture <span>Three Python files</span>
-                    </summary>
-                    <ul>
-                      <li>
-                        <code>tracker.py</code> — adds sessions and stores them
-                        in a CSV file.
-                      </li>
-                      <li>
-                        <code>report.py</code> — groups minutes and prints a
-                        weekly total.
-                      </li>
-                      <li>
-                        <code>test_report.py</code> — checks repeated topics and
-                        an empty week.
-                      </li>
-                    </ul>
-                  </details>
-                  <details>
-                    <summary>Milestones <span>Where to start</span></summary>
-                    <ol>
-                      <li>Start with one session and save it to a CSV file.</li>
-                      <li>Read the file and total the minutes for one week.</li>
-                      <li>
-                        Test an empty week and two sessions on the same topic.
-                      </li>
-                    </ol>
-                  </details>
-                </div>
-              </div>
-              <div class="learn-demo-controls">
-                <p data-blueprint-status role="status">Guided example</p>
+                <span>Project notebook <small>· Study Tracker</small></span>
                 <button
+                  class="learn-demo-pause"
                   type="button"
-                  class="learn-demo-action"
-                  data-blueprint-generate
+                  data-demo-pause
                   hidden
                 >
-                  Ask Blueprint
+                  <span aria-hidden="true">Ⅱ</span
+                  ><span class="learn-sr-only">Pause Blueprint demo</span>
                 </button>
+              </div>
+              <p class="learn-sr-only">
+                The Study Tracker plan logs the date, topic and minutes.
+                tracker.py writes sessions to a CSV file, report.py reads those
+                sessions and totals the week, and test_report.py checks repeated
+                topics and empty weeks. Build the logger first, then the report,
+                then test both.
+              </p>
+              <div class="blueprint-workspace" aria-hidden="true">
+                <p class="blueprint-brief">
+                  <img
+                    src="assets/emblem-blueprint.webp"
+                    width="24"
+                    height="22"
+                    alt=""
+                  />
+                  <span data-blueprint-prompt
+                    >I want to log my study time and see a weekly total.</span
+                  >
+                </p>
+                <div class="blueprint-map" data-blueprint-stage="scope">
+                  <div class="blueprint-scope" data-reveal>
+                    <span>First version</span
+                    ><strong>Log sessions. See weekly totals.</strong>
+                  </div>
+                  <div class="blueprint-flow">
+                    <div class="blueprint-node" data-reveal>
+                      <svg class="icon">
+                        <use href="assets/icons.svg#code"></use>
+                      </svg>
+                      <strong>Log time</strong><code>tracker.py</code>
+                    </div>
+                    <div class="blueprint-node" data-reveal>
+                      <svg class="icon">
+                        <use href="assets/icons.svg#folder"></use>
+                      </svg>
+                      <strong>Save sessions</strong><code>sessions.csv</code>
+                    </div>
+                    <div class="blueprint-node" data-reveal>
+                      <svg class="icon">
+                        <use href="assets/icons.svg#monitor"></use>
+                      </svg>
+                      <strong>Print totals</strong><code>report.py</code>
+                    </div>
+                  </div>
+                  <div class="blueprint-outcome" data-reveal>
+                    <div class="blueprint-milestones">
+                      <b>Build order</b>
+                      <ol>
+                        <li>Log a session</li>
+                        <li>Print a weekly total</li>
+                        <li>Test an empty week</li>
+                      </ol>
+                    </div>
+                    <div class="blueprint-report">
+                      <small>Weekly report</small><strong>1h 50m</strong>
+                      <div class="blueprint-chart">
+                        <span><i class="blueprint-bar-mon"></i>Mon</span>
+                        <span><i class="blueprint-bar-wed"></i>Wed</span>
+                        <span><i class="blueprint-bar-fri"></i>Fri</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="learn-demo-footer" aria-hidden="true">
+                <p data-demo-caption>Project plan ready</p>
+                <span class="demo-progress"><i></i></span>
               </div>
             </div>
           </article>
