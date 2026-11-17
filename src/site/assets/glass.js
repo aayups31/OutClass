@@ -77,22 +77,16 @@ if (window.gsap && window.ScrollTrigger) {
         },
       });
     }
-    const story = document.querySelector(".glass-story");
-    if (story) {
-      gsap.fromTo(
-        story,
-        { "--glass-wipe": "100%" },
-        {
-          "--glass-wipe": "0%",
-          ease: "none",
-          scrollTrigger: {
-            trigger: story,
-            start: "top bottom",
-            end: "top 42%",
-            scrub: 0.5,
-          },
-        },
-      );
+    for (const stage of document.querySelectorAll(".app-stage")) {
+      gsap.from(stage.querySelectorAll(".app-window"), {
+        opacity: 0.64,
+        y: 32,
+        duration: 0.9,
+        stagger: { each: 0.1, from: "center" },
+        ease: "power3.out",
+        clearProps: "opacity,transform",
+        scrollTrigger: { trigger: stage, start: "top 87%", once: true },
+      });
     }
     const motions = {
       lift: { y: 56, scale: 0.95 },

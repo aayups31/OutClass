@@ -143,321 +143,366 @@
           </div>
         </div>
       </section>
-      <section id="product" class="glass-story">
-        <div class="glass-intro wrap">
-          <h2>Two apps.<br />One learning workflow.</h2>
-          <div>
-            <a href="#learn-app">For self-learners ↓</a
-            ><a href="#academy-app">For educators ↓</a>
-          </div>
-        </div>
+      <div id="product" class="app-story">
         <section
           id="learn-app"
-          class="glass-scene glass-learn"
-          data-glass="lift"
+          class="app-chapter app-chapter-learn"
+          aria-labelledby="learn-heading"
         >
-          <div class="glass-scene-copy">
+          <header class="app-chapter-heading wrap">
             <span>OutClass Learn</span>
-            <h2>Build while you learn.</h2>
-            <p>Your lesson, editor, and AI teacher work side by side.</p>
-            <a href="learn.html">Explore Learn ↗</a>
-          </div>
-          <div
-            class="product-window glass-demo"
-            aria-label="Learn concept interface"
-          >
-            <div class="product-titlebar">
-              <img
-                src="assets/orbital-logo.webp"
-                width="32"
-                height="24"
-                alt=""
-              /><b>OutClass</b><span>Learn / lesson.py</span
-              ><small>Concept preview</small>
-            </div>
-            <div class="product-body">
-              <aside class="product-sidebar">
-                <span>Courses</span><span>Python foundations</span
-                ><span>Files</span><span>lesson.py</span
-                ><span>test_lesson.py</span>
-              </aside>
-              <div class="product-canvas">
-                <div class="app-breadcrumb">
-                  Python foundations / Working with collections
+            <h2 id="learn-heading">Turn lessons into real ability.</h2>
+            <p>
+              Follow the lesson, write the code, and build something of your own
+              with help from AI that understands what you’re learning.
+            </p>
+          </header>
+          <div class="app-stage wrap">
+            <article
+              class="app-window app-window-left lesson-view"
+              aria-label="Learn lesson preview"
+            >
+              <div class="app-window-bar">
+                <img
+                  src="assets/orbital-logo.webp"
+                  alt=""
+                  width="30"
+                  height="22"
+                />
+                <b>OutClass</b><span>Learn</span>
+              </div>
+              <div class="app-window-body">
+                <small>Python foundations / Lesson 4</small>
+                <h3>Working with data</h3>
+                <div class="app-video lesson-video">
+                  <b>Working<br />with data</b><span>▶ &nbsp; 8:24</span>
                 </div>
-                <div class="editor-tab">lesson.py　×</div>
-                <pre class="real-code"><span>1</span>  def summarize(records):
-<span>2</span>      totals = {}
-<span>3</span>      for name, minutes in records:
-<span>4</span>          totals[name] = totals.get(name, 0) + minutes
-<span>5</span>      return totals
-<span>6</span>
-<span>7</span>  print(summarize(today))</pre>
-                <div class="run-output">
-                  <small>TERMINAL　　OUTPUT</small>
-                  <p>› python lesson.py</p>
-                  <code>{ "reading": 45, "coding": 90 }</code>
-                  <p>✓ Process finished</p>
+                <div class="app-preview-tabs">
+                  <b>Overview</b><span>Notes</span><span>Resources</span>
+                </div>
+                <p>Use lists and dictionaries to work with a real dataset.</p>
+              </div>
+            </article>
+            <article
+              class="app-window app-window-main learn-workspace"
+              aria-label="Learn editor and OffCourse preview"
+            >
+              <div class="app-window-bar">
+                <img
+                  src="assets/orbital-logo.webp"
+                  alt=""
+                  width="30"
+                  height="22"
+                /><b>OutClass</b><span>Learn</span
+                ><small>Python foundations</small>
+              </div>
+              <div class="learn-window-grid">
+                <aside class="app-window-rail">
+                  <strong>Python foundations</strong
+                  ><small>Lesson 4 of 12</small>
+                  <div class="app-course-progress"><span></span></div>
+                  <span>✓ &nbsp; Getting started</span
+                  ><span>✓ &nbsp; Variables</span
+                  ><span>✓ &nbsp; Control flow</span
+                  ><b>▷ &nbsp; Working with data</b
+                  ><span>○ &nbsp; Functions</span>
+                </aside>
+                <div class="app-window-body">
+                  <h3>Working with data</h3>
+                  <div class="app-preview-tabs">
+                    <span>Lesson</span><b>Code</b><span>Practice</span
+                    ><span>Project</span>
+                  </div>
+                  <div class="app-editor">
+                    <div><b>lesson.py</b><span>▷ Run</span></div>
+                    <pre><code><i>1</i>  <em>def</em> summarize(records):
+<i>2</i>      totals = {}
+<i>3</i>      <em>for</em> name, minutes <em>in</em> records:
+<i>4</i>          saved = totals.get(name, 0)
+<i>5</i>          totals[name] = saved + minutes
+<i>6</i>      <em>return</em> totals</code></pre>
+                  </div>
+                  <div class="app-output">
+                    <b>✓ All tests passed</b><span>3 / 3</span>
+                  </div>
+                </div>
+                <aside class="app-window-rail app-window-ai">
+                  <strong
+                    ><img
+                      src="assets/emblem-offcourse.webp"
+                      width="23"
+                      height="18"
+                      alt=""
+                    />OffCourse</strong
+                  >
+                  <p>
+                    What should the report return when there are no records?
+                  </p>
+                  <small>Hint from lesson 4</small>
+                </aside>
+              </div>
+            </article>
+            <article
+              class="app-window app-window-right blueprint-view"
+              aria-label="Blueprint project plan preview"
+            >
+              <div class="app-window-bar">
+                <img
+                  src="assets/emblem-blueprint.webp"
+                  width="25"
+                  height="20"
+                  alt=""
+                /><b>Blueprint</b>
+              </div>
+              <div class="app-window-body">
+                <p class="app-ai-message">Help me build a study tracker.</p>
+                <h3>Study tracker</h3>
+                <ol class="app-plan">
+                  <li>Define the first version</li>
+                  <li>Log study sessions</li>
+                  <li>Build a weekly summary</li>
+                  <li>Test with real data</li>
+                </ol>
+              </div>
+            </article>
+          </div>
+          <nav class="app-roles wrap" aria-label="OutClass Learn links">
+            <a href="agents-learn.html#offcourse"
+              ><img
+                src="assets/emblem-offcourse.webp"
+                width="45"
+                height="36"
+                alt=""
+              /><span
+                ><strong>OffCourse</strong
+                ><small>Get a hint from your lesson and code.</small></span
+              ></a
+            >
+            <a href="agents-learn.html#blueprint"
+              ><img
+                src="assets/emblem-blueprint.webp"
+                width="45"
+                height="36"
+                alt=""
+              /><span
+                ><strong>Blueprint</strong
+                ><small>Turn an idea into a project plan.</small></span
+              ></a
+            >
+          </nav>
+          <a class="app-chapter-link" href="learn.html"
+            >Explore OutClass Learn <span aria-hidden="true">↗</span></a
+          >
+        </section>
+
+        <section
+          id="educator-app"
+          class="app-chapter app-chapter-educator"
+          aria-labelledby="educator-heading"
+        >
+          <header class="app-chapter-heading wrap">
+            <span>OutClass Educator</span>
+            <h2 id="educator-heading">Build, create, and grow your courses.</h2>
+            <p>
+              Design a course in Academy, bring lessons to life in Creator
+              Studio, and launch them with GTM.
+            </p>
+          </header>
+          <div class="app-stage wrap">
+            <article
+              class="app-window app-window-left academy-view"
+              id="academy-app"
+              aria-label="Academy course editor preview"
+            >
+              <div class="app-window-bar">
+                <img
+                  src="assets/orbital-logo.webp"
+                  alt=""
+                  width="30"
+                  height="22"
+                /><b>OutClass</b><span>Academy</span>
+              </div>
+              <div class="educator-window-grid">
+                <aside class="app-window-rail">
+                  <strong>Academy</strong><b>▤ &nbsp; Courses</b
+                  ><span>◫ &nbsp; Curriculum</span
+                  ><span>◇ &nbsp; Exercises</span
+                  ><span>⌁ &nbsp; Capstones</span>
+                </aside>
+                <div class="app-window-body">
+                  <small>Courses / CS101</small>
+                  <h3>Computer Science Fundamentals</h3>
+                  <div class="app-preview-tabs">
+                    <b>Curriculum</b><span>Resources</span>
+                  </div>
+                  <ul class="app-chapter-list">
+                    <li>
+                      <strong>Chapter 1: Foundations</strong
+                      ><span>1. Getting started</span><b>2. Working with data</b
+                      ><span>3. Control flow</span>
+                    </li>
+                    <li><strong>Chapter 2: Data structures</strong></li>
+                  </ul>
+                  <div class="app-mini-agent">
+                    <img
+                      src="assets/emblem-atlas.webp"
+                      alt=""
+                      width="22"
+                      height="18"
+                    /><span><b>Atlas</b> · Plan the curriculum</span>
+                  </div>
+                  <div class="app-mini-agent">
+                    <img
+                      src="assets/emblem-forge.webp"
+                      alt=""
+                      width="22"
+                      height="18"
+                    /><span><b>Forge</b> · Add a practice exercise</span>
+                  </div>
                 </div>
               </div>
-              <aside class="product-assistant">
-                <div class="assistant-title">✧ OffCourse</div>
-                <div class="assistant-user">Help me take the next step.</div>
-                <p class="agent-reveal">Read the error with your code.</p>
-                <div class="assistant-evidence">
-                  Get a hint grounded in the lesson
+            </article>
+            <article
+              class="app-window app-window-main studio-view"
+              id="creator-studio-app"
+              aria-label="Creator Studio script and video preview"
+            >
+              <div class="app-window-bar">
+                <img
+                  src="assets/orbital-logo.webp"
+                  alt=""
+                  width="30"
+                  height="22"
+                /><b>OutClass</b><span>Creator Studio</span
+                ><small>CS101 Launch</small>
+              </div>
+              <div class="app-window-body">
+                <div class="app-studio-header">
+                  <div>
+                    <small>Projects / CS101 Launch</small>
+                    <h3>Lesson 3: Data structures</h3>
+                  </div>
+                  <span>↗ &nbsp; Send to GTM</span>
                 </div>
-                <p class="agent-reveal">
-                  Test your understanding with a new requirement.
-                </p>
-                <div class="assistant-input">Ask OffCourse <span>↑</span></div>
-              </aside>
-            </div>
-          </div>
-        </section>
-        <section
-          id="academy-app"
-          class="glass-scene glass-academy"
-          data-glass="wipe"
-        >
-          <div class="glass-scene-copy">
-            <span>Academy</span>
-            <h2>Teach through real projects.</h2>
-            <p>Turn chapters into exercises and capstones with Forge.</p>
-            <a href="academy.html">Explore Academy ↗</a>
-          </div>
-          <figure class="glass-demo workflow-preview">
-            <img
-              src="assets/academy-workflow.webp"
-              width="1705"
-              height="922"
-              alt="Academy course editor showing the CS101 curriculum, lesson objectives, and the Atlas and Forge assistants"
-              loading="lazy"
-              decoding="async"
-            />
-          </figure>
-        </section>
-        <section
-          id="creator-studio-app"
-          class="glass-scene glass-creator-studio"
-          data-glass="pan"
-        >
-          <div class="glass-scene-copy">
-            <span>Creator Studio</span>
-            <h2>Show what learners will build.</h2>
-            <p>
-              Turn course material into a preview with a clear hook, a
-              demonstration, and captions.
-            </p>
-            <a href="creator-studio.html">Explore Creator Studio ↗</a>
-          </div>
-          <figure class="glass-demo workflow-preview">
-            <img
-              src="assets/creator-workflow.webp"
-              width="1705"
-              height="922"
-              alt="Creator Studio showing a scene list, teaching script, captioned video preview, and suggestions from Muse"
-              loading="lazy"
-              decoding="async"
-            />
-          </figure>
-        </section>
-        <section id="gtm-app" class="glass-scene glass-gtm" data-glass="stack">
-          <div class="glass-scene-copy">
-            <span>GTM</span>
-            <h2>Give your course a launch.</h2>
-            <p>
-              Adapt a post for each channel and review the media before
-              publishing.
-            </p>
-            <a href="gtm.html">Explore GTM ↗</a>
-          </div>
-          <figure
-            class="glass-demo workflow-preview campaign-concept"
-            aria-label="GTM concept showing an OutClass LinkedIn draft and its feed preview"
-          >
-            <header class="campaign-appbar">
-              <span class="campaign-brand"
-                ><img
+                <div class="app-preview-tabs">
+                  <b>Script</b><span>Scenes</span><span>Captions</span
+                  ><span>Assets</span>
+                </div>
+                <div class="app-studio-grid">
+                  <div class="app-scene-list">
+                    <strong>Scenes</strong><span><i>▶</i>Intro</span
+                    ><span><i>▤</i>Arrays and lists</span
+                    ><span><i>◇</i>Stacks and queues</span>
+                  </div>
+                  <div class="app-video studio-video">
+                    <small>CS101</small><b>Data<br />structures</b
+                    ><span>▶ &nbsp; 0:00 / 8:24</span>
+                  </div>
+                </div>
+                <div class="app-timeline">
+                  <span>Intro</span><span>Arrays and lists</span
+                  ><span>Stacks and queues</span>
+                </div>
+                <div class="app-mini-agent">
+                  <img
+                    src="assets/emblem-muse.webp"
+                    alt=""
+                    width="22"
+                    height="18"
+                  /><span
+                    ><b>Muse</b> · “Show the array before introducing the
+                    syntax.”</span
+                  >
+                </div>
+              </div>
+            </article>
+            <article
+              class="app-window app-window-right launch-view"
+              id="gtm-app"
+              aria-label="GTM campaign draft by OutClass"
+            >
+              <div class="app-window-bar">
+                <img
                   src="assets/orbital-logo.webp"
                   alt=""
-                  width="42"
-                  height="30"
-                /><strong>OutClass</strong></span
-              >
-              <span>Learn</span><span>Academy</span><span>Creator Studio</span
-              ><b>GTM</b>
-              <span class="campaign-account"
-                ><img
-                  src="assets/orbital-logo.webp"
-                  alt=""
-                  width="42"
-                  height="30"
-              /></span>
-            </header>
-            <div class="campaign-layout">
-              <aside class="campaign-nav" aria-label="Campaign workspace">
-                <strong>GTM</strong>
-                <b>◉ &nbsp; Campaigns</b><span>▱ &nbsp; Content</span
-                ><span>▦ &nbsp; Calendar</span> <span>▥ &nbsp; Analytics</span
-                ><span>◈ &nbsp; Brand Kit</span
-                ><span>⌁ &nbsp; Integrations</span>
-                <div class="campaign-agent">
+                  width="30"
+                  height="22"
+                /><b>OutClass</b><span>GTM</span>
+              </div>
+              <div class="app-window-body">
+                <small>Campaigns / Draft</small>
+                <h3>CS101 Launch</h3>
+                <div class="app-preview-tabs">
+                  <b>LinkedIn</b><span>X</span><span>YouTube</span>
+                </div>
+                <div class="app-launch-draft">
+                  <div>
+                    <img
+                      src="assets/orbital-logo.webp"
+                      alt=""
+                      width="31"
+                      height="23"
+                    /><strong>OutClass</strong><small>Draft preview</small>
+                  </div>
+                  <p>
+                    Meet CS101, our hands-on introduction to computer science.
+                    Start with Python and build your first API.
+                  </p>
+                  <div class="app-video launch-video">
+                    <b>CS101</b><span>▶ &nbsp; Course preview</span>
+                  </div>
+                </div>
+                <div class="app-mini-agent">
                   <img
                     src="assets/emblem-signal.webp"
                     alt=""
-                    width="30"
-                    height="20"
-                  /><span><b>Signal</b><small>Campaign strategist</small></span>
-                </div>
-              </aside>
-              <div class="campaign-main">
-                <div class="campaign-crumb">
-                  GTM &nbsp; › &nbsp; Campaigns &nbsp; › &nbsp; CS101 Launch
-                </div>
-                <h3>CS101 Launch</h3>
-                <div class="campaign-meta">
-                  <b>● Draft</b><span>Course launch campaign</span
-                  ><span>4 posts</span><span>LinkedIn, X, YouTube</span>
-                </div>
-                <div class="campaign-columns">
-                  <div>
-                    <div class="campaign-channels">
-                      <b
-                        ><strong class="campaign-linkedin">in</strong>
-                        LinkedIn</b
-                      ><span>𝕏 &nbsp; X</span><span>▷ &nbsp; YouTube</span
-                      ><span>◎ &nbsp; Instagram</span>
-                    </div>
-                    <div class="campaign-agent">
-                      <img
-                        src="assets/emblem-signal.webp"
-                        alt=""
-                        width="34"
-                        height="24"
-                      /><span
-                        ><b>Signal</b
-                        ><small>Tailor this post for LinkedIn.</small></span
-                      ><strong class="campaign-action soft"
-                        >✦ &nbsp; Generate</strong
-                      >
-                    </div>
-                    <div class="campaign-draft">
-                      <div class="campaign-author">
-                        <div class="campaign-avatar">
-                          <img
-                            src="assets/orbital-logo.webp"
-                            alt=""
-                            width="42"
-                            height="30"
-                          />
-                        </div>
-                        <span
-                          ><strong>OutClass</strong
-                          ><small>Post to Anyone ▾</small></span
-                        >
-                      </div>
-                      <p>
-                        Meet CS101, our hands-on introduction to computer
-                        science.
-                      </p>
-                      <p>
-                        Start with your first lines of Python, then use what you
-                        learn to build and test a project of your own.
-                      </p>
-                      <ul>
-                        <li>Work with real datasets</li>
-                        <li>Practice with short coding exercises</li>
-                        <li>Build an API as your capstone</li>
-                      </ul>
-                      <p class="campaign-tags">
-                        #OutClass &nbsp; #CS101 &nbsp; #LearnToCode
-                      </p>
-                      <div class="campaign-attachment">
-                        <span class="campaign-mini-thumb"
-                          ><img
-                            src="assets/orbital-logo.webp"
-                            alt=""
-                            width="42"
-                            height="30"
-                          /><b>CS101</b><span>▶</span></span
-                        ><span
-                          ><strong>CS101: Course Preview</strong
-                          ><small>From Creator Studio · 2:41</small></span
-                        >
-                      </div>
-                    </div>
-                  </div>
-                  <aside class="campaign-feed">
-                    <header>
-                      <strong>Preview</strong><span>▣ &nbsp; ▯</span>
-                    </header>
-                    <div class="campaign-feed-post">
-                      <div class="campaign-service">
-                        <strong class="campaign-linkedin">in</strong> LinkedIn ·
-                        Feed
-                      </div>
-                      <div class="campaign-author">
-                        <div class="campaign-avatar">
-                          <img
-                            src="assets/orbital-logo.webp"
-                            alt=""
-                            width="42"
-                            height="30"
-                          />
-                        </div>
-                        <span
-                          ><strong>OutClass</strong
-                          ><small>Education · Preview</small></span
-                        >
-                      </div>
-                      <p>
-                        Meet CS101, our hands-on introduction to computer
-                        science.
-                      </p>
-                      <p>
-                        Start with your first lines of Python, then use what you
-                        learn to build and test a project of your own.
-                      </p>
-                      <ul>
-                        <li>Work with real datasets</li>
-                        <li>Practice with short coding exercises</li>
-                        <li>Build an API as your capstone</li>
-                      </ul>
-                      <p class="campaign-tags">
-                        #OutClass &nbsp; #CS101 &nbsp; #LearnToCode
-                      </p>
-                      <div class="campaign-video">
-                        <div>
-                          <img
-                            src="assets/orbital-logo.webp"
-                            alt=""
-                            width="42"
-                            height="30"
-                          /><strong>CS101</strong
-                          ><small>Computer Science Fundamentals</small>
-                        </div>
-                        <div class="campaign-editor-poster" aria-hidden="true">
-                          <i>def</i> summarize(records):<br />&nbsp; totals =
-                          {}<br />&nbsp; <i>for</i> record in records:<br />&nbsp;&nbsp;&nbsp;
-                          update(totals, record)<br />&nbsp;
-                          <i>return</i> totals
-                        </div>
-                        <span class="campaign-play" aria-hidden="true">▶</span>
-                      </div>
-                    </div>
-                  </aside>
-                </div>
-                <div class="campaign-footer">
-                  <span>▦ &nbsp; Schedule later</span><span>Save draft</span
-                  ><span>Schedule</span
-                  ><strong class="campaign-action">Publish to LinkedIn</strong>
+                    width="22"
+                    height="18"
+                  /><span><b>Signal</b> · Tailor the LinkedIn draft</span>
                 </div>
               </div>
-            </div>
-          </figure>
+            </article>
+          </div>
+          <nav class="app-roles wrap" aria-label="OutClass Educator workspaces">
+            <a href="academy.html"
+              ><img
+                src="assets/emblem-atlas.webp"
+                width="45"
+                height="36"
+                alt=""
+              /><span
+                ><strong>Academy</strong
+                ><small>Design courses with Atlas and Forge.</small></span
+              ></a
+            >
+            <a href="creator-studio.html"
+              ><img
+                src="assets/emblem-muse.webp"
+                width="45"
+                height="36"
+                alt=""
+              /><span
+                ><strong>Creator Studio</strong
+                ><small>Make teaching content with Muse.</small></span
+              ></a
+            >
+            <a href="gtm.html"
+              ><img
+                src="assets/emblem-signal.webp"
+                width="45"
+                height="36"
+                alt=""
+              /><span
+                ><strong>GTM</strong
+                ><small>Launch and measure with Signal and Pulse.</small></span
+              ></a
+            >
+          </nav>
+          <a class="app-chapter-link" href="download.html#educator-download"
+            >Get OutClass Educator <span aria-hidden="true">↗</span></a
+          >
         </section>
-      </section>
+      </div>
       <section class="glass-agent-callout wrap" id="agents">
         <h2>Meet your agents.</h2>
         <div class="agent-choices">
