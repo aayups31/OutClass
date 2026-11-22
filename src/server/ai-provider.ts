@@ -144,7 +144,7 @@ export class AIProvider {
   }
   platform(route: string, body?: unknown) {
     if (
-      !/^(catalog|mine|publish|redeem|courses\/[a-f0-9-]{36}\/(enroll|grant|withdraw))$/.test(
+      !/^(catalog|mine|publish|redeem|media|media\/[a-f0-9-]{36}\/(chunk|finish|chunks\/[0-9]{1,3})|courses\/[a-f0-9-]{36}\/(enroll|grant|withdraw|assess))$/.test(
         route,
       )
     )
@@ -293,7 +293,10 @@ export class AIProvider {
       | "analytics"
       | "promotion"
       | "work"
-      | "project_forge";
+      | "project_forge"
+      | "course_plan"
+      | "course_lesson"
+      | "course_critique";
     schema: T;
     name: string;
     instructions: string;
@@ -304,13 +307,19 @@ export class AIProvider {
     assertClean(context + JSON.stringify(history), "AI context");
     const c = this.config();
     const outputTokens =
-      task === "project_forge"
-        ? 5000
-        : task === "work"
-          ? 3500
-          : task === "checkpoint"
-            ? 250
-            : 1800;
+      task === "course_lesson"
+        ? 10000
+        : task === "course_plan"
+          ? 7000
+          : task === "course_critique"
+            ? 5000
+            : task === "project_forge"
+              ? 5000
+              : task === "work"
+                ? 3500
+                : task === "checkpoint"
+                  ? 250
+                  : 1800;
     if (!this.ready())
       throw new UserError("Choose an AI connection in Settings first.");
     try {

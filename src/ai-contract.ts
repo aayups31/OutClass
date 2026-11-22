@@ -1,5 +1,13 @@
 import { z } from "zod";
 import {
+  coursePlan,
+  courseLessonAnswer,
+  courseCritique,
+  planningInstructions,
+  lessonWritingInstructions,
+  courseCritiqueInstructions,
+} from "./course-workshop-contract.js";
+import {
   agentWorkAnswer,
   agentWorkInstructions,
   projectForgeAnswer,
@@ -56,6 +64,9 @@ export const hostedRequest = z.object({
     "promotion",
     "work",
     "project_forge",
+    "course_plan",
+    "course_lesson",
+    "course_critique",
   ]),
   context: z.string().min(1).max(90000),
   history: z
@@ -75,6 +86,9 @@ export type AIUsage = {
   plan: "free" | "paid";
 };
 export function answerSchema(task: z.infer<typeof hostedRequest>["task"]) {
+  if (task === "course_plan") return coursePlan;
+  if (task === "course_lesson") return courseLessonAnswer;
+  if (task === "course_critique") return courseCritique;
   if (task === "work") return agentWorkAnswer;
   if (task === "project_forge") return projectForgeAnswer;
   if (task === "promotion") return promotionAnswer;
@@ -89,6 +103,9 @@ export function answerSchema(task: z.infer<typeof hostedRequest>["task"]) {
 export function answerInstructions(
   task: z.infer<typeof hostedRequest>["task"],
 ) {
+  if (task === "course_plan") return planningInstructions;
+  if (task === "course_lesson") return lessonWritingInstructions;
+  if (task === "course_critique") return courseCritiqueInstructions;
   if (task === "work") return agentWorkInstructions;
   if (task === "project_forge") return projectForgeInstructions;
   if (task === "promotion") return promotionInstructions;
