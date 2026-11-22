@@ -57,6 +57,26 @@ export class AcademyResources {
   private file(id: string) {
     return path.resolve(this.app.store.directory, "academy-resources", id);
   }
+  private async verifiedBytes(item: AcademyResource) {
+    let bytes: Buffer;
+    try {
+      bytes = await readFile(this.file(item.id));
+    } catch {
+      throw new UserError(
+        `The file for “${item.name}” is missing. Upload the original resource again.`,
+        409,
+      );
+    }
+    if (
+      bytes.length !== item.bytes ||
+      createHash("sha256").update(bytes).digest("hex") !== item.sha256
+    )
+      throw new UserError(
+        `The file for “${item.name}” has changed. Upload the original resource again.`,
+        409,
+      );
+    return bytes;
+  }
   check(refs: AcademyResource[]) {
     if (!refs.length) return;
     const stored = this.all();
@@ -89,7 +109,16 @@ export class AcademyResources {
     const prior = Object.values(records).find(
       (r) => r.sha256 === sha256 && r.name === name,
     );
-    if (prior) return prior;
+    if (prior) {
+      // Re-uploading the same original repairs a deleted or damaged local file.
+      try {
+        await this.verifiedBytes(prior);
+      } catch {
+        await mkdir(path.dirname(this.file(prior.id)), { recursive: true });
+        await writeFile(this.file(prior.id), bytes, { mode: 0o600 });
+      }
+      return prior;
+    }
     if (
       Object.values(records).reduce(
         (size, item) => size + item.bytes,
@@ -132,20 +161,20 @@ export class AcademyResources {
           "This resource is unavailable on this device.",
           404,
         );
-      const file = this.file(id);
-      res.set("X-OutClass-Resource", "1");
+      const bytes = await this.verifiedBytes(item);
       if (item.kind === "code" && req.query.text === "1") {
-        if (item.bytes > 40000)
+        const content = bytes.toString("utf8");
+        if (content.length > 40000)
           throw new UserError(
             "Starter code is limited to 40,000 characters per file.",
           );
-        res.removeHeader("X-OutClass-Resource");
-        res.json({ content: await readFile(file, "utf8") });
+        res.json({ content });
         return;
       }
+      res.set("X-OutClass-Resource", "1");
       res.type(item.mime).attachment(item.name);
       // attachment() may infer a type from the file extension.
-      res.type(item.mime).sendFile(file);
+      res.type(item.mime).sendFile(this.file(id));
     });
     return router;
   }
