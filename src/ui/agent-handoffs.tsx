@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import type { AgentDomain, AgentHandoff } from "../server/agent-handoffs";
 type API = <T>(route: string, body?: unknown) => Promise<T>;
 export const agentNames: Record<AgentDomain, string> = {
-  academy: "Academy Architect",
+  academy: "Atlas",
   creative: "Creative Director",
   growth: "Growth Strategist",
   analytics: "Analytics specialist",

@@ -217,21 +217,24 @@ export class AgentWorkService {
             curriculum: course.lessons.flatMap((item, index) =>
               index >= Math.max(0, input.lessonIndex - 24) &&
               index <= input.lessonIndex + 8
-                ? [{
-                    lessonIndex: index,
-                    title: item.title.slice(0, 160),
-                    objective: item.objective.slice(0, 300),
-                    chapter: item.chapter?.slice(0, 100) || null,
-                    position:
-                      index < input.lessonIndex
-                        ? "earlier"
-                        : index === input.lessonIndex
-                          ? "selected"
-                          : "later",
-                  }]
+                ? [
+                    {
+                      lessonIndex: index,
+                      title: item.title.slice(0, 160),
+                      objective: item.objective.slice(0, 300),
+                      chapter: item.chapter?.slice(0, 100) || null,
+                      position:
+                        index < input.lessonIndex
+                          ? "earlier"
+                          : index === input.lessonIndex
+                            ? "selected"
+                            : "later",
+                    },
+                  ]
                 : [],
             ),
-            curriculumComplete: course.lessons.length <= 33 &&
+            curriculumComplete:
+              course.lessons.length <= 33 &&
               input.lessonIndex <= 24 &&
               input.lessonIndex + 8 >= course.lessons.length - 1,
           }
@@ -332,7 +335,7 @@ export class AgentWorkService {
   start(raw: unknown) {
     const input = agentWorkRequest.parse(raw);
     if (input.scaffold && input.domain !== "academy")
-      throw new UserError("Project Forge works with Academy lessons.");
+      throw new UserError("Forge works with Academy lessons.");
     assertClean(JSON.stringify(input), "agent task");
     const previous = this.list().find(
       (r) => r.request.requestId === input.requestId,

@@ -38,6 +38,7 @@ import { HostedAcademyPanel } from "./academy-hosted";
 import { HandoffInbox } from "./agent-handoffs";
 import "./academy-workbench.css";
 import { AcademyDialog } from "./academy-dialog";
+import { academyExample } from "../academy-example";
 type API = <T>(route: string, body?: unknown) => Promise<T>;
 type Tab = "overview" | "lessons" | "project" | "review" | "releases";
 type Recovery = { course: AcademyDraft; id?: string; revision?: number };
@@ -498,7 +499,7 @@ export function AcademyWorkbench({
             onClick={() => setShowAgent((v) => !v)}
             aria-expanded={showAgent}
           >
-            <Sparkles size={14} /> Architect
+            <Sparkles size={14} /> Atlas
           </button>
           <button
             className="button primary"
@@ -793,6 +794,18 @@ export function AcademyWorkbench({
                   >
                     Download outline template <Download size={13} />
                   </button>
+                  <button
+                    className="text-button"
+                    onClick={() =>
+                      download("academy-teaching-example.json", {
+                        format: "outclass-academy",
+                        version: 1,
+                        course: academyExample(),
+                      })
+                    }
+                  >
+                    Download teaching example <Download size={13} />
+                  </button>
                 </div>
                 <details className="academy-helper">
                   <summary>How to import an existing course</summary>
@@ -1010,7 +1023,7 @@ export function AcademyWorkbench({
                     <div className="academy-forge-callout">
                       <Sparkles size={20} />
                       <div>
-                        <strong>Project Forge</strong>
+                        <strong>Forge</strong>
                         <p>
                           Draft a build guide, learner TODOs, and checks for
                           this lesson.
@@ -1732,11 +1745,11 @@ export function AcademyWorkbench({
         <aside className="academy-architect" hidden={!showAgent}>
           <div className="academy-architect-heading">
             <span>
-              <Sparkles size={14} /> Academy Architect
+              <Sparkles size={14} /> Atlas
             </span>
             <button
               className="text-button"
-              aria-label="Close Academy Architect"
+              aria-label="Close Atlas"
               onClick={() => setShowAgent(false)}
             >
               <X size={14} />

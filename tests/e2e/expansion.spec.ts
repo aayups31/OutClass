@@ -7,6 +7,7 @@ import path from "node:path";
 import { Store } from "../../src/server/store";
 import { Application } from "../../src/server/application";
 import { createApp } from "../../src/server/http";
+import { academyExample } from "../../src/academy-example";
 const base = "http://127.0.0.1:47848";
 let dir: string,
   store: Store,
@@ -28,6 +29,7 @@ test.afterAll(async () => {
   store.close();
   await rm(dir, { recursive: true, force: true });
 });
+
 test("author a course, launch Learn, approve grounded copy and prepare a manual campaign", async ({
   page,
   request,
@@ -57,15 +59,15 @@ test("author a course, launch Learn, approve grounded copy and prepare a manual 
     "Practical Python activities",
   );
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.getByRole("button", { name: "Architect", exact: true }).click();
+  await page.getByRole("button", { name: "Atlas", exact: true }).click();
   const architect = page.getByRole("region", {
-    name: "Academy Architect task workspace",
+    name: "Atlas task workspace",
   });
   await expect(architect).toBeVisible();
   expect(
     await page.evaluate(() => document.documentElement.scrollWidth),
   ).toBeLessThanOrEqual(390);
-  await page.getByRole("button", { name: "Close Academy Architect" }).click();
+  await page.getByRole("button", { name: "Close Atlas" }).click();
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page
     .getByRole("button", { name: "Course overview", exact: true })
@@ -556,4 +558,67 @@ test("author a course, launch Learn, approve grounded copy and prepare a manual 
     path: ".local/landing-refresh/gtm-workspace.png",
     fullPage: true,
   });
+});
+
+test("the teaching example downloads, imports, releases and opens its capstone in Learn", async ({
+  page,
+}) => {
+  await page.goto(base + "/?view=academy");
+  const downloadPromise = page.waitForEvent("download");
+  await page
+    .getByRole("button", { name: "Download teaching example", exact: true })
+    .click();
+  const download = await downloadPromise;
+  const filename = await download.path();
+  expect(download.suggestedFilename()).toBe("academy-teaching-example.json");
+  const exported = JSON.parse(await readFile(filename!, "utf8"));
+  expect(exported.course).toEqual(academyExample());
+  await page
+    .getByLabel("Import course outline", { exact: true })
+    .setInputFiles({
+      name: "teaching-example.json",
+      mimeType: "application/json",
+      buffer: Buffer.from(JSON.stringify(exported)),
+    });
+  await page
+    .getByRole("button", { name: "Use as new course", exact: true })
+    .click();
+  await page.getByLabel("I own or have permission").check();
+  await page
+    .getByRole("button", { name: "Save course draft", exact: true })
+    .click();
+  await expect(page.locator(".academy-message[role=status]")).toContainText(
+    "Saved on this device",
+  );
+  await page
+    .getByRole("button", { name: "Review & release", exact: true })
+    .click();
+  await expect(page.getByLabel("Course coverage")).toContainText("3/3");
+  await expect(
+    page.locator(".academy-finding.blocker, .academy-finding.review"),
+  ).toHaveCount(0);
+  await page
+    .getByRole("button", { name: "Complete instructor review", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Approve local release", exact: true })
+    .click();
+  await page.getByLabel("Preview lesson revision 1").selectOption("2");
+  await page
+    .getByRole("button", { name: "Preview as a learner", exact: true })
+    .click();
+  await expect(page.locator(".topbar")).toContainText("Code & learn");
+  const folder = store.state().session!.workspace;
+  expect(
+    await readFile(path.join(folder, "assignments/lesson-2/report.py"), "utf8"),
+  ).toContain("NotImplementedError");
+  expect(
+    await readFile(
+      path.join(folder, "assignments/lesson-2/test_report.py"),
+      "utf8",
+    ),
+  ).toContain("test_whole_report");
+  expect(
+    await readFile(path.join(folder, "assignments/lesson-2/README.md"), "utf8"),
+  ).toContain("python -m unittest -v");
 });

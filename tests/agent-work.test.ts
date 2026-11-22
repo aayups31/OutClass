@@ -610,3 +610,43 @@ it("gives Academy the curriculum order without treating future lessons as prereq
   expect(curriculum[1]).toMatchObject({ lessonIndex: 1, chapter: "Reports" });
   expect(context.allowedPrerequisiteLessons).toEqual([0]);
 });
+
+it("labels a large curriculum excerpt and keeps its selected-lesson context bounded", async () => {
+  const saved = expansion.saveCourse({
+    title: "Long practical course",
+    audience: "Python learners",
+    outcome: "A weekly report",
+    rightsConfirmed: true,
+    lessons: Array.from({ length: 200 }, (_, index) => ({
+      ...sourceLesson,
+      title: `Lesson ${index}`,
+      objective: "x".repeat(500),
+    })),
+    expectedRevision: 0,
+  });
+  const model = vi
+    .spyOn(app.ai, "structured")
+    .mockResolvedValue(lessonAnswer(100));
+  const result = await work.wait(
+    work.start(request("academy", saved.id, { lessonIndex: 100 })).id,
+  );
+  expect(result.phase).toBe("ready");
+  const context = JSON.parse(model.mock.calls[0][0].context);
+  const brief = JSON.parse(
+    context.sources.find(
+      (source: { title: string }) => source.title === "Saved task brief",
+    ).text,
+  );
+  expect(brief.curriculumComplete).toBe(false);
+  expect(brief.curriculum).toHaveLength(33);
+  expect(brief.curriculum[0].lessonIndex).toBe(76);
+  expect(brief.curriculum.at(-1).lessonIndex).toBe(108);
+  expect(
+    brief.curriculum.every(
+      (lesson: { objective: string }) => lesson.objective.length <= 300,
+    ),
+  ).toBe(true);
+  expect(
+    context.allowedPrerequisiteLessons.every((index: number) => index < 100),
+  ).toBe(true);
+});

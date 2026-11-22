@@ -50,7 +50,7 @@ export function AgentPanel({
   }, [entity?.id, api, domain]);
   const name =
     domain === "academy"
-      ? "Academy Architect"
+      ? "Atlas"
       : domain === "creative"
         ? "Creative Director"
         : domain === "analytics"

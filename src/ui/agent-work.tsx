@@ -29,7 +29,7 @@ const working = (phase?: string) =>
     phase || "",
   );
 const roles = {
-  academy: "Academy Architect",
+  academy: "Atlas",
   creative: "Creative Director",
   growth: "Growth Strategist",
   analytics: "Analytics",
@@ -331,22 +331,16 @@ export function AgentWorkPanel({
                   );
                 }}
               >
-                <option value="architect">
-                  Academy Architect · lesson design
-                </option>
-                <option value="exercise">
-                  Project Forge · exercise scaffold
-                </option>
-                <option value="capstone">
-                  Project Forge · capstone scaffold
-                </option>
+                <option value="architect">Atlas · lesson design</option>
+                <option value="exercise">Forge · exercise scaffold</option>
+                <option value="capstone">Forge · capstone scaffold</option>
               </select>
             </label>
           )}
           {domain === "academy" && scaffold && (
             <p className="agent-work-state">
-              Project Forge drafts a build guide and starter files with TODOs.
-              Review each file before applying it to Learn.
+              Forge drafts a build guide and starter files with TODOs. Review
+              each file before applying it to Learn.
             </p>
           )}
           {domain === "academy" && (
@@ -473,7 +467,7 @@ export function AgentWorkPanel({
                 : job?.phase === "failed" || job?.phase === "interrupted"
                   ? "Retry task"
                   : scaffold
-                    ? "Run Project Forge"
+                    ? "Run Forge"
                     : "Run agent"}
             </button>
             <span>
