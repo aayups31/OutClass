@@ -28,6 +28,24 @@ export const academyLesson = z
       .optional(),
     learn: learnPackage.optional(),
     assessments: z.array(assessmentItem).max(20).optional(),
+    rubric: z
+      .array(
+        z.object({
+          criterion: z.string().max(500),
+          evidence: z.string().max(800),
+          points: z.number().int().min(1).max(100),
+        }),
+      )
+      .max(8)
+      .optional(),
+    technicalVerification: z
+      .object({
+        hash: z.string().length(64),
+        verified: z.boolean(),
+        image: z.string().max(300),
+        at: z.iso.datetime(),
+      })
+      .optional(),
   })
   .strict();
 export const courseDraft = z

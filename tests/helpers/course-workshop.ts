@@ -185,5 +185,20 @@ export function writtenLesson(index: number): CourseLessonAnswer {
     })),
     instructorSolution:
       "def total_minutes(values):\n    result=0\n    for value in values:\n        result+=value\n    return result\n",
+    solutionPath: "report.py",
+    faultyImplementation:
+      "def total_minutes(values):\n    return values[-1] if values else 0\n",
+    rubric: [
+      {
+        criterion: "Correct accumulation",
+        evidence: "Repeated records produce the expected total",
+        points: 2,
+      },
+      {
+        criterion: "A defensible boundary",
+        evidence: "Explain why an empty list returns zero",
+        points: 2,
+      },
+    ],
   };
 }

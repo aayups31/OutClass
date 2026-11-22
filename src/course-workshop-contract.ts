@@ -98,8 +98,19 @@ export const courseLessonAnswer = z.object({
   assignment: learnPackage,
   assessments: z.array(assessmentItem).min(2).max(6),
   answerKeys: z.array(assessmentKey).min(2).max(6),
-  instructorSolution: text(16000), solutionPath:starterPath, faultyImplementation:text(16000),
-  rubric:z.array(z.object({criterion:text(500),evidence:text(800),points:z.number().int().min(1).max(100)})).min(2).max(8),
+  instructorSolution: text(16000),
+  solutionPath: starterPath,
+  faultyImplementation: text(16000),
+  rubric: z
+    .array(
+      z.object({
+        criterion: text(500),
+        evidence: text(800),
+        points: z.number().int().min(1).max(100),
+      }),
+    )
+    .min(2)
+    .max(8),
 });
 export const courseCritique = z.object({
   findings: z

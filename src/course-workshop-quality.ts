@@ -112,6 +112,15 @@ export function validateWrittenLesson(
       "Supply a README with reproducible setup and run instructions.",
     );
   const ids = new Set(answer.assessments.map((item) => item.id));
+  if (
+    !answer.assignment.starterFiles.some(
+      (file) => file.path === answer.solutionPath,
+    )
+  )
+    add(
+      "solution-path",
+      "The private solution must replace an existing learner source file.",
+    );
   if (ids.size !== answer.assessments.length)
     add("item-ids", "Assessment IDs must be unique.");
   if (
