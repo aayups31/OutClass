@@ -39,6 +39,7 @@ import { HandoffInbox } from "./agent-handoffs";
 import "./academy-workbench.css";
 import { AcademyDialog } from "./academy-dialog";
 import { academyExample } from "../academy-example";
+import { AcademyReferences } from "./academy-references";
 type API = <T>(route: string, body?: unknown) => Promise<T>;
 type Tab = "overview" | "lessons" | "project" | "review" | "releases";
 type Recovery = { course: AcademyDraft; id?: string; revision?: number };
@@ -969,6 +970,11 @@ export function AcademyWorkbench({
                       source material. Importing does not execute code or call
                       AI.
                     </small>
+                    <AcademyReferences
+                      key={`${selected?.id || "draft"}:${lessonIndex}`}
+                      value={lesson.references}
+                      onChange={(references) => updateLesson({ references })}
+                    />
                   </>
                 ) : lessonTab === "resources" ? (
                   <section className="academy-resource-workspace">

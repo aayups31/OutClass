@@ -341,6 +341,30 @@ function AssignmentReview({
         </p>
       )}
       <p className="learn-practice-brief">{value.brief}</p>
+      {!!value.references?.length && (
+        <details className="learn-source-acknowledgments">
+          <summary>Readings & source acknowledgments</summary>
+          <ul>
+            {value.references.map((reference) => (
+              <li key={reference.id}>
+                <a href={reference.url} target="_blank" rel="noreferrer">
+                  {reference.title}
+                </a>
+                <p>
+                  {reference.authors} · {reference.publisher}
+                </p>
+                <small>
+                  {reference.license} · {reference.permissionNote}
+                </small>
+              </li>
+            ))}
+          </ul>
+          <p>
+            Independently prepared teaching material. Source institutions do not
+            endorse this course.
+          </p>
+        </details>
+      )}
       {value.project && (
         <section className="learn-project-connection">
           <small>Your evolving project</small>

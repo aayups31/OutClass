@@ -6,7 +6,12 @@ const httpsUrl = z
   .refine((value) => {
     try {
       const url = new URL(value);
-      return url.protocol === "https:" && !url.username && !url.password;
+      return (
+        url.protocol === "https:" &&
+        !url.username &&
+        !url.password &&
+        !/[\s<>]/u.test(value)
+      );
     } catch {
       return false;
     }

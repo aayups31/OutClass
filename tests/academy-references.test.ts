@@ -69,6 +69,7 @@ it("requires complete attribution and a permission note for an approved excerpt"
     { license: "Permission not yet reviewed" },
     { url: "javascript:alert(1)" },
     { url: "https://name:secret@example.org" },
+    { url: "https://example.org/\nforged" },
     { excerpt: "" },
     { permissionNote: "yes" },
   ])

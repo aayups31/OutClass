@@ -13,7 +13,7 @@ let dir: string,
   store: Store,
   server: Server,
   web: ReturnType<typeof createApp>;
-test.beforeAll(async () => {
+test.beforeEach(async () => {
   dir = await mkdtemp(path.join(tmpdir(), "outclass-products-"));
   store = new Store(path.join(dir, "data"));
   const app = new Application(store);
@@ -23,7 +23,7 @@ test.beforeAll(async () => {
   server = web.listen(47848, "127.0.0.1");
   await new Promise<void>((r) => server.once("listening", r));
 });
-test.afterAll(async () => {
+test.afterEach(async () => {
   await web.locals.stopPrograms();
   await new Promise<void>((r) => server.close(() => r()));
   store.close();
@@ -583,6 +583,61 @@ test("the teaching example downloads, imports, releases and opens its capstone i
   await page
     .getByRole("button", { name: "Use as new course", exact: true })
     .click();
+  await page
+    .getByRole("navigation", { name: "Course lessons" })
+    .getByRole("button", { name: /Deliver a report for an empty or busy week/ })
+    .click();
+  await page
+    .getByRole("button", { name: "Teaching material", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Find university sources", exact: true })
+    .click();
+  await page.getByLabel("Search university sources").fill("MIT Python");
+  await expect(page.locator(".academy-reference-results")).toContainText(
+    "6.0001",
+  );
+  await page
+    .getByRole("button", { name: "Add source reference", exact: true })
+    .click();
+  await page
+    .getByLabel("Reference title 1", { exact: true })
+    .fill("Report contracts — teaching fixture");
+  await page
+    .getByLabel("Reference publisher 1", { exact: true })
+    .fill("OutClass test materials");
+  await page
+    .getByLabel("Reference author 1", { exact: true })
+    .fill("Test educator");
+  await page
+    .getByLabel("Reference URL 1", { exact: true })
+    .fill("https://example.org/report-contracts");
+  await page
+    .getByLabel("Reference license 1", { exact: true })
+    .fill("Original test material");
+  await page
+    .getByLabel("Reference permission 1", { exact: true })
+    .fill(
+      "Original fixture authorized for course distribution and configured agent use.",
+    );
+  await page
+    .getByLabel("Reference excerpt 1", { exact: true })
+    .fill(
+      "Keep calculation separate from formatting. Test an empty report and a report with repeated names.",
+    );
+  await page.getByLabel("Approve reference excerpt 1", { exact: true }).check();
+  await page
+    .getByLabel("Reference excerpt 1", { exact: true })
+    .fill(
+      "Keep calculation separate from formatting. Check the empty report and repeated names before presenting the result.",
+    );
+  await expect(
+    page.getByLabel("Approve reference excerpt 1", { exact: true }),
+  ).not.toBeChecked();
+  await page.getByLabel("Approve reference excerpt 1", { exact: true }).check();
+  await page
+    .getByRole("button", { name: "Course overview", exact: true })
+    .click();
   await page.getByLabel("I own or have permission").check();
   await page
     .getByRole("button", { name: "Save course draft", exact: true })
@@ -621,4 +676,17 @@ test("the teaching example downloads, imports, releases and opens its capstone i
   expect(
     await readFile(path.join(folder, "assignments/lesson-2/README.md"), "utf8"),
   ).toContain("python -m unittest -v");
+  expect(
+    await readFile(
+      path.join(folder, "assignments/lesson-2/SOURCES.md"),
+      "utf8",
+    ),
+  ).toContain("https://example.org/report-contracts");
+  await page
+    .locator(".layout-tools")
+    .getByRole("button", { name: "Lesson", exact: true })
+    .click();
+  await expect(page.locator(".learn-source-acknowledgments")).toContainText(
+    "Test educator",
+  );
 });
