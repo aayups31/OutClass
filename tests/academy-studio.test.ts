@@ -26,7 +26,8 @@ const course = (): AcademyDraft => ({
   lessons: [0, 1].map((i) => ({
     title: i ? "Handle empty data" : "Group records",
     objective: "Produce a total for each person",
-    practice: "Group Ada’s two records and test the empty input",
+    practice:
+      "Group two records and test empty input.\nExample input: Ada 5, Ada 4\nExpected result: Ada 9",
     content: "A dictionary keyed by person accumulates minutes from records.",
     learn: {
       minutes: 20,
@@ -375,4 +376,27 @@ it("indexes the full supported Academy catalog in Learn", async () => {
       )
       .get(result.courseId),
   ).toMatchObject({ total: 200 });
+});
+
+it("reports missing examples and a capstone without a starting point without blocking ordinary edits", () => {
+  const draft = course();
+  draft.lessons[0].practice = "Build a useful report.";
+  draft.lessons[0].learn!.kind = "capstone";
+  draft.lessons[0].learn!.starterFiles = [];
+  const saved = expansion.saveCourse({ ...draft, expectedRevision: 0 });
+  const report = studio.audit(saved.id);
+  expect(report.findings).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        id: "0:worked-example",
+        level: "review",
+        field: "practice",
+      }),
+      expect.objectContaining({ id: "0:capstone-start", level: "review" }),
+      expect.objectContaining({
+        id: "0:hint-progression",
+        level: "suggestion",
+      }),
+    ]),
+  );
 });

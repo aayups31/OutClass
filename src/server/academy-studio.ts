@@ -264,6 +264,36 @@ export function auditAcademy(course: Revision<AcademyDraft>): AcademyAudit {
     }
     assignments++;
     minutes += p.minutes;
+    if (
+      !/^\s*Example input:\s*\S.+$/im.test(l.practice) ||
+      !/^\s*Expected result:\s*\S.+$/im.test(l.practice)
+    )
+      add(
+        `${i}:worked-example`,
+        "review",
+        "practice",
+        "Give the learner a concrete example",
+        "Add Example input: and Expected result: lines with small, actual values. The learner sees this brief separately from the teaching material.",
+        i,
+      );
+    if (p.hints.length === 1)
+      add(
+        `${i}:hint-progression`,
+        "suggestion",
+        "learn",
+        "Offer a second step when the learner is stuck",
+        "Follow the first hint with a more specific diagnostic experiment. Avoid repeating the task or revealing the implementation.",
+        i,
+      );
+    if (p.kind === "capstone" && !p.starterFiles.length)
+      add(
+        `${i}:capstone-start`,
+        "review",
+        "learn",
+        "Make the capstone starting point clear",
+        "Provide a build guide or starter files, or explain the empty-project setup in the practice brief before approving this finding.",
+        i,
+      );
     if (p.prerequisiteLessons.some((n) => n >= i))
       add(
         `${i}:order`,

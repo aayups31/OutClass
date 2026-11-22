@@ -570,3 +570,43 @@ it("grounds proposed scenes in timed transcript evidence and blocks changed tran
   );
   expect(expansion.state().creatives[0].revision).toBe(1);
 });
+
+it("gives Academy the curriculum order without treating future lessons as prerequisites", async () => {
+  const saved = expansion.saveCourse({
+    ...{
+      title: "Study reports",
+      audience: "Learners who can write a loop",
+      outcome: "A weekly report",
+      rightsConfirmed: true,
+      lessons: [
+        { ...sourceLesson, title: "Read records", objective: "Read CSV rows" },
+        { ...sourceLesson, title: "Group records", chapter: "Reports" },
+        {
+          ...sourceLesson,
+          title: "Expose an API",
+          objective: "Build an HTTP endpoint",
+        },
+      ],
+    },
+    expectedRevision: 0,
+  });
+  const model = vi
+    .spyOn(app.ai, "structured")
+    .mockResolvedValue(lessonAnswer(1));
+  const result = await work.wait(
+    work.start(request("academy", saved.id, { lessonIndex: 1 })).id,
+  );
+  expect(result.phase).toBe("ready");
+  const context = JSON.parse(model.mock.calls[0][0].context);
+  const brief = context.sources.find(
+    (s: { title: string }) => s.title === "Saved task brief",
+  );
+  const curriculum = JSON.parse(brief.text).curriculum;
+  expect(curriculum.map((l: { position: string }) => l.position)).toEqual([
+    "earlier",
+    "selected",
+    "later",
+  ]);
+  expect(curriculum[1]).toMatchObject({ lessonIndex: 1, chapter: "Reports" });
+  expect(context.allowedPrerequisiteLessons).toEqual([0]);
+});

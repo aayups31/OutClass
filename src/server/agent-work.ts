@@ -214,6 +214,26 @@ export class AgentWorkService {
             title: course.title,
             audience: course.audience,
             outcome: course.outcome,
+            curriculum: course.lessons.flatMap((item, index) =>
+              index >= Math.max(0, input.lessonIndex - 24) &&
+              index <= input.lessonIndex + 8
+                ? [{
+                    lessonIndex: index,
+                    title: item.title.slice(0, 160),
+                    objective: item.objective.slice(0, 300),
+                    chapter: item.chapter?.slice(0, 100) || null,
+                    position:
+                      index < input.lessonIndex
+                        ? "earlier"
+                        : index === input.lessonIndex
+                          ? "selected"
+                          : "later",
+                  }]
+                : [],
+            ),
+            curriculumComplete: course.lessons.length <= 33 &&
+              input.lessonIndex <= 24 &&
+              input.lessonIndex + 8 >= course.lessons.length - 1,
           }
         : input.domain === "creative"
           ? {
