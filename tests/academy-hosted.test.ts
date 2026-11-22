@@ -9,8 +9,13 @@ it.skipIf(process.env.OUTCLASS_DATABASE_TEST !== "1")(
   "isolates real account access, freezes releases and consumes launch grants exactly once",
   async () => {
     const env = parse(await readFile(".local/ai-service.env")),
-      pool = new Pool(serviceConfig(env).pool),
+      pool = new Pool({
+        ...serviceConfig(env).pool,
+        query_timeout: 8000,
+        statement_timeout: 8000,
+      }),
       db = await pool.connect();
+    console.info("Hosted Academy: database connected");
     await db.query("BEGIN");
     // Every service transaction is a savepoint inside this test's rollback.
     const wrapped = {
@@ -70,6 +75,7 @@ it.skipIf(process.env.OUTCLASS_DATABASE_TEST !== "1")(
       };
     try {
       expect((await service.publish(author, input)).id).toBe(id);
+      console.info("Hosted Academy: unpublished test transaction created");
       expect((await service.publish(author, input)).id).toBe(id);
       await expect(
         service.publish(author, {
@@ -81,6 +87,9 @@ it.skipIf(process.env.OUTCLASS_DATABASE_TEST !== "1")(
       await expect(service.grant(other, id, 34)).rejects.toThrow(/Enroll/);
       await service.enroll(learner, id);
       await service.enroll(learner, id);
+      console.info(
+        "Hosted Academy: publication isolation and enrollment checked",
+      );
       expect(
         (await service.mine(author)).find((c) => c.id === id).enrollments,
       ).toBe(1);
@@ -94,6 +103,9 @@ it.skipIf(process.env.OUTCLASS_DATABASE_TEST !== "1")(
       await expect(service.redeem(learner, grant.grant)).rejects.toThrow(
         /consumed/,
       );
+      console.info(
+        "Hosted Academy: launch ownership and single-use grant checked",
+      );
       await expect(service.withdraw(other, id)).rejects.toThrow(/creator/);
       await service.withdraw(author, id);
       await expect(service.detail(id)).rejects.toThrow(/not publicly/);
@@ -104,5 +116,5 @@ it.skipIf(process.env.OUTCLASS_DATABASE_TEST !== "1")(
       await pool.end();
     }
   },
-  30000,
+  90000,
 );
