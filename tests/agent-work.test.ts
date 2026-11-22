@@ -650,3 +650,100 @@ it("labels a large curriculum excerpt and keeps its selected-lesson context boun
     context.allowedPrerequisiteLessons.every((index: number) => index < 100),
   ).toBe(true);
 });
+
+it("grounds Academy in approved readings for the selected lesson and requires a real reading citation", async () => {
+  const reference = {
+    id: randomUUID(),
+    title: "Grouping records",
+    publisher: "Fixture educator",
+    authors: "Fixture author",
+    url: "https://example.org/grouping",
+    license: "Permission granted",
+    licenseUrl: "",
+    permissionNote:
+      "Original fixture authorized for this course and agent workflow.",
+    excerpt: "Trace each person's dictionary total as repeated records arrive.",
+    approved: true,
+  };
+  const saved = expansion.saveCourse({
+    title: "Python reports",
+    audience: "Beginners",
+    outcome: "A useful report",
+    rightsConfirmed: true,
+    lessons: [
+      {
+        ...sourceLesson,
+        references: [
+          reference,
+          {
+            ...reference,
+            id: randomUUID(),
+            approved: false,
+            excerpt: "PRIVATE UNAPPROVED SOURCE",
+          },
+        ],
+      },
+      {
+        ...sourceLesson,
+        references: [
+          { ...reference, id: randomUUID(), excerpt: "OTHER LESSON SOURCE" },
+        ],
+      },
+    ],
+    expectedRevision: 0,
+  });
+  const answer = lessonAnswer();
+  const model = vi.spyOn(app.ai, "structured").mockResolvedValue(answer);
+  const failed = await work.wait(
+    work.start(request("academy", saved.id, { maxCalls: 1 })).id,
+  );
+  expect(failed.phase).toBe("failed");
+  expect(failed.error).toContain("reading");
+  const context = JSON.parse(model.mock.calls[0][0].context);
+  expect(JSON.stringify(context)).not.toContain("PRIVATE UNAPPROVED SOURCE");
+  expect(JSON.stringify(context)).not.toContain("OTHER LESSON SOURCE");
+  expect(
+    context.sources.find(
+      (item: { id: string }) => item.id === `reading:${reference.id}`,
+    ).text,
+  ).toContain(reference.url);
+  answer.artifacts[0].sourceIds.push(`reading:${reference.id}`);
+  const ready = await work.wait(
+    work.start(request("academy", saved.id, { maxCalls: 1 })).id,
+  );
+  expect(ready.phase).toBe("ready");
+  await work.apply(ready.id, ready.reviewHash!);
+  expect(expansion.state().courses[0].lessons[0].references).toEqual(
+    saved.lessons[0].references,
+  );
+});
+
+it("does not leak unapproved reference text through the quick-review draft excerpt", async () => {
+  const c = course();
+  c.lessons[0].references = [
+    {
+      id: randomUUID(),
+      title: "Draft source",
+      publisher: "Fixture",
+      authors: "",
+      url: "",
+      license: "",
+      licenseUrl: "",
+      permissionNote: "",
+      excerpt: "PRIVATE UNAPPROVED EXCERPT",
+      approved: false,
+    },
+  ];
+  const { revision: _revision, updatedAt: _updatedAt, ...draft } = c;
+  const saved = expansion.saveCourse({ ...draft, expectedRevision: 1 });
+  const model = vi.spyOn(app.ai, "structured").mockResolvedValue({
+    summary: "Inspect the learner task",
+    steps: [],
+    draftText: "A clearer practice brief",
+    limitations: ["No external reading was supplied."],
+  });
+  await work.proposals.run("academy", saved.id, saved.revision);
+  expect(model.mock.calls[0][0].context).not.toContain(
+    "PRIVATE UNAPPROVED EXCERPT",
+  );
+});

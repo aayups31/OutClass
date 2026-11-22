@@ -55,6 +55,23 @@ export function validateCourse(course: AcademyDraft) {
       "Keep a course release under 300,000 characters; split large source files into linked resources.",
     );
   course.lessons.forEach((lesson, i) => {
+    if (
+      lesson.references?.some(
+        (reference) => reference.excerpt && !reference.approved,
+      )
+    )
+      issues.push(
+        `Lesson ${i + 1}: review permission for each reference excerpt or remove its text before release.`,
+      );
+    if (
+      lesson.references?.some((reference) => reference.approved) &&
+      lesson.learn?.starterFiles.some(
+        (file) => file.path.toLowerCase() === "sources.md",
+      )
+    )
+      issues.push(
+        `Lesson ${i + 1}: SOURCES.md is reserved for source acknowledgments; rename that starter file.`,
+      );
     for (const field of ["title", "objective", "practice", "content"] as const)
       if (!lesson[field] && (field !== "content" || !lesson.resources?.length))
         issues.push(`Lesson ${i + 1}: add ${field}.`);

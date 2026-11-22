@@ -2,6 +2,7 @@ import { z } from "zod";
 import { learnPackage } from "./learn-package-contract.js";
 import { learningProject } from "./academy-design-contract.js";
 import { academyResource } from "./academy-resource-contract.js";
+import { academyReference } from "./academy-reference-contract.js";
 import { COURSE_LESSON_LIMIT, COURSE_SOURCE_LIMIT } from "./course-limits.js";
 import type { CompiledProject } from "./server/academy-compiler.js";
 
@@ -14,6 +15,16 @@ export const academyLesson = z
     content: text(COURSE_SOURCE_LIMIT),
     chapter: text(100).optional(),
     resources: z.array(academyResource).max(12).optional(),
+    references: z
+      .array(academyReference)
+      .max(12)
+      .refine(
+        (references) =>
+          new Set(references.map((reference) => reference.id)).size ===
+          references.length,
+        "Reference identities must be unique within a lesson.",
+      )
+      .optional(),
     learn: learnPackage.optional(),
   })
   .strict();

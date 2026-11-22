@@ -30,6 +30,7 @@ import {
 } from "./agent-handoffs.js";
 import type { ProductAgentRun } from "./product-agents.js";
 import { lessonEvidence } from "../academy-design.js";
+import { referenceEvidence } from "./academy-references.js";
 
 const key = "suite:work:v1";
 const digest = (value: unknown) =>
@@ -208,6 +209,17 @@ export class AgentWorkService {
           : null,
       }),
     });
+    // Academy readings are selected for this lesson, not blindly mixed across the course.
+    if (input.domain === "academy") {
+      for (let index = sources.length - 1; index >= 0; index--)
+        if (sources[index].id.startsWith("reading:")) sources.splice(index, 1);
+      sources.push(
+        ...referenceEvidence(
+          lesson.references,
+          `${lesson.title} ${lesson.objective} ${lesson.practice} ${input.goal || ""}`,
+        ),
+      );
+    }
     const brief =
       input.domain === "academy"
         ? {
@@ -305,6 +317,21 @@ export class AgentWorkService {
           .map((s) => s.id),
       },
       brief,
+      referenceCoverage:
+        input.domain === "academy"
+          ? {
+              attached: lesson.references?.length || 0,
+              approved:
+                lesson.references?.filter(
+                  (reference) => reference.approved && reference.excerpt,
+                ).length || 0,
+              selectedSourceIds: sources
+                .filter((source) => source.id.startsWith("reading:"))
+                .map((source) => source.id),
+              sourceLimit: 3,
+              discoveryLinksAreEvidence: false,
+            }
+          : null,
       curriculum: course.lessons.map((l, index) => ({
         index,
         title: l.title.slice(0, 100),
@@ -434,6 +461,13 @@ export class AgentWorkService {
         if (!a.sourceIds.includes(`lesson:${input.lessonIndex}`))
           throw new UserError(
             "Cite the selected lesson itself. Course and project references can supplement it.",
+          );
+        if (
+          row.sources.some((source) => source.id.startsWith("reading:")) &&
+          !a.sourceIds.some((id) => id.startsWith("reading:"))
+        )
+          throw new UserError(
+            "Ground the assignment in at least one supplied reading and cite its reading: source ID. Do not cite a link you have not read.",
           );
         const example = /^[ \t]*Example input:[ \t]*([^\r\n]+)$/im
           .exec(a.practice)?.[1]

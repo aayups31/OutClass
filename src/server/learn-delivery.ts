@@ -3,6 +3,7 @@ import type { Application } from "./application.js";
 import type { CourseRelease } from "../expansion-contract.js";
 import { Workspace } from "./workspace.js";
 import { UserError, assertClean } from "./safety.js";
+import { referenceCredits } from "../academy-reference-contract.js";
 type Progress = {
   revision: number;
   checked: number[];
@@ -55,6 +56,9 @@ export class LearnDelivery {
       lessonTitle: lesson.title,
       objective: lesson.objective,
       brief: lesson.practice,
+      references: (lesson.references || [])
+        .filter((reference) => reference.approved)
+        .map(({ excerpt: _, ...reference }) => reference),
       plan,
       project: binding.release.learningProject
         ? {
@@ -97,6 +101,12 @@ export class LearnDelivery {
         content: `# ${plan.title || value.lessonTitle}\n\n${value.objective}\n\n${value.brief}\n\n## Acceptance criteria\n${plan.acceptanceCriteria.map((c) => `- ${c}`).join("\n")}\n\n## Reflection\n${plan.reflection}\n\n## Apply it differently\n${plan.transferChallenge}\n\nInstructor-authored assignment, release ${value.releaseId}. Self-review is not automated grading. Starter files are never executed automatically.\n`,
       },
     ];
+    const binding = this.app.store.get<Binding>(`academy:delivery:${courseId}`);
+    const index = Number(/^lesson-(\d+)$/.exec(lessonId)?.[1]);
+    const credits = referenceCredits(
+      binding?.release.lessons[index]?.references,
+    );
+    if (credits) files.push({ path: "SOURCES.md", content: credits });
     if (value.project)
       files.push({
         path: "PROJECT_CONNECTION.md",

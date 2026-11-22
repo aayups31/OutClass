@@ -142,6 +142,12 @@ export function importAcademy(raw: unknown) {
     );
   // Importing never carries rights approval or silently changes a saved draft.
   result.rightsConfirmed = false;
+  for (const lesson of result.lessons)
+    if (lesson.references)
+      lesson.references = lesson.references.map((reference) => ({
+        ...reference,
+        approved: false,
+      }));
   return {
     course: result,
     hash: digest(result),
@@ -220,6 +226,33 @@ export function auditAcademy(course: Revision<AcademyDraft>): AcademyAudit {
     transfers = 0,
     minutes = 0;
   course.lessons.forEach((l, i) => {
+    if (
+      l.references?.some(
+        (reference) => reference.excerpt && !reference.approved,
+      )
+    )
+      add(
+        `${i}:reference-permission`,
+        "blocker",
+        "references",
+        "Review reference permission",
+        "Approve the excerpt and record permission for your intended use, or remove its text. A publicly readable course page does not establish reuse permission.",
+        i,
+      );
+    if (
+      l.references?.some((reference) => reference.approved) &&
+      l.learn?.starterFiles.some(
+        (file) => file.path.toLowerCase() === "sources.md",
+      )
+    )
+      add(
+        `${i}:reference-path`,
+        "blocker",
+        "references",
+        "Rename the source starter file",
+        "SOURCES.md is reserved for the released lesson's source acknowledgments.",
+        i,
+      );
     for (const field of ["title", "objective", "practice", "content"] as const)
       if (!l[field].trim() && (field !== "content" || !l.resources?.length))
         add(

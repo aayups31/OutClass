@@ -8,6 +8,7 @@ import {
 import { UserError } from "./safety.js";
 import { GTMAnalytics } from "./gtm-analytics.js";
 import { AgentHandoffs, type AgentDomain } from "./agent-handoffs.js";
+import { referenceEvidence } from "./academy-references.js";
 export type ProductAgentRun = {
   id: string;
   domain: AgentDomain;
@@ -78,6 +79,15 @@ export class ProductAgents {
         2000,
       ),
     }));
+    if (domain === "academy") {
+      const course = state.courses.find((course) => course.id === entityId)!;
+      sources.push(
+        ...referenceEvidence(
+          sourceLessons.flatMap(({ lesson }) => lesson.references || []),
+          `${course.title} ${course.outcome}`,
+        ),
+      );
+    }
     if (domain === "growth" || domain === "analytics")
       for (const r of new GTMAnalytics(this.app, this.state)
         .view(entityId)
@@ -187,7 +197,10 @@ export class ProductAgents {
         name: `outclass_${domain}_proposal`,
         instructions: productAgentInstructions[domain],
         context: JSON.stringify({
-          draftExcerpt: JSON.stringify(context.entity).slice(0, 8000),
+          // Only approved, separately attributed readings may reach a model.
+          draftExcerpt: JSON.stringify(context.entity, (key, value) =>
+            key === "references" ? undefined : value,
+          ).slice(0, 8000),
           sources: context.sources,
           request:
             "Propose the next useful revision, with source-grounded editable draft text. The draft excerpt may be truncated.",
