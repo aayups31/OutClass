@@ -33,7 +33,7 @@ async function upload(name: string, content: string | Buffer) {
   const response = await fetch(base + "?name=" + encodeURIComponent(name), {
     method: "POST",
     headers: { "Content-Type": "application/octet-stream" },
-    body: content,
+    body: typeof content === "string" ? content : Uint8Array.from(content),
   });
   expect(response.status).toBe(200);
   return response.json();

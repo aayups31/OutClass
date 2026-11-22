@@ -265,8 +265,8 @@ export function auditAcademy(course: Revision<AcademyDraft>): AcademyAudit {
     assignments++;
     minutes += p.minutes;
     if (
-      !/^\s*Example input:\s*\S.+$/im.test(l.practice) ||
-      !/^\s*Expected result:\s*\S.+$/im.test(l.practice)
+      !/^[ \t]*Example input:[ \t]*\S[^\r\n]*$/im.test(l.practice) ||
+      !/^[ \t]*Expected result:[ \t]*\S[^\r\n]*$/im.test(l.practice)
     )
       add(
         `${i}:worked-example`,
