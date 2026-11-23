@@ -12,12 +12,63 @@ const session = {
   expires_at: Math.floor(Date.now() / 1000) + 3600,
   email: "learner@example.com",
 };
+it("creates credentials without a session, verifies email, and protects profile writes", async () => {
+  const f = await fixture();
+  expect(
+    (await f.post("register", { email: session.email, password: "short" }))
+      .status,
+  ).toBe(400);
+  const registration = await f.post("register", {
+    email: session.email,
+    password: "a long private passphrase",
+  });
+  expect(registration.status).toBe(200);
+  expect(registration.headers.get("set-cookie")).toBeNull();
+  expect(f.deps.auth).toHaveBeenCalledWith("signup", {
+    email: session.email,
+    password: "a long private passphrase",
+  });
+  expect(
+    (
+      await f.post("profile", {
+        name: "Learner",
+        interests: [],
+        industries: [],
+        learningGoals: [],
+      })
+    ).status,
+  ).toBe(401);
+  const verified = await f.post("verify", {
+    email: session.email,
+    code: "123456",
+  });
+  const cookie = verified.headers
+    .getSetCookie()
+    .map((value) => value.split(";")[0])
+    .join("; ");
+  expect(
+    (
+      await f.post(
+        "profile",
+        { name: "Learner", interests: [], industries: [], learningGoals: [] },
+        cookie,
+      )
+    ).status,
+  ).toBe(200);
+  expect(f.deps.browser!.profile).toHaveBeenCalledWith(session.access_token, {
+    name: "Learner",
+    interests: [],
+    industries: [],
+    learningGoals: [],
+  });
+});
 let server: Server | undefined;
 afterEach(async () => {
   if (server) await new Promise<void>((r) => server!.close(() => r()));
   server = undefined;
 });
 async function fixture(overrides: Partial<GatewayDependencies> = {}) {
+  let profile: unknown = null;
   const deps: GatewayDependencies = {
     authenticate: async () => user,
     answer: async () => ({ answer: "Predict the result.", citations: [] }),
@@ -51,6 +102,10 @@ async function fixture(overrides: Partial<GatewayDependencies> = {}) {
         return { id: user, email: session.email };
       }),
       signOut: vi.fn(async () => {}),
+      profile: vi.fn(async (_token, value) => {
+        if (value) profile = value;
+        return profile;
+      }),
       plan: async () => ({
         amount: 1200,
         currency: "cad",
@@ -82,6 +137,61 @@ async function fixture(overrides: Partial<GatewayDependencies> = {}) {
     fetch(`${base}/v1/browser/${path}`, { headers: { Cookie: cookie } });
   return { deps, post, get };
 }
+it("signs in with password and saves only validated profile preferences", async () => {
+  const f = await fixture(),
+    credentials = {
+      email: session.email,
+      password: "a long private passphrase",
+    };
+  const signed = await f.post("password", credentials);
+  expect(signed.status).toBe(200);
+  expect(JSON.stringify(await signed.json())).not.toContain(
+    session.access_token,
+  );
+  const cookie = "__Host-outclass-access=" + session.access_token,
+    profile = {
+      name: "Aayu",
+      interests: ["Programming"],
+      learningGoals: ["Build a useful app"],
+      industries: ["Education"],
+    };
+  expect(
+    (await f.post("profile", { ...profile, role: "admin" }, cookie)).status,
+  ).toBe(400);
+  expect(
+    (await f.post("profile", profile, cookie, "https://attacker.example"))
+      .status,
+  ).toBe(403);
+  expect((await f.post("profile", profile, cookie)).status).toBe(200);
+  expect(await (await f.get("profile", cookie)).json()).toEqual({ profile });
+});
+it("rejects failed password authentication without setting cookies", async () => {
+  const f = await fixture({
+    auth: async () => {
+      throw Error("private provider details");
+    },
+  });
+  const response = await f.post("password", {
+    email: session.email,
+    password: "a long incorrect passphrase",
+  });
+  expect(response.status).toBe(400);
+  expect(response.headers.getSetCookie()).toHaveLength(0);
+  expect(await response.text()).not.toContain("private provider details");
+});
+it("ignores malformed profile metadata instead of exposing unvalidated fields", async () => {
+  const f = await fixture();
+  f.deps.browser!.profile = async () => ({
+    name: "Learner",
+    role: "admin",
+    learningGoals: "invalid",
+  });
+  const response = await f.get(
+    "profile",
+    "__Host-outclass-access=" + session.access_token,
+  );
+  expect(await response.json()).toEqual({ profile: null });
+});
 it("sets verified, secure, HttpOnly session cookies and never exposes tokens to browser JSON", async () => {
   const f = await fixture();
   expect(await (await f.get("config")).json()).toMatchObject({
