@@ -75,6 +75,15 @@ for (const width of [1440, 390])
       await route.fulfill({ json: result });
     });
     await page.goto(base + "/account.html");
+    await page.locator("#auth-flow").waitFor({ state: "visible" });
+    await page.evaluate(async () => {
+      const elements = document.querySelectorAll(".account-intro, #auth-flow");
+      await Promise.all(
+        [...elements].flatMap((element) =>
+          element.getAnimations().map((animation) => animation.finished),
+        ),
+      );
+    });
     await page.screenshot({
       path: `.local/account-signup-${width}.png`,
       fullPage: true,

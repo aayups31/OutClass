@@ -34,6 +34,7 @@
     <link rel="stylesheet" href="assets/refinement.css" />
     <link rel="stylesheet" href="assets/glass.css" />
     <link rel="stylesheet" href="assets/support.css?v=light" />
+    <link rel="stylesheet" href="assets/account-experience.css" />
   </head>
   <body class="glass-page subpage support-page account-page">
     <a class="skip-link" href="#main">Skip to content</a>
@@ -70,8 +71,9 @@
     <main id="main" tabindex="-1">
       <section class="account-layout wrap">
         <div class="account-intro">
-          <h1>Your next chapter starts here.</h1>
-          <p>A workspace shaped around your curiosity, goals, and ambitions.</p>
+          <p class="account-eyebrow">A SPACE FOR WHAT COMES NEXT</p>
+          <h1>Your next<br />chapter.<br /><em>Make it yours.</em></h1>
+          <p>Follow your curiosity. Build something that matters.</p>
           <div class="account-visual" aria-hidden="true">
             <div class="account-visual-brand">
               <img
@@ -81,24 +83,6 @@
                 height="216"
               />
             </div>
-            <div class="account-visual-agent account-visual-offcourse">
-              <img
-                src="assets/emblem-offcourse.webp"
-                alt=""
-                width="70"
-                height="52"
-              />
-              <span>OffCourse</span>
-            </div>
-            <div class="account-visual-agent account-visual-blueprint">
-              <img
-                src="assets/emblem-blueprint.webp"
-                alt=""
-                width="70"
-                height="52"
-              />
-              <span>Blueprint</span>
-            </div>
           </div>
         </div>
         <section class="account-panel" aria-label="OutClass account">
@@ -106,15 +90,6 @@
             <span class="loading-orbit"></span>Opening your account…
           </div>
           <div id="auth-flow" hidden="">
-            <div class="account-panel-top">
-              <img
-                class="brand-orbit"
-                src="assets/orbital-logo.webp"
-                width="54"
-                height="36"
-                alt=""
-              /><span class="account-preview">Included AI preview</span>
-            </div>
             <div id="email-step">
               <p class="account-fineprint" id="account-stage">
                 01 · Your account
@@ -139,16 +114,13 @@
                   id="account-password"
                   name="password"
                   type="password"
-                  minlength="12"
+                  minlength="8"
                   maxlength="128"
                   autocomplete="new-password"
                   required
                   aria-describedby="password-help"
                 />
-                <small id="password-help"
-                  >Use 12–128 characters. A long, unique passphrase works
-                  well.</small
-                >
+                <small id="password-help">At least 8 characters.</small>
                 <button
                   id="credentials-submit"
                   class="button primary account-submit"
