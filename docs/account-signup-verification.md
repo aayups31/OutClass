@@ -2,7 +2,8 @@
 
 The account page supports email/password signup, numeric email verification, and
 an editable learning profile (name, interests, learning goals, and industries).
-Existing email-code sign-in and password sign-in remain available. Preferences
+Returning browser users sign in with email and password; email codes only verify
+new signups. The resend endpoint uses Supabase's signup resend action. Preferences
 are Supabase user metadata, never authorization or billing claims.
 
 ## Automated checks
@@ -14,8 +15,8 @@ are Supabase user metadata, never authorization or billing claims.
 - `npm run build:ai`
 
 Browser tests cover desktop and mobile signup, invalid-code recovery, profile
-saving/reloading/editing, refreshing allowance without discarding edits, password
-sign-in failure and recovery, sign-out, and legacy email-code sign-in. Browser API
+saving/reloading/editing, password sign-in failure and recovery, sign-out, and the
+absence of passwordless browser sign-in. Browser API
 tests cover unauthenticated and cross-origin writes, bounded strict profile
 validation, invalid metadata, secure cookies, refresh, and provider failures.
 Browser tests use mocked provider responses; API tests use an injected identity
@@ -34,3 +35,7 @@ Before public signup, configure an OutClass sender domain and ensure Supabase's
 Then verify a fresh real account from signup through email receipt, verification,
 profile save, sign-out, and password sign-in. This external check has not been
 represented as an automated pass.
+
+Accounts originally created through passwordless OTP need a password established
+through Supabase's verified recovery flow before using the new browser sign-in.
+This change does not invent or silently assign a password to an existing account.

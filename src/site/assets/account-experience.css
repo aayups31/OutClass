@@ -18,9 +18,10 @@
   position: sticky;
   top: 80px;
   padding: 0;
+  isolation: isolate;
 }
 .account-page .account-intro .account-eyebrow {
-  margin: 0 0 28px;
+  margin: 0 0 32px;
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.23em;
@@ -28,20 +29,17 @@
 }
 .account-page .account-intro h1 {
   max-width: none;
-  font-size: clamp(60px, 6.3vw, 90px);
-  line-height: 0.99;
+  font-size: clamp(64px, 7vw, 100px);
+  line-height: 1.02;
   letter-spacing: -0.075em;
-  font-weight: 600;
+  font-weight: 650;
   margin: 0 0 26px;
 }
-.account-page .account-intro h1 em {
-  display: inline-block;
-  margin-top: 16px;
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: 0.82em;
-  font-weight: 400;
-  letter-spacing: -0.065em;
-  color: #5266ab;
+.account-page .account-intro h1 span {
+  color: #4f65b0;
+  background: linear-gradient(110deg, #17254e 0%, #526dc9 58%, #929edc);
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 .account-page .account-intro > p:not(.account-eyebrow) {
   max-width: 330px;
@@ -53,36 +51,70 @@
   position: relative;
   display: block;
   width: 100%;
-  height: 220px;
-  margin-top: 20px;
+  height: 290px;
+  margin-top: 8px;
   perspective: none;
   pointer-events: none;
 }
 .account-page .account-visual::before {
   content: "";
   position: absolute;
-  inset: 45% -15% 0 -25%;
-  background: radial-gradient(ellipse, #8eacfc38, transparent 65%);
+  inset: 20% -12% -8% -25%;
+  background: radial-gradient(ellipse, #879fff55, transparent 64%);
+  transform: rotate(-18deg);
+}
+.account-page .account-visual::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  width: 140%;
+  height: 180px;
+  left: -25%;
+  top: 35%;
+  background: linear-gradient(
+    168deg,
+    transparent 40%,
+    #bacbff33 45%,
+    #ffffffce 49%,
+    #aabafa50 50%,
+    transparent 59%
+  );
+  transform: skewY(-12deg);
+  mask-image: linear-gradient(
+    90deg,
+    transparent,
+    #000 25%,
+    #000 65%,
+    transparent
+  );
 }
 .account-page .account-visual-brand {
   position: relative;
   inset: auto;
   display: grid;
   place-items: center;
-  width: 250px;
-  height: 190px;
-  margin-left: 20px;
+  width: 340px;
+  height: 260px;
+  margin: 0 auto;
   padding: 0;
   border: 0;
   border-radius: 0;
   background: none;
   box-shadow: none;
-  transform: rotate(-10deg);
+  transform: rotate(-14deg);
 }
 .account-page .account-visual-brand img {
-  width: 250px;
+  width: 340px;
   height: auto;
-  filter: drop-shadow(0 30px 25px #486bdd30);
+  filter: drop-shadow(10px 35px 23px #486bdd36);
+}
+.account-page .account-intro .account-signature {
+  max-width: none;
+  margin-top: 5px;
+  color: #52658b;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
 }
 .account-page .account-panel {
   width: 100%;
@@ -102,6 +134,9 @@
   line-height: 1.2;
   letter-spacing: -0.05em;
   margin: 15px 0 12px;
+}
+.account-page #email-form {
+  margin-top: 36px;
 }
 .account-page #account-stage,
 .account-page #code-step > .account-fineprint:first-child,
@@ -239,6 +274,18 @@
   margin-top: 25px;
   background: none;
 }
+.account-page.account-onboarding .account-layout {
+  grid-template-columns: 0.9fr 1.3fr;
+  gap: 90px;
+}
+.account-page.account-onboarding .account-intro h1 {
+  font-size: 76px;
+}
+.account-page #profile-step {
+  border-bottom: 0;
+  margin: 0;
+  padding: 0;
+}
 .account-page .site-footer {
   border-color: #8d9ec52b;
 }
@@ -268,6 +315,10 @@
   .account-page .account-intro h1 {
     font-size: 66px;
   }
+  .account-page.account-onboarding .account-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 35px;
+  }
 }
 @media (max-width: 810px) {
   .account-page .account-layout {
@@ -283,17 +334,18 @@
   .account-page .account-intro h1 {
     font-size: clamp(56px, 11vw, 76px);
   }
-  .account-page .account-intro h1 br:nth-child(2) {
-    display: none;
-  }
-  .account-page .account-intro h1 em {
-    margin-top: 8px;
-  }
   .account-page .account-intro .account-eyebrow {
     margin-bottom: 22px;
     font-size: 9px;
   }
   .account-page .account-visual {
+    display: none;
+  }
+  .account-page .account-intro .account-signature {
+    margin: 18px 0 0;
+    font-size: 9px;
+  }
+  .account-page.account-onboarding .account-intro {
     display: none;
   }
   .account-page .account-panel {

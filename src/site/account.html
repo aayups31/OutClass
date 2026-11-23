@@ -71,9 +71,8 @@
     <main id="main" tabindex="-1">
       <section class="account-layout wrap">
         <div class="account-intro">
-          <p class="account-eyebrow">A SPACE FOR WHAT COMES NEXT</p>
-          <h1>Your next<br />chapter.<br /><em>Make it yours.</em></h1>
-          <p>Follow your curiosity. Build something that matters.</p>
+          <p class="account-eyebrow">OUTCLASS / YOUR WORKSPACE</p>
+          <h1>Beyond<br /><span>the lesson.</span></h1>
           <div class="account-visual" aria-hidden="true">
             <div class="account-visual-brand">
               <img
@@ -84,6 +83,7 @@
               />
             </div>
           </div>
+          <p class="account-signature">Learn. Build. Become.</p>
         </div>
         <section class="account-panel" aria-label="OutClass account">
           <div id="auth-loading" role="status" class="account-loading">
@@ -95,9 +95,6 @@
                 01 · Your account
               </p>
               <h2 id="auth-title">Create your account.</h2>
-              <p id="auth-description">
-                Start with your email and a password. Then verify your inbox.
-              </p>
               <form id="email-form">
                 <label for="account-email">Email address</label
                 ><input
@@ -135,8 +132,6 @@
               <div class="account-auth-options">
                 <button id="choose-signin" type="button" class="text-link">
                   Already have an account? Sign in</button
-                ><button id="choose-code" type="button" class="text-link">
-                  Use an email code instead</button
                 ><button
                   id="choose-signup"
                   type="button"
@@ -146,10 +141,6 @@
                   Create an account
                 </button>
               </div>
-              <p class="account-fineprint">
-                Hosted AI is available to approved test accounts. The desktop
-                app supports your own API key or a local model.
-              </p>
             </div>
             <div id="code-step" hidden="">
               <p class="account-fineprint">02 · Verify your email</p>
@@ -168,7 +159,7 @@
                 Enter the code sent to <strong id="pending-email"></strong>.
               </p>
               <form id="code-form">
-                <label for="account-code">Sign-in code</label
+                <label for="account-code">Verification code</label
                 ><input
                   id="account-code"
                   name="code"
@@ -180,7 +171,7 @@
                   placeholder="000000"
                   required=""
                 /><button class="button primary account-submit" type="submit">
-                  Sign in
+                  Verify email
                   <svg class="icon" aria-hidden="true">
                     <use href="assets/icons.svg#right"></use>
                   </svg>
@@ -189,21 +180,13 @@
               <button class="text-link" id="resend-code" type="button">
                 Send another code
               </button>
-              <p class="account-fineprint">
-                Use the most recent code. Check your spam folder if it hasn’t
-                arrived.
-              </p>
             </div>
             <a class="account-privacy" href="privacy.html">Privacy policy</a>
           </div>
           <div id="account-dashboard" hidden="">
             <section id="profile-step" hidden aria-labelledby="profile-title">
               <p class="account-fineprint">03 · Make it yours</p>
-              <h2 id="profile-title">What would you like to explore?</h2>
-              <p>
-                Choose a few starting points. You can change these whenever your
-                interests evolve.
-              </p>
+              <h2 id="profile-title">Make it personal.</h2>
               <form id="profile-form">
                 <label for="profile-name">Your name</label
                 ><input
@@ -234,74 +217,76 @@
                 </button>
               </form>
             </section>
-            <button id="edit-profile" class="text-link" type="button">
-              Your learning profile ↗
-            </button>
-            <div class="account-panel-top">
-              <span class="account-connected"
-                ><i class="status-dot"></i>Signed in</span
-              ><button id="sign-out" type="button" class="text-link">
-                Sign out
+            <div id="account-summary">
+              <button id="edit-profile" class="text-link" type="button">
+                Your learning profile ↗
               </button>
-            </div>
-            <h2>Your account</h2>
-            <p class="account-email-display" id="signed-in-email"></p>
-            <div class="allowance-panel">
-              <div>
-                <span>Included AI</span
-                ><strong id="plan-name">Preview plan</strong>
+              <div class="account-panel-top">
+                <span class="account-connected"
+                  ><i class="status-dot"></i>Signed in</span
+                ><button id="sign-out" type="button" class="text-link">
+                  Sign out
+                </button>
               </div>
-              <div class="allowance-number">
-                <strong id="answers-left">—</strong
-                ><span>answers remaining</span>
+              <h2>Your account</h2>
+              <p class="account-email-display" id="signed-in-email"></p>
+              <div class="allowance-panel">
+                <div>
+                  <span>Included AI</span
+                  ><strong id="plan-name">Preview plan</strong>
+                </div>
+                <div class="allowance-number">
+                  <strong id="answers-left">—</strong
+                  ><span>answers remaining</span>
+                </div>
+                <progress
+                  id="allowance-progress"
+                  value="0"
+                  max="20"
+                  aria-label="Monthly answers remaining"
+                ></progress>
+                <p id="allowance-detail"></p>
+                <button id="refresh-allowance" type="button" class="text-link">
+                  Refresh allowance
+                  <svg class="icon" aria-hidden="true">
+                    <use href="assets/icons.svg#refresh"></use>
+                  </svg>
+                </button>
               </div>
-              <progress
-                id="allowance-progress"
-                value="0"
-                max="20"
-                aria-label="Monthly answers remaining"
-              ></progress>
-              <p id="allowance-detail"></p>
-              <button id="refresh-allowance" type="button" class="text-link">
-                Refresh allowance
-                <svg class="icon" aria-hidden="true">
-                  <use href="assets/icons.svg#refresh"></use>
-                </svg>
-              </button>
-            </div>
-            <div class="billing-panel">
-              <div>
-                <h3 id="billing-title">More room to explore.</h3>
-                <span id="billing-mode" class="account-preview"
-                  >Billing preview</span
+              <div class="billing-panel">
+                <div>
+                  <h3 id="billing-title">More room to explore.</h3>
+                  <span id="billing-mode" class="account-preview"
+                    >Billing preview</span
+                  >
+                </div>
+                <p id="billing-description">
+                  Loading the current subscription details…
+                </p>
+                <button
+                  id="open-billing"
+                  class="button secondary"
+                  type="button"
+                  disabled=""
                 >
+                  Open billing
+                  <svg class="icon" aria-hidden="true">
+                    <use href="assets/icons.svg#arrow"></use>
+                  </svg>
+                </button>
+                <p class="account-fineprint" id="billing-detail"></p>
               </div>
-              <p id="billing-description">
-                Loading the current subscription details…
-              </p>
-              <button
-                id="open-billing"
-                class="button secondary"
-                type="button"
-                disabled=""
-              >
-                Open billing
+              <a class="button primary account-submit" href="download.html"
+                >Get the desktop app
                 <svg class="icon" aria-hidden="true">
-                  <use href="assets/icons.svg#arrow"></use>
-                </svg>
-              </button>
-              <p class="account-fineprint" id="billing-detail"></p>
+                  <use href="assets/icons.svg#arrow"></use></svg
+              ></a>
+              <p class="account-fineprint">
+                Already installed? Open OutClass and sign in separately in its
+                AI settings. Your local code and course history stay on your
+                computer.
+              </p>
             </div>
-            <a class="button primary account-submit" href="download.html"
-              >Get the desktop app
-              <svg class="icon" aria-hidden="true">
-                <use href="assets/icons.svg#arrow"></use></svg
-            ></a>
-            <p class="account-fineprint">
-              Already installed? Open OutClass and sign in separately in its AI
-              settings. Your local code and course history stay on your
-              computer.
-            </p>
           </div>
           <p
             class="account-message"

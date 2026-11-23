@@ -86,12 +86,18 @@ function showCode() {
   byId("account-code").value = "";
 }
 function showEmail() {
+  document.body.classList.remove("account-onboarding");
   byId("auth-flow").hidden = false;
   byId("account-dashboard").hidden = true;
   byId("email-step").hidden = false;
   byId("code-step").hidden = true;
   byId("account-code").value = "";
   pendingEmail = "";
+}
+function showProfile(visible) {
+  byId("profile-step").hidden = !visible;
+  byId("account-summary").hidden = visible;
+  document.body.classList.toggle("account-onboarding", visible);
 }
 function renderBilling() {
   const paid = currentUsage?.plan === "paid";
@@ -162,9 +168,7 @@ byId("email-form").addEventListener("submit", (event) => {
     const email = byId("account-email").value.trim();
     const password = byId("account-password").value;
     try {
-      if (authMode === "code") await request("email", { email });
-      else if (authMode === "signup")
-        await request("register", { email, password });
+      if (authMode === "signup") await request("register", { email, password });
       else {
         await request("password", { email, password });
         renderAccount(await request("session"));
@@ -177,7 +181,7 @@ byId("email-form").addEventListener("submit", (event) => {
     pendingEmail = email;
     showCode();
     startCooldown();
-    message("Your sign-in code has been requested. Check your inbox.");
+    message();
   }).then(() => {
     if (pendingEmail) byId("account-code").focus();
   });
@@ -185,34 +189,21 @@ byId("email-form").addEventListener("submit", (event) => {
 function chooseAuth(mode) {
   authMode = mode;
   showEmail();
+  message();
   const password = byId("account-password");
-  password.hidden = mode === "code";
-  password.required = mode !== "code";
-  password.previousElementSibling.hidden = mode === "code";
-  byId("password-help").hidden = mode === "code";
+  byId("password-help").hidden = mode === "signin";
   password.autocomplete =
     mode === "signup" ? "new-password" : "current-password";
   password.value = "";
   byId("auth-title").textContent =
     mode === "signup" ? "Create your account." : "Welcome back.";
-  byId("auth-description").textContent =
-    mode === "code"
-      ? "We’ll email you a one-time sign-in code."
-      : mode === "signup"
-        ? "Create your credentials, verify your email, then make OutClass yours."
-        : "Sign in with your email and password.";
   byId("credentials-submit").textContent =
-    mode === "signup"
-      ? "Create account"
-      : mode === "code"
-        ? "Send sign-in code"
-        : "Sign in";
+    mode === "signup" ? "Create account" : "Sign in";
   byId("choose-signup").hidden = mode === "signup";
   byId("choose-signin").hidden = mode === "signin";
 }
 byId("choose-signup").addEventListener("click", () => chooseAuth("signup"));
 byId("choose-signin").addEventListener("click", () => chooseAuth("signin"));
-byId("choose-code").addEventListener("click", () => chooseAuth("code"));
 const interests = [
     "Programming",
     "AI & machine learning",
@@ -257,14 +248,14 @@ async function loadProfile(email) {
     ])
       for (const input of byId(id).querySelectorAll("input"))
         input.checked = profile?.[key]?.includes(input.value) || false;
-    byId("profile-step").hidden = !!profile?.name;
+    showProfile(!profile?.name);
   } catch {
     if (profileEmail === email) profileEmail = undefined;
     /* Existing account/allowance remains available during a profile-service failure. */
   }
 }
 byId("edit-profile").addEventListener("click", () => {
-  byId("profile-step").hidden = false;
+  showProfile(true);
   byId("profile-name").focus();
 });
 byId("profile-form").addEventListener("submit", (event) => {
@@ -283,7 +274,7 @@ byId("profile-form").addEventListener("submit", (event) => {
         .map((x) => x.trim())
         .filter(Boolean),
     });
-    byId("profile-step").hidden = true;
+    showProfile(false);
     message("Your learning profile is saved. You can update it anytime.");
   });
 });
@@ -295,9 +286,10 @@ byId("code-form").addEventListener("submit", (event) => {
       throw Error("Enter the 6–8 digit code from your latest email.");
     const account = await request("verify", { email: pendingEmail, code });
     byId("account-code").value = "";
+    showProfile(true);
     renderAccount(account);
     renderAccount(await request("session"));
-    message("You’re signed in. Your next step is in the desktop app.");
+    message();
   });
 });
 byId("account-code").addEventListener("input", (event) => {
@@ -310,7 +302,7 @@ byId("change-email").addEventListener("click", () => {
 });
 byId("resend-code").addEventListener("click", () => {
   void act(async () => {
-    await request("email", { email: pendingEmail });
+    await request("resend-verification", { email: pendingEmail });
     startCooldown();
     message("A new code has been requested. Use the latest email.");
   });

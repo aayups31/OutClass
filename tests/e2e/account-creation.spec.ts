@@ -100,22 +100,22 @@ for (const width of [1440, 390])
     await expect(
       page.getByRole("heading", { name: "Check your inbox." }),
     ).toBeVisible();
-    await page.getByLabel("Sign-in code", { exact: true }).fill("000000");
+    await page.getByLabel("Verification code", { exact: true }).fill("000000");
     await page.locator("#code-form button[type=submit]").click();
     await expect(page.locator("#account-message")).toContainText(
       "could not be verified",
     );
     await expect(page.locator("#account-dashboard")).toBeHidden();
-    await page.getByLabel("Sign-in code", { exact: true }).fill("123456");
+    await page.getByLabel("Verification code", { exact: true }).fill("123456");
     await page.locator("#code-form button[type=submit]").click();
     await expect(
-      page.getByRole("heading", { name: "What would you like to explore?" }),
+      page.getByRole("heading", { name: "Make it personal." }),
     ).toBeVisible();
     await page.waitForLoadState("networkidle");
     await page.getByLabel("Your name", { exact: true }).fill("Aayu");
     await page.getByLabel("Programming", { exact: true }).check();
     await page.getByLabel("Education", { exact: true }).check();
-    await page.getByRole("button", { name: "Refresh allowance" }).click();
+    await expect(page.locator("#account-summary")).toBeHidden();
     await expect(page.getByLabel("Your name", { exact: true })).toHaveValue(
       "Aayu",
     );
@@ -138,6 +138,11 @@ for (const width of [1440, 390])
       "Aayu",
     );
     await expect(page.getByLabel("Education", { exact: true })).toBeChecked();
+    await page.locator("#profile-step").evaluate(async (element) => {
+      await Promise.all(
+        element.getAnimations().map((animation) => animation.finished),
+      );
+    });
     expect(
       await page.evaluate(() =>
         JSON.stringify({ ...localStorage, ...sessionStorage }),
@@ -156,8 +161,15 @@ for (const width of [1440, 390])
       path: `.local/account-creation-${width}.png`,
       fullPage: true,
     });
+    await page.getByRole("button", { name: "Save my profile" }).click();
     await page.locator("#sign-out").click();
     await page.locator("#choose-signin").click();
+    await expect(page.locator("#choose-code")).toHaveCount(0);
+    await expect(page.locator("#code-step")).toBeHidden();
+    await page.screenshot({
+      path: `.local/account-signin-${width}.png`,
+      fullPage: true,
+    });
     await page
       .getByLabel("Email address", { exact: true })
       .fill("learner@example.com");
@@ -175,8 +187,7 @@ for (const width of [1440, 390])
     await page.locator("#email-form button[type=submit]").click();
     await expect(page.locator("#signed-in-email")).toBeVisible();
     await page.locator("#sign-out").click();
-    await page.locator("#choose-code").click();
-    await expect(page.getByLabel("Password", { exact: true })).toBeHidden();
-    await page.locator("#email-form button[type=submit]").click();
-    await expect(page.locator("#code-step")).toBeVisible();
+    await expect(page.locator("#choose-code")).toHaveCount(0);
+    await expect(page.getByLabel("Password", { exact: true })).toBeVisible();
+    await expect(page.locator("#code-step")).toBeHidden();
   });
