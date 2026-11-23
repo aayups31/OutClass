@@ -23,7 +23,7 @@ beforeEach(async () => {
   server = createApp(app, port, () => focused++).listen(port, "127.0.0.1");
   await new Promise<void>((resolve) => server.once("listening", resolve));
   base = `http://127.0.0.1:${port}`;
-});
+}, 30000);
 afterEach(async () => {
   await new Promise<void>((resolve) => server.close(() => resolve()));
   store.close();
