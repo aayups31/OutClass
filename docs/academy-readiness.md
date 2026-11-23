@@ -1,5 +1,7 @@
 # Academy engineering readiness
 
+For the November 23 full-course implementation and current evidence/limits, see [Academy course-production engineering](academy-engineering-completion.md). The dated pass below is historical; its attachment and generator limitations are superseded by that report.
+
 This records the November 21, 2026 quality pass. It describes verified behavior, not a certification of teaching quality or a substitute for learner trials.
 
 ## Implemented in this pass
