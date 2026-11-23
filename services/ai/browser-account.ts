@@ -25,6 +25,9 @@ export type BrowserAccount = {
     value?: z.infer<typeof accountProfile>,
   ) => Promise<unknown>;
   plan?: () => Promise<BrowserPlan>;
+  appearance?: (
+    token: string,
+  ) => Promise<{ name?: string; avatarUrl: string | null }>;
 };
 const sessionSchema = z.object({
   access_token: z.string().min(1).max(3800),
@@ -403,10 +406,25 @@ export function browserAccountRoutes(
       return;
     }
     try {
+      const usage = await deps.allowance.usage(account.id);
+      const [year, month] = usage.period.split("-").map(Number);
+      const appearance = options.appearance
+        ? await options
+            .appearance(account.token)
+            .catch(() => ({ avatarUrl: null }))
+        : { avatarUrl: null };
       res.json({
         authenticated: true,
         email: account.email,
-        usage: await deps.allowance.usage(account.id),
+        ...appearance,
+        usage: {
+          ...usage,
+          percentRemaining:
+            usage.limit > 0
+              ? Math.round((100 * usage.remaining) / usage.limit)
+              : 0,
+          resetsAt: new Date(Date.UTC(year, month, 1)).toISOString(),
+        },
       });
     } catch {
       res

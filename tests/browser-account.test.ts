@@ -322,6 +322,10 @@ it("sets verified, secure, HttpOnly session cookies and never exposes tokens to 
     email: session.email,
     usage: { remaining: 19 },
   });
+  expect((await (await f.get("session", cookie)).json()).usage).toMatchObject({
+    percentRemaining: 95,
+    resetsAt: "2026-11-01T00:00:00.000Z",
+  });
   const checkout = await f.post(
     "checkout",
     { user_id: "someone-else" },

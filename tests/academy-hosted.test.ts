@@ -260,6 +260,17 @@ it.each([
       await expect(service.grant(other, id, 34)).rejects.toThrow(/Enroll/);
       await service.enroll(learner, id);
       await service.enroll(learner, id);
+      expect(
+        (await service.library(learner)).enrolled.map((course) => course.id),
+      ).toContain(id);
+      expect((await service.library(learner)).created).toEqual([]);
+      expect(
+        (await service.library(author)).created.map((course) => course.id),
+      ).toContain(id);
+      expect(await service.library(other)).toEqual({
+        enrolled: [],
+        created: [],
+      });
       expect((await service.media.read(learner, resource.id, 0)).base64).toBe(
         bytes.toString("base64"),
       );

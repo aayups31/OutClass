@@ -134,6 +134,19 @@ export class HostedAcademy {
       return rows;
     });
   }
+  library(actor: string) {
+    return this.scoped(actor, async (db) => {
+      const enrolled = await db.query(
+        "SELECT c.id,c.title,c.revision,c.status,e.enrolled_at FROM outclass_platform.enrollments e JOIN outclass_platform.courses c ON c.id=e.course_id WHERE e.user_id=$1 ORDER BY e.enrolled_at DESC LIMIT 100",
+        [actor],
+      );
+      const created = await db.query(
+        "SELECT c.id,c.title,c.revision,c.status,c.created_at FROM outclass_platform.courses c WHERE c.author_id=$1 ORDER BY c.created_at DESC LIMIT 100",
+        [actor],
+      );
+      return { enrolled: enrolled.rows, created: created.rows };
+    });
+  }
   publish(actor: string, raw: unknown) {
     const value = publication.parse(raw),
       validation = validateCourse(value.course);
@@ -481,6 +494,9 @@ export class HostedAcademy {
     );
     router.get("/mine", async (_req, res) =>
       res.json(await this.mine(res.locals.user)),
+    );
+    router.get("/library", async (_req, res) =>
+      res.json(await this.library(res.locals.user)),
     );
     router.post("/publish", async (req, res) =>
       res.json(await this.publish(res.locals.user, req.body)),

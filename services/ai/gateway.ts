@@ -454,6 +454,33 @@ export function productionDependencies(
       preview: true,
       freeLimit: config.freeLimit,
       paidLimit: config.paidLimit,
+      appearance: async (token) => {
+        const user = await authFetch("user", undefined, token);
+        const candidateName =
+          user.user_metadata?.outclass_profile?.name ||
+          user.user_metadata?.full_name;
+        const name =
+          typeof candidateName === "string"
+            ? candidateName.trim().slice(0, 100)
+            : undefined;
+        const raw = user.user_metadata?.avatar_url;
+        if (typeof raw !== "string" || raw.length > 2048)
+          return { name, avatarUrl: null };
+        try {
+          const url = new URL(raw);
+          const avatarUrl =
+            url.protocol === "https:" &&
+            !url.username &&
+            !url.password &&
+            (url.origin === supabase.origin ||
+              url.hostname === "lh3.googleusercontent.com")
+              ? url.href
+              : null;
+          return { name, avatarUrl };
+        } catch {
+          return { name, avatarUrl: null };
+        }
+      },
       changePassword: async (token, password) => {
         await authFetch("user", { password }, token, "PUT");
       },
