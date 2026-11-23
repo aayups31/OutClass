@@ -100,7 +100,7 @@ for (const width of [1440, 390])
       }
       await route.fulfill({ json: result });
     });
-    await page.goto(base + "/account.html");
+    await page.goto(base + "/account.html?settings");
     await page.locator("#auth-flow").waitFor({ state: "visible" });
     await page.evaluate(async () => {
       const elements = document.querySelectorAll(".account-intro, #auth-flow");
