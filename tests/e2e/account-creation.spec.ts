@@ -67,6 +67,22 @@ for (const width of [1440, 390])
         signed = true;
         result = { authenticated: true, email: "learner@example.com" };
       }
+      if (name === "change-password") {
+        expect(body).toEqual({
+          currentPassword: "OldPass8!",
+          password: "NewPass8!",
+        });
+        result = { updated: true };
+      }
+      if (name === "reset-password") {
+        expect(body).toEqual({
+          email: "learner@example.com",
+          code: "123456",
+          password: "ResetPass8!",
+        });
+        signed = true;
+        result = { updated: true };
+      }
       if (name === "verify") {
         if (body.code !== "123456") {
           await route.fulfill({
@@ -146,6 +162,23 @@ for (const width of [1440, 390])
       "profile is saved",
     );
     expect(profile).toMatchObject({ name: "Aayu", industries: ["Education"] });
+    await page.getByText("Change password", { exact: false }).click();
+    await page
+      .getByLabel("Current password", { exact: true })
+      .fill("OldPass8!");
+    await page.locator("#new-password").fill("NewPass8!");
+    await page
+      .locator("#confirm-password")
+      .fill("Mismatch8!");
+    await page.getByRole("button", { name: "Update password" }).click();
+    await expect(page.locator("#account-message")).toContainText("don’t match");
+    await page
+      .locator("#confirm-password")
+      .fill("NewPass8!");
+    await page.getByRole("button", { name: "Update password" }).click();
+    await expect(page.locator("#account-message")).toContainText(
+      "password has been updated",
+    );
     await page.reload();
     await expect(page.locator("#signed-in-email")).toHaveText(
       "learner@example.com",
@@ -209,4 +242,19 @@ for (const width of [1440, 390])
     await expect(page.locator("#choose-code")).toHaveCount(0);
     await expect(page.getByLabel("Password", { exact: true })).toBeVisible();
     await expect(page.locator("#code-step")).toBeHidden();
+    await page.locator("#forgot-password").click();
+    await page.locator("#credentials-submit").click();
+    await expect(page.locator("#recovery-passwords")).toBeVisible();
+    await page.getByLabel("Verification code", { exact: true }).fill("123456");
+    await page.locator("#recovery-password").fill("ResetPass8!");
+    await page
+      .locator("#recovery-confirm")
+      .fill("ResetPass8!");
+    await page
+      .getByRole("button", { name: "Reset password", exact: true })
+      .click();
+    await expect(page.locator("#account-message")).toContainText(
+      "Password reset",
+    );
+    await expect(page.locator("#recovery-password")).toHaveValue("");
   });

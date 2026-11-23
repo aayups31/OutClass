@@ -39,3 +39,16 @@ represented as an automated pass.
 Accounts originally created through passwordless OTP need a password established
 through Supabase's verified recovery flow before using the new browser sign-in.
 This change does not invent or silently assign a password to an existing account.
+
+## Password management
+
+The signed-in Change password section reauthenticates the current password and
+checks that the authenticated identity matches before updating Supabase. Forgot
+password requests a recovery email; the reset endpoint verifies a `recovery`
+code before setting the new password. New passwords require at least 8 characters.
+Both actions use origin checks, rate limits, and HttpOnly session cookies. Password
+inputs are cleared after requests and are never stored in browser storage.
+
+Supabase's Reset password email template must include `{{ .Token }}` for this
+numeric recovery flow. Automated tests use an injected provider; no live account's
+password was changed during verification. Resend test-sender restrictions still apply.

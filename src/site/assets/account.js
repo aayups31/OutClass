@@ -84,8 +84,20 @@ function showCode() {
   byId("code-step").hidden = false;
   byId("pending-email").textContent = pendingEmail;
   byId("account-code").value = "";
+  const recovery = authMode === "recovery";
+  byId("recovery-passwords").hidden = !recovery;
+  for (const id of ["recovery-password", "recovery-confirm"]) {
+    byId(id).required = recovery;
+    byId(id).value = "";
+  }
+  byId("verify-submit").textContent = recovery
+    ? "Reset password"
+    : "Verify email";
 }
 function showEmail() {
+  byId("password-form").reset();
+  byId("recovery-password").value = "";
+  byId("recovery-confirm").value = "";
   document.body.classList.remove("account-onboarding");
   byId("auth-flow").hidden = false;
   byId("account-dashboard").hidden = true;
@@ -168,7 +180,9 @@ byId("email-form").addEventListener("submit", (event) => {
     const email = byId("account-email").value.trim();
     const password = byId("account-password").value;
     try {
-      if (authMode === "signup") await request("register", { email, password });
+      if (authMode === "recovery") await request("recover", { email });
+      else if (authMode === "signup")
+        await request("register", { email, password });
       else {
         await request("password", { email, password });
         renderAccount(await request("session"));
@@ -191,17 +205,30 @@ function chooseAuth(mode) {
   showEmail();
   message();
   const password = byId("account-password");
-  byId("password-help").hidden = mode === "signin";
+  password.hidden = mode === "recovery";
+  password.required = mode !== "recovery";
+  password.previousElementSibling.hidden = mode === "recovery";
+  byId("password-help").hidden = mode !== "signup";
   password.autocomplete =
     mode === "signup" ? "new-password" : "current-password";
   password.value = "";
   byId("auth-title").textContent =
-    mode === "signup" ? "Create your account." : "Welcome back.";
+    mode === "signup"
+      ? "Create your account."
+      : mode === "recovery"
+        ? "Reset your password."
+        : "Welcome back.";
   byId("credentials-submit").textContent =
-    mode === "signup" ? "Create account" : "Sign in";
+    mode === "signup"
+      ? "Create account"
+      : mode === "recovery"
+        ? "Send recovery code"
+        : "Sign in";
   byId("choose-signup").hidden = mode === "signup";
   byId("choose-signin").hidden = mode === "signin";
+  byId("forgot-password").hidden = mode === "recovery";
 }
+byId("forgot-password").addEventListener("click", () => chooseAuth("recovery"));
 byId("choose-signup").addEventListener("click", () => chooseAuth("signup"));
 byId("choose-signin").addEventListener("click", () => chooseAuth("signin"));
 const interests = [
@@ -284,6 +311,25 @@ byId("code-form").addEventListener("submit", (event) => {
     const code = byId("account-code").value;
     if (!/^\d{6,8}$/.test(code))
       throw Error("Enter the 6–8 digit code from your latest email.");
+    if (authMode === "recovery") {
+      const password = byId("recovery-password").value;
+      if (password !== byId("recovery-confirm").value)
+        throw Error("The new passwords don’t match.");
+      try {
+        await request("reset-password", {
+          email: pendingEmail,
+          code,
+          password,
+        });
+        renderAccount(await request("session"));
+        message("Password reset. Use your new password next time you sign in.");
+      } finally {
+        byId("recovery-password").value = "";
+        byId("recovery-confirm").value = "";
+        byId("account-code").value = "";
+      }
+      return;
+    }
     const account = await request("verify", { email: pendingEmail, code });
     byId("account-code").value = "";
     showProfile(true);
@@ -302,7 +348,9 @@ byId("change-email").addEventListener("click", () => {
 });
 byId("resend-code").addEventListener("click", () => {
   void act(async () => {
-    await request("resend-verification", { email: pendingEmail });
+    await request(authMode === "recovery" ? "recover" : "resend-verification", {
+      email: pendingEmail,
+    });
     startCooldown();
     message("A new code has been requested. Use the latest email.");
   });
@@ -361,4 +409,22 @@ async function load() {
   await config;
   setBusy(false);
 }
+byId("password-form").addEventListener("submit", (event) => {
+  event.preventDefault();
+  void act(async () => {
+    const password = byId("new-password").value;
+    if (password !== byId("confirm-password").value)
+      throw Error("The new passwords don’t match.");
+    try {
+      await request("change-password", {
+        currentPassword: byId("current-password").value,
+        password,
+      });
+      byId("password-form").closest("details").open = false;
+      message("Your password has been updated.");
+    } finally {
+      byId("password-form").reset();
+    }
+  });
+});
 void load();
