@@ -152,7 +152,7 @@ export class AIProvider {
   }
   platform(route: string, body?: unknown) {
     if (
-      !/^(catalog|mine|publish|redeem|media|media\/[a-f0-9-]{36}\/(chunk|finish|chunks\/[0-9]{1,3})|courses\/[a-f0-9-]{36}\/(enroll|grant|withdraw|assess))$/.test(
+      !/^(catalog|mine|publish|redeem|media|transfers|transfers\/[a-f0-9-]{36}\/(chunk|publish)|media\/[a-f0-9-]{36}\/(chunk|finish|chunks\/[0-9]{1,3})|courses\/[a-f0-9-]{36}\/(enroll|grant|withdraw|assess|lessons\/[0-9]{1,3}\/chunks\/[0-9]{1,3}))$/.test(
         route,
       )
     )

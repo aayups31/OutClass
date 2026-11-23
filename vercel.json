@@ -5,7 +5,7 @@
   "buildCommand": "node scripts/build-site.mjs",
   "outputDirectory": "dist/site",
   "cleanUrls": true,
-  "functions": { "api/ai.ts": { "maxDuration": 60 } },
+  "functions": { "api/ai.ts": { "maxDuration": 300 } },
   "rewrites": [
     { "source": "/v1/:path*", "destination": "/api/ai" },
     { "source": "/health", "destination": "/api/ai" },

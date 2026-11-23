@@ -7,13 +7,14 @@ import {
   courseDraft,
   type AcademyDraft,
 } from "../../src/expansion-contract.js";
-import { validateCourse,auditAcademy } from "../../src/academy-quality.js";
+import { validateCourse, auditAcademy } from "../../src/academy-quality.js";
 import { assertClean, UserError } from "../../src/server/safety.js";
 import { COURSE_LESSON_LIMIT } from "../../src/course-limits.js";
 import { HostedAcademyMedia } from "./academy-media.js";
 import { assessmentKey } from "../../src/course-workshop-contract.js";
 import { HostedCourseAssessment } from "./academy-assessment.js";
-import {courseManifest,lessonHash} from "../../src/server/course-content.js";
+import { courseManifest, lessonHash } from "../../src/server/course-content.js";
+import { HostedAcademyTransfer, TRANSFER_CHUNK } from "./academy-transfer.js";
 const publication = z
   .object({
     releaseId: z.string().uuid(),
@@ -52,6 +53,7 @@ export type HostedCourse = {
   audience: string;
   outcome: string;
   lessons: { title: string; objective: string; practice: string }[];
+  lessonCount: number;
   preview: string;
   priceMinor: 0;
   projectTemplate: "python_activity_api_v1" | null;
@@ -80,7 +82,7 @@ export class HostedAcademy {
       client.release();
     }
   }
-  private project(row: any): HostedCourse {
+  private project(row: any, compact = false): HostedCourse {
     const course = row.body.course as AcademyDraft;
     return {
       id: row.id,
@@ -89,12 +91,15 @@ export class HostedAcademy {
       createdAt: row.created_at,
       audience: course.audience,
       outcome: course.outcome,
-      lessons: course.lessons.map((l) => ({
-        title: l.title,
-        chapter: l.chapter,
-        objective: l.objective,
-        practice: l.practice,
-      })),
+      lessonCount: course.lessons.length,
+      lessons: (compact ? course.lessons.slice(0, 8) : course.lessons).map(
+        (l) => ({
+          title: l.title,
+          chapter: l.chapter,
+          objective: l.objective,
+          practice: l.practice,
+        }),
+      ),
       preview: course.lessons[0]?.content.slice(0, 1200) || "",
       priceMinor: 0,
       projectTemplate: row.body.projectTemplate,
@@ -105,7 +110,7 @@ export class HostedAcademy {
       const { rows } = await db.query(
         "SELECT DISTINCT ON(author_id,lineage_id) id,title,revision,body,created_at FROM outclass_platform.courses WHERE status='published' ORDER BY author_id,lineage_id,revision DESC LIMIT 100",
       );
-      return rows.map((r) => this.project(r));
+      return rows.map((r) => this.project(r, true));
     });
   }
   detail(id: string) {
@@ -174,9 +179,9 @@ export class HostedAcademy {
       );
     assertClean(JSON.stringify(value.course), "public course");
     const manifest = courseManifest(value.course);
-    if (Buffer.byteLength(JSON.stringify(manifest)) > 350000)
+    if (Buffer.byteLength(JSON.stringify(manifest)) > 1500000)
       throw new UserError(
-        "This course manifest exceeds 350 KB. Reduce assessment and overview metadata; lesson content is stored separately.",
+        "This course manifest exceeds 1.5 MB. Split its design metadata into separate course modules; teaching content is stored separately.",
       );
     const body = {
         course: manifest,
@@ -240,7 +245,15 @@ export class HostedAcademy {
           409,
         );
       for (const [position, lesson] of value.course.lessons.entries())
-        await db.query("INSERT INTO outclass_platform.course_lesson_content(course_id,position,hash,body) VALUES($1,$2,$3,$4)",[value.releaseId,position,lessonHash(lesson),JSON.stringify(lesson)]);
+        await db.query(
+          "INSERT INTO outclass_platform.course_lesson_content(course_id,position,hash,body) VALUES($1,$2,$3,$4)",
+          [
+            value.releaseId,
+            position,
+            lessonHash(lesson),
+            JSON.stringify(lesson),
+          ],
+        );
       for (const resource of value.course.lessons.flatMap(
         (lesson) => lesson.resources || [],
       ))
@@ -358,23 +371,80 @@ export class HostedAcademy {
       if (!course.rows.length)
         throw new UserError("Course access is no longer available.", 403);
       const row = course.rows[0];
-      let hydrated = row.body.course;
+      const hydrated = row.body.course;
+      let lessonContent: { hash: string; bytes: number }[] | undefined;
       if (hydrated.lessonHashes) {
-        const content = await db.query("SELECT position,hash,body FROM outclass_platform.course_lesson_content WHERE course_id=$1 ORDER BY position",[row.id]);
-        if(content.rows.length!==hydrated.lessonHashes.length || content.rows.some((item,index)=>item.position!==index || item.hash!==hydrated.lessonHashes[index] || lessonHash(item.body)!==item.hash))throw new UserError("Course content is incomplete or corrupt. Contact its educator.",503);
-        const {lessonHashes: _hashes,...manifest}=hydrated;
-        hydrated={...manifest,lessons:content.rows.map(item=>item.body)};
+        const content = await db.query(
+          "SELECT position,hash,body FROM outclass_platform.course_lesson_content WHERE course_id=$1 ORDER BY position",
+          [row.id],
+        );
+        if (
+          content.rows.length !== hydrated.lessonHashes.length ||
+          content.rows.some(
+            (item, index) =>
+              item.position !== index ||
+              item.hash !== hydrated.lessonHashes[index] ||
+              lessonHash(item.body) !== item.hash,
+          )
+        )
+          throw new UserError(
+            "Course content is incomplete or corrupt. Contact its educator.",
+            503,
+          );
+        lessonContent = content.rows.map((item) => ({
+          hash: item.hash,
+          bytes: Buffer.byteLength(JSON.stringify(item.body)),
+        }));
       }
       return {
         contractVersion: 1,
         id: row.id,
-        lineageId:row.lineage_id,
+        lineageId: row.lineage_id,
         title: row.title,
         revision: row.revision,
         lessonIndex: grant.lesson_index,
         course: hydrated,
+        ...(lessonContent ? { lessonContent } : {}),
         projectTemplate: row.body.projectTemplate,
         scopes: ["read_assignment"],
+      };
+    });
+  }
+  async lessonChunk(
+    actor: string,
+    id: string,
+    index: number,
+    position: number,
+  ) {
+    z.string().uuid().parse(id);
+    z.number()
+      .int()
+      .min(0)
+      .max(COURSE_LESSON_LIMIT - 1)
+      .parse(index);
+    z.number().int().min(0).max(199).parse(position);
+    return this.scoped(actor, async (db) => {
+      const row = (
+        await db.query(
+          "SELECT l.body,l.hash FROM outclass_platform.course_lesson_content l JOIN outclass_platform.courses c ON c.id=l.course_id WHERE c.id=$1 AND l.position=$2 AND c.status='published' AND (c.author_id=$3 OR EXISTS(SELECT 1 FROM outclass_platform.enrollments e WHERE e.course_id=c.id AND e.user_id=$3))",
+          [id, index, actor],
+        )
+      ).rows[0];
+      if (!row)
+        throw new UserError(
+          "Enroll in this published course before downloading its lessons.",
+          403,
+        );
+      if (lessonHash(row.body) !== row.hash)
+        throw new UserError("This lesson failed its integrity check.", 503);
+      const bytes = Buffer.from(JSON.stringify(row.body));
+      if (position * TRANSFER_CHUNK >= bytes.length)
+        throw new UserError("Lesson chunk not found.", 404);
+      return {
+        hash: row.hash,
+        base64: bytes
+          .subarray(position * TRANSFER_CHUNK, (position + 1) * TRANSFER_CHUNK)
+          .toString("base64"),
       };
     });
   }
@@ -392,6 +462,19 @@ export class HostedAcademy {
   privateRoutes() {
     const router = Router();
     router.use("/media", this.media.routes());
+    router.use("/transfers", new HostedAcademyTransfer(this).routes());
+    router.get(
+      "/courses/:id/lessons/:index/chunks/:position",
+      async (req, res) =>
+        res.json(
+          await this.lessonChunk(
+            res.locals.user,
+            req.params.id,
+            Number(req.params.index),
+            Number(req.params.position),
+          ),
+        ),
+    );
     router.use(
       "/courses/:id/assess",
       new HostedCourseAssessment(this).routes(),

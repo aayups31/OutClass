@@ -30,9 +30,13 @@ import { AgentHandoffs, agentDomain } from "./agent-handoffs.js";
 import { AgentWorkService } from "./agent-work.js";
 import type { CreatorProduction } from "./creator-production.js";
 import { COURSE_LESSON_LIMIT, COURSE_CHAR_LIMIT } from "../course-limits.js";
-import { loadCourse, storeCourse } from "./course-content.js";
+import { loadCourse, storeCourse, lessonHash } from "./course-content.js";
 import type { AssessmentKey } from "../course-workshop-contract.js";
-import {auditAcademy,courseContent,validateCourse} from "../academy-quality.js";
+import {
+  auditAcademy,
+  courseContent,
+  validateCourse,
+} from "../academy-quality.js";
 import { validatePlan } from "../course-workshop-quality.js";
 import { blocksText } from "../lesson-blocks.js";
 import { CourseResearch } from "./course-research.js";
@@ -48,7 +52,7 @@ const edit = {
 const releaseRequest = z
   .object({ expectedRevision: z.number().int(), approve: z.literal(true) })
   .strict();
-export {validateCourse} from '../academy-quality.js';
+export { validateCourse } from "../academy-quality.js";
 export class Expansion {
   readonly compiler: AcademyCompiler;
   constructor(readonly app: Application) {
@@ -277,7 +281,7 @@ export class Expansion {
       lessons,
       learningProject,
     } = release;
-    const result = await this.app.ai.platform("publish", {
+    const publication = {
       releaseId: release.id,
       lineageId: release.courseId,
       revision: release.revision,
@@ -304,7 +308,47 @@ export class Expansion {
         ? "python_activity_api_v1"
         : null,
       approvePublicRelease: true,
-    });
+    };
+    const bytes = Buffer.from(JSON.stringify(publication)),
+      sha256 = createHash("sha256").update(bytes).digest("hex");
+    if (bytes.length > 48000000)
+      throw new UserError(
+        "This publication exceeds the 48 MB transfer budget. Split it into course modules.",
+      );
+    // Small publications remain compatible while a host stages the large-transfer migration.
+    if(bytes.length<=3000000){
+      const result=await this.app.ai.platform("publish",publication);
+      this.app.store.put(`academy:publication:${release.id}`,result);
+      return result;
+    }
+    const transferKey = `academy:publication-transfer:${sha256}`,
+      transferId = this.app.store.get<string>(transferKey) || randomUUID();
+    this.app.store.put(transferKey, transferId);
+    const begun = (await this.app.ai.platform("transfers", {
+      id: transferId,
+      bytes: bytes.length,
+      sha256,
+    })) as { complete: boolean; chunkBytes: number };
+    if (begun.chunkBytes !== 240000)
+      throw new UserError(
+        "Update the app to match the hosted course-transfer contract.",
+      );
+    if (!begun.complete)
+      for (
+        let position = 0;
+        position < Math.ceil(bytes.length / 240000);
+        position++
+      )
+        await this.app.ai.platform(`transfers/${transferId}/chunk`, {
+          position,
+          base64: bytes
+            .subarray(position * 240000, (position + 1) * 240000)
+            .toString("base64"),
+        });
+    const result = await this.app.ai.platform(
+      `transfers/${transferId}/publish`,
+      {},
+    );
     this.app.store.put(`academy:publication:${release.id}`, result);
     return result;
   }
@@ -314,11 +358,15 @@ export class Expansion {
         "Finish or discard your current Learn session before redeeming a course code.",
         409,
       );
+    const pendingKey = `academy:pending-download:${hash(grant)}`;
+    const raw =
+      this.app.store.get<unknown>(pendingKey) ||
+      (await this.app.ai.platform("redeem", { grant }));
     const payload = z
       .object({
         contractVersion: z.literal(1),
         id: z.string().uuid(),
-        lineageId:z.string().uuid().optional(),
+        lineageId: z.string().uuid().optional(),
         title: z.string(),
         revision: z.number().int().positive(),
         lessonIndex: z
@@ -326,24 +374,93 @@ export class Expansion {
           .int()
           .min(0)
           .max(COURSE_LESSON_LIMIT - 1),
-        course: courseDraft,
+        course: courseDraft.extend({
+          lessonHashes: z
+            .array(z.string().regex(/^[a-f0-9]{64}$/))
+            .max(COURSE_LESSON_LIMIT)
+            .optional(),
+        }),
+        lessonContent: z
+          .array(
+            z.object({
+              hash: z.string().regex(/^[a-f0-9]{64}$/),
+              bytes: z.number().int().min(1).max(48000000),
+            }),
+          )
+          .max(COURSE_LESSON_LIMIT)
+          .optional(),
         projectTemplate: z.enum(["python_activity_api_v1"]).nullable(),
         scopes: z.tuple([z.literal("read_assignment")]),
       })
-      .parse(await this.app.ai.platform("redeem", { grant }));
+      .parse(raw);
+    this.app.store.put(pendingKey, payload);
+    if (payload.lessonContent) {
+      if (
+        payload.lessonContent.length !== payload.course.lessons.length ||
+        payload.course.lessonHashes?.length !== payload.lessonContent.length
+      )
+        throw new UserError("Incomplete hosted course manifest.");
+      const lessons: AcademyDraft["lessons"] = [];
+      for (const [index, ref] of payload.lessonContent.entries()) {
+        if (ref.hash !== payload.course.lessonHashes[index])
+          throw new UserError(
+            "The hosted lesson identity does not match its manifest.",
+          );
+        let lesson = this.app.store.get<AcademyDraft["lessons"][number]>(
+          `academy:content:${ref.hash}`,
+        );
+        if (!lesson || lessonHash(lesson) !== ref.hash) {
+          const chunks: Buffer[] = [];
+          for (
+            let position = 0;
+            position < Math.ceil(ref.bytes / 240000);
+            position++
+          ) {
+            const chunk = z
+              .object({
+                hash: z.literal(ref.hash),
+                base64: z.string().max(320000),
+              })
+              .parse(
+                await this.app.ai.platform(
+                  `courses/${payload.id}/lessons/${index}/chunks/${position}`,
+                ),
+              );
+            chunks.push(Buffer.from(chunk.base64, "base64"));
+          }
+          const bytes = Buffer.concat(chunks);
+          if (bytes.length !== ref.bytes)
+            throw new UserError(
+              "This lesson download is incomplete. Retry the same launch code.",
+            );
+          lesson = courseDraft.shape.lessons.element.parse(
+            JSON.parse(bytes.toString("utf8")),
+          );
+          if (lessonHash(lesson) !== ref.hash)
+            throw new UserError(
+              "This downloaded lesson failed its integrity check.",
+            );
+          this.app.store.put(`academy:content:${ref.hash}`, lesson);
+        }
+        lessons.push(lesson);
+      }
+      payload.course.lessons = lessons;
+    }
+    const { lessonHashes: _lessonHashes, ...downloadedCourse } = payload.course;
+    const completeCourse = courseDraft.parse(downloadedCourse);
     if (!payload.course.lessons[payload.lessonIndex])
       throw new UserError("The assignment does not contain this lesson.");
     const release: CourseRelease = {
-      ...payload.course,
+      ...completeCourse,
       id: payload.id,
       courseId: payload.lineageId || payload.id,
       revision: payload.revision,
       publishedAt: stamp(),
-      hash: hash(payload.course),
+      hash: hash(completeCourse),
       visibility: "local",
     };
     for (const resource of new Map(
-      payload.course.lessons
+      completeCourse.lessons
         .flatMap((lesson) => lesson.resources || [])
         .map((resource) => [resource.id, resource]),
     ).values()) {
@@ -386,7 +503,9 @@ export class Expansion {
     );
     this.app.store.put(`academy:remote:${release.id}`, true);
     this.enroll(release.id);
-    return this.launch(release.id, payload.lessonIndex);
+    const launched = await this.launch(release.id, payload.lessonIndex);
+    this.app.store.remove(pendingKey);
+    return launched;
   }
   async launch(releaseId: string, lessonIndex: number, preview = false) {
     const expansion = this.state();

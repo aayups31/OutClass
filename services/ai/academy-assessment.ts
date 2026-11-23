@@ -63,7 +63,15 @@ export class HostedCourseAssessment {
         )
       ).rows[0];
       if (prior) return prior.result;
-      const item = (course.body.course as AcademyDraft).lessons
+      const lessons = course.body.course.lessonHashes
+        ? (
+            await db.query(
+              "SELECT body->'assessments' AS items FROM outclass_platform.course_lesson_content WHERE course_id=$1",
+              [id],
+            )
+          ).rows.map((row) => ({ assessments: row.items || [] }))
+        : (course.body.course as AcademyDraft).lessons;
+      const item = (lessons as AcademyDraft["lessons"])
         .flatMap((lesson) => lesson.assessments || [])
         .find((item) => item.id === input.itemId);
       if (!item || input.choice >= item.choices.length)
