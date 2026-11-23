@@ -223,11 +223,9 @@ export function browserAccountRoutes(
       await deps.auth("recover", parsed.data);
       res.json({ sent: true });
     } catch {
-      res
-        .status(503)
-        .json({
-          error: "The recovery email could not be sent. Try again later.",
-        });
+      res.status(503).json({
+        error: "The recovery email could not be sent. Try again later.",
+      });
     }
   });
   router.post("/reset-password", async (req, res) => {
@@ -250,12 +248,10 @@ export function browserAccountRoutes(
       save(res, session);
       res.json({ updated: true });
     } catch {
-      res
-        .status(400)
-        .json({
-          error:
-            "Password reset failed. Check the latest recovery code and use at least 8 characters.",
-        });
+      res.status(400).json({
+        error:
+          "Password reset failed. Check the latest recovery code and use at least 8 characters.",
+      });
     }
   });
   router.post("/change-password", async (req, res) => {
@@ -289,12 +285,10 @@ export function browserAccountRoutes(
       save(res, session);
       res.json({ updated: true });
     } catch {
-      res
-        .status(400)
-        .json({
-          error:
-            "Password could not be changed. Check your current password and use at least 8 characters for the new one.",
-        });
+      res.status(400).json({
+        error:
+          "Password could not be changed. Check your current password and use at least 8 characters for the new one.",
+      });
     }
   });
   router.post("/password", async (req, res) => {
@@ -312,8 +306,7 @@ export function browserAccountRoutes(
       res.json({ authenticated: true, email: session.email });
     } catch {
       res.status(400).json({
-        error:
-          "Sign-in failed. Check your email and password. New accounts must verify their email first.",
+        error: "Sign-in failed. Check your email and password.",
       });
     }
   });

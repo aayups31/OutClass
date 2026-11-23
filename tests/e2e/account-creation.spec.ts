@@ -114,10 +114,36 @@ for (const width of [1440, 390])
       path: `.local/account-signup-${width}.png`,
       fullPage: true,
     });
+    await page.locator("#credentials-submit").click();
+    await expect(page.locator("#account-email-error")).toHaveText(
+      "Enter your email address.",
+    );
+    await expect(page.locator("#account-password-error")).toHaveText(
+      "Enter your password.",
+    );
+    await expect(page.locator("#account-email")).toBeFocused();
+    await expect(page.locator("#account-email")).toHaveAttribute(
+      "aria-invalid",
+      "true",
+    );
+    await page.locator("#account-email-error").evaluate(async (element) => {
+      await Promise.all(
+        element.getAnimations().map((animation) => animation.finished),
+      );
+    });
+    await page.screenshot({
+      path: `.local/account-field-errors-${width}.png`,
+      fullPage: true,
+    });
+    await page.locator("#account-email").fill("not-an-email");
+    await expect(page.locator("#account-email-error")).toHaveText(
+      "Use a valid email address.",
+    );
     await page
       .getByLabel("Email address", { exact: true })
       .fill("existing@example.com");
     await page.getByLabel("Password", { exact: true }).fill("Eight!42");
+    await expect(page.locator("#account-password-error")).toBeHidden();
     await page.locator("#email-form button[type=submit]").click();
     await expect(page.locator("#account-message")).toContainText(
       "already exists",
@@ -167,14 +193,12 @@ for (const width of [1440, 390])
       .getByLabel("Current password", { exact: true })
       .fill("OldPass8!");
     await page.locator("#new-password").fill("NewPass8!");
-    await page
-      .locator("#confirm-password")
-      .fill("Mismatch8!");
+    await page.locator("#confirm-password").fill("Mismatch8!");
     await page.getByRole("button", { name: "Update password" }).click();
-    await expect(page.locator("#account-message")).toContainText("don’t match");
-    await page
-      .locator("#confirm-password")
-      .fill("NewPass8!");
+    await expect(page.locator("#confirm-password-error")).toContainText(
+      "don’t match",
+    );
+    await page.locator("#confirm-password").fill("NewPass8!");
     await page.getByRole("button", { name: "Update password" }).click();
     await expect(page.locator("#account-message")).toContainText(
       "password has been updated",
@@ -247,9 +271,7 @@ for (const width of [1440, 390])
     await expect(page.locator("#recovery-passwords")).toBeVisible();
     await page.getByLabel("Verification code", { exact: true }).fill("123456");
     await page.locator("#recovery-password").fill("ResetPass8!");
-    await page
-      .locator("#recovery-confirm")
-      .fill("ResetPass8!");
+    await page.locator("#recovery-confirm").fill("ResetPass8!");
     await page
       .getByRole("button", { name: "Reset password", exact: true })
       .click();

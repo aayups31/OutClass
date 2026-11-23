@@ -1,4 +1,66 @@
 /* An open editorial composition, shared by signup, verification and profile. */
+.account-page .account-panel .account-field-error {
+  margin: -12px 0 22px;
+  color: #975066;
+  font-size: 11px;
+  line-height: 1.6;
+  letter-spacing: 0.015em;
+  animation: account-error-in 0.25s ease-out;
+}
+.account-page .account-panel #account-password + .account-field-error {
+  margin: 5px 0 8px;
+}
+.account-page .account-panel input[aria-invalid="true"],
+.account-page .account-panel textarea[aria-invalid="true"] {
+  border-bottom-color: #b76a83;
+  background: linear-gradient(0deg, #b76a8308, transparent 70%);
+}
+.account-page .account-panel input[aria-invalid="true"]:focus-visible {
+  outline: none;
+  border-bottom-color: #b76a83;
+  box-shadow: 0 1px #b76a8355;
+}
+.account-page .account-panel .account-message.is-error {
+  position: relative;
+  border: 0;
+  border-top: 1px solid #a86a8030;
+  border-radius: 0;
+  padding: 14px 0 0 17px;
+  margin: 22px 0 0;
+  background: none;
+  box-shadow: none;
+  color: #8e4c60;
+  font-size: 12px;
+  line-height: 1.7;
+  animation: account-error-in 0.3s ease-out;
+}
+.account-page .account-message.is-error::before {
+  content: "";
+  position: absolute;
+  top: 21px;
+  left: 0;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #b76a83;
+  box-shadow: 0 0 8px #b76a8340;
+}
+@keyframes account-error-in {
+  from {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .account-page .account-panel .account-field-error,
+  .account-page .account-panel .account-message.is-error {
+    animation: none;
+  }
+}
 .account-page .account-security {
   padding-block: 24px;
   border-block: 1px solid #8d9ec540;
@@ -206,10 +268,9 @@
 .account-page
   .account-panel
   :is(input:not([type="checkbox"]), textarea):focus-visible {
-  outline: 2px solid #5671c7;
-  outline-offset: 5px;
+  outline: none;
   border-color: #2946ad;
-  box-shadow: none;
+  box-shadow: 0 1px 0 #5671c7;
 }
 .account-page .account-panel label,
 .account-page .account-panel legend {

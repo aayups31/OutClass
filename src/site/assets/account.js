@@ -8,9 +8,101 @@ let pendingEmail = "",
   cooldown = 0,
   cooldownTimer;
 const message = (text = "", error = false) => {
-  byId("account-message").textContent = text;
-  byId("account-message").classList.toggle("is-error", error);
+  const element = byId("account-message");
+  element.textContent = text;
+  element.classList.toggle("is-error", error);
+  const form =
+    error &&
+    [...document.querySelectorAll(".account-panel form")].find(
+      (form) => form.getClientRects().length,
+    );
+  (form || document.querySelector(".account-panel")).append(element);
 };
+const fields = [
+  ...document.querySelectorAll(
+    ".account-panel input:not([type=checkbox]), .account-panel textarea",
+  ),
+];
+function fieldError(field, text = "") {
+  const hint = byId(`${field.id}-error`);
+  hint.textContent = text;
+  hint.hidden = !text;
+  if (text) field.setAttribute("aria-invalid", "true");
+  else field.removeAttribute("aria-invalid");
+}
+function validationMessage(field) {
+  const label =
+    document
+      .querySelector(`label[for="${field.id}"]`)
+      ?.textContent.trim()
+      .toLowerCase() || "this field";
+  if (field.validity.valueMissing) {
+    if (["confirm-password", "recovery-confirm"].includes(field.id))
+      return "Confirm your new password.";
+    return `Enter ${label === "your name" ? "your name" : `your ${label}`}.`;
+  }
+  if (field.validity.typeMismatch) return "Use a valid email address.";
+  if (
+    field.validity.tooShort ||
+    (field.type === "password" &&
+      field.minLength > 0 &&
+      field.value.length < field.minLength)
+  )
+    return `Use at least ${field.minLength} characters.`;
+  if (field.validity.tooLong)
+    return `Use no more than ${field.maxLength} characters.`;
+  if (field.validity.patternMismatch)
+    return "Enter the 6–8 digit code from your email.";
+  const original =
+    field.id === "confirm-password"
+      ? "new-password"
+      : field.id === "recovery-confirm"
+        ? "recovery-password"
+        : null;
+  if (original && field.value !== byId(original).value)
+    return "The new passwords don’t match.";
+  return "";
+}
+for (const field of fields) {
+  const hint = document.createElement("p");
+  hint.id = `${field.id}-error`;
+  hint.className = "account-field-error";
+  hint.hidden = true;
+  field.after(hint);
+  field.setAttribute(
+    "aria-describedby",
+    [field.getAttribute("aria-describedby"), hint.id].filter(Boolean).join(" "),
+  );
+  field.addEventListener("input", () => {
+    if (field.hasAttribute("aria-invalid"))
+      fieldError(field, validationMessage(field));
+    if (byId("account-message").classList.contains("is-error")) message();
+  });
+}
+for (const form of document.querySelectorAll(".account-panel form")) {
+  form.noValidate = true;
+  form.addEventListener(
+    "submit",
+    (event) => {
+      let first;
+      for (const field of fields.filter(
+        (field) =>
+          field.form === form && !field.disabled && !field.closest("[hidden]"),
+      )) {
+        const error = validationMessage(field);
+        fieldError(field, error);
+        if (error && !first) first = field;
+      }
+      if (first) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        message();
+        first.focus();
+      }
+    },
+    true,
+  );
+}
 async function request(route, body) {
   const response = await fetch(`/v1/browser/${route}`, {
     method: body === undefined ? "GET" : "POST",
@@ -95,6 +187,7 @@ function showCode() {
     : "Verify email";
 }
 function showEmail() {
+  for (const field of fields) fieldError(field);
   byId("password-form").reset();
   byId("recovery-password").value = "";
   byId("recovery-confirm").value = "";
