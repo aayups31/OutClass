@@ -1,6 +1,10 @@
 import express from "express";
 import { z } from "zod";
 import type { GatewayDependencies } from "./gateway.js";
+import {
+  accountProfile,
+  accountCredentials,
+} from "../../src/account-profile.js";
 
 export type BrowserPlan = {
   amount: number;
@@ -15,6 +19,10 @@ export type BrowserAccount = {
   paidLimit: number;
   identity: (token: string) => Promise<{ id: string; email: string }>;
   signOut: (token: string) => Promise<void>;
+  profile?: (
+    token: string,
+    value?: z.infer<typeof accountProfile>,
+  ) => Promise<unknown>;
   plan?: () => Promise<BrowserPlan>;
 };
 const sessionSchema = z.object({
@@ -110,9 +118,10 @@ export function browserAccountRoutes(
     const token = stored.get(accessName);
     if (token) {
       try {
-        return z
+        const account = z
           .object({ id: z.string().uuid(), email: z.string().email() })
           .parse(await options.identity(token));
+        return { ...account, token };
       } catch (error) {
         if (temporaryFailure(error)) throw error;
         /* A valid refresh token may restore an expired session. */
@@ -133,7 +142,7 @@ export function browserAccountRoutes(
         .object({ id: z.string().uuid(), email: z.string().email() })
         .parse(await options.identity(session.access_token));
       save(res, session);
-      return account;
+      return { ...account, token: session.access_token };
     } catch (error) {
       if (temporaryFailure(error)) throw error;
       clear(res);
@@ -146,12 +155,10 @@ export function browserAccountRoutes(
       async (req, res, next) => {
         const account = await identity(req, res);
         if (!account) {
-          res
-            .status(401)
-            .json({
-              error:
-                "Sign in to OutClass before enrolling or creating a launch code.",
-            });
+          res.status(401).json({
+            error:
+              "Sign in to OutClass before enrolling or creating a launch code.",
+          });
           return;
         }
         res.locals.user = account.id;
@@ -174,6 +181,76 @@ export function browserAccountRoutes(
       paidLimit: options.paidLimit,
       plan,
     });
+  });
+  router.post("/register", async (req, res) => {
+    if (limited(`auth:${req.ip}`, 6)) {
+      res.status(429).json({ error: "Wait a minute before trying again." });
+      return;
+    }
+    try {
+      const credentials = accountCredentials.parse(req.body);
+      await deps.auth("signup", credentials);
+      res.json({ sent: true });
+    } catch {
+      res.status(400).json({
+        error:
+          "Account creation could not be completed. Use a password of 12–128 characters, check your email, or sign in if you already have an account.",
+      });
+    }
+  });
+  router.post("/password", async (req, res) => {
+    if (limited(`auth:${req.ip}`, 6)) {
+      res.status(429).json({ error: "Wait a minute before trying again." });
+      return;
+    }
+    try {
+      const credentials = accountCredentials.parse(req.body),
+        session = sessionSchema.parse(
+          await deps.auth("token?grant_type=password", credentials),
+        );
+      await options.identity(session.access_token);
+      save(res, session);
+      res.json({ authenticated: true, email: session.email });
+    } catch {
+      res.status(400).json({
+        error:
+          "Sign-in failed. Check your credentials and verify your email, or use an email code.",
+      });
+    }
+  });
+  router.get("/profile", async (req, res) => {
+    const account = await identity(req, res);
+    if (!account) {
+      res.status(401).json({ error: "Sign in before opening your profile." });
+      return;
+    }
+    if (!options.profile) {
+      res.status(503).json({ error: "Profile service unavailable." });
+      return;
+    }
+    const profile = accountProfile.safeParse(
+      await options.profile(account.token),
+    );
+    res.json({ profile: profile.success ? profile.data : null });
+  });
+  router.post("/profile", async (req, res) => {
+    const account = await identity(req, res);
+    if (!account) {
+      res.status(401).json({ error: "Sign in before saving your profile." });
+      return;
+    }
+    const parsed = accountProfile.safeParse(req.body);
+    if (!parsed.success) {
+      res
+        .status(400)
+        .json({ error: "Enter your name and up to 15 choices per category." });
+      return;
+    }
+    if (!options.profile) {
+      res.status(503).json({ error: "Profile service unavailable." });
+      return;
+    }
+    res.json({ profile: await options.profile(account.token, parsed.data) });
   });
   router.post("/email", async (req, res) => {
     if (limited(`auth:${req.ip}`, 6)) {

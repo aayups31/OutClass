@@ -1,8 +1,10 @@
 const byId = (id) => document.getElementById(id);
 let pendingEmail = "",
+  authMode = "signup",
   busy = false,
   accountConfig,
   currentUsage,
+  profileEmail,
   cooldown = 0,
   cooldownTimer;
 const message = (text = "", error = false) => {
@@ -41,7 +43,7 @@ function setBusy(value) {
     .querySelector(".account-panel")
     .setAttribute("aria-busy", String(value));
   for (const element of document.querySelectorAll(
-    ".account-panel button,.account-panel input",
+    ".account-panel button,.account-panel input,.account-panel textarea",
   ))
     element.disabled = value;
   byId("resend-code").disabled = value || cooldown > 0;
@@ -126,6 +128,7 @@ function renderBilling() {
 function renderAccount(result) {
   byId("auth-loading").hidden = true;
   if (!result.authenticated) {
+    profileEmail = undefined;
     showEmail();
     return;
   }
@@ -148,18 +151,140 @@ function renderAccount(result) {
       `${currentUsage.used} of ${limit} used · ${currentUsage.period} · resets each calendar month (UTC).`;
   }
   renderBilling();
+  if (profileEmail !== result.email) {
+    profileEmail = result.email;
+    void loadProfile(result.email);
+  }
 }
 byId("email-form").addEventListener("submit", (event) => {
   event.preventDefault();
   void act(async () => {
     const email = byId("account-email").value.trim();
-    await request("email", { email });
+    const password = byId("account-password").value;
+    try {
+      if (authMode === "code") await request("email", { email });
+      else if (authMode === "signup")
+        await request("register", { email, password });
+      else {
+        await request("password", { email, password });
+        renderAccount(await request("session"));
+        message("Welcome back.");
+        return;
+      }
+    } finally {
+      byId("account-password").value = "";
+    }
     pendingEmail = email;
     showCode();
     startCooldown();
     message("Your sign-in code has been requested. Check your inbox.");
   }).then(() => {
     if (pendingEmail) byId("account-code").focus();
+  });
+});
+function chooseAuth(mode) {
+  authMode = mode;
+  showEmail();
+  const password = byId("account-password");
+  password.hidden = mode === "code";
+  password.required = mode !== "code";
+  password.previousElementSibling.hidden = mode === "code";
+  byId("password-help").hidden = mode === "code";
+  password.autocomplete =
+    mode === "signup" ? "new-password" : "current-password";
+  password.value = "";
+  byId("auth-title").textContent =
+    mode === "signup" ? "Create your account." : "Welcome back.";
+  byId("auth-description").textContent =
+    mode === "code"
+      ? "We’ll email you a one-time sign-in code."
+      : mode === "signup"
+        ? "Create your credentials, verify your email, then make OutClass yours."
+        : "Sign in with your email and password.";
+  byId("credentials-submit").textContent =
+    mode === "signup"
+      ? "Create account"
+      : mode === "code"
+        ? "Send sign-in code"
+        : "Sign in";
+  byId("choose-signup").hidden = mode === "signup";
+  byId("choose-signin").hidden = mode === "signin";
+}
+byId("choose-signup").addEventListener("click", () => chooseAuth("signup"));
+byId("choose-signin").addEventListener("click", () => chooseAuth("signin"));
+byId("choose-code").addEventListener("click", () => chooseAuth("code"));
+const interests = [
+    "Programming",
+    "AI & machine learning",
+    "Data & analytics",
+    "Design",
+    "Business",
+    "Product management",
+    "Science",
+    "Creative technology",
+  ],
+  industries = [
+    "Technology",
+    "Education",
+    "Healthcare",
+    "Finance",
+    "Climate & energy",
+    "Media & entertainment",
+    "Manufacturing",
+    "Entrepreneurship",
+  ];
+for (const [id, values] of [
+  ["interest-choices", interests],
+  ["industry-choices", industries],
+])
+  for (const value of values) {
+    const label = document.createElement("label"),
+      input = document.createElement("input");
+    input.type = "checkbox";
+    input.value = value;
+    label.append(input, document.createTextNode(value));
+    byId(id).append(label);
+  }
+async function loadProfile(email) {
+  try {
+    const { profile } = await request("profile");
+    if (profileEmail !== email) return;
+    byId("profile-name").value = profile?.name || "";
+    byId("profile-goals").value = (profile?.learningGoals || []).join("\n");
+    for (const [id, key] of [
+      ["interest-choices", "interests"],
+      ["industry-choices", "industries"],
+    ])
+      for (const input of byId(id).querySelectorAll("input"))
+        input.checked = profile?.[key]?.includes(input.value) || false;
+    byId("profile-step").hidden = !!profile?.name;
+  } catch {
+    if (profileEmail === email) profileEmail = undefined;
+    /* Existing account/allowance remains available during a profile-service failure. */
+  }
+}
+byId("edit-profile").addEventListener("click", () => {
+  byId("profile-step").hidden = false;
+  byId("profile-name").focus();
+});
+byId("profile-form").addEventListener("submit", (event) => {
+  event.preventDefault();
+  void act(async () => {
+    await request("profile", {
+      name: byId("profile-name").value.trim(),
+      interests: [
+        ...byId("interest-choices").querySelectorAll("input:checked"),
+      ].map((x) => x.value),
+      industries: [
+        ...byId("industry-choices").querySelectorAll("input:checked"),
+      ].map((x) => x.value),
+      learningGoals: byId("profile-goals")
+        .value.split(/\n/)
+        .map((x) => x.trim())
+        .filter(Boolean),
+    });
+    byId("profile-step").hidden = true;
+    message("Your learning profile is saved. You can update it anytime.");
   });
 });
 byId("code-form").addEventListener("submit", (event) => {
@@ -201,6 +326,7 @@ byId("sign-out").addEventListener("click", () => {
     const result = await request("sign-out", {});
     showEmail();
     currentUsage = undefined;
+    profileEmail = undefined;
     message(
       result.revoked
         ? "You’re signed out."

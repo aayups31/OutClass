@@ -267,15 +267,24 @@
               website.
             </p>
             <p>
-              The account page sends your email and the code you enter to
-              OutClass’s hosted authentication service. Browser sign-in uses
-              host-only Secure, HttpOnly cookies with SameSite protections;
-              authentication tokens are not returned to page JavaScript. The
-              access cookie follows the token’s expiry, and the refresh cookie
-              is retained for up to 30 days or until you sign out. Account
-              responses are not cached. Sign-out clears the browser cookies and
-              attempts to revoke only that browser’s provider session. Desktop
-              sign-in is separate.
+              The account page sends your email, password when creating an
+              account or signing in with a password, and verification code to
+              OutClass’s hosted authentication service, Supabase. Passwords are
+              handled by Supabase and are not saved in browser storage. Browser
+              sign-in uses host-only Secure, HttpOnly cookies with SameSite
+              protections; authentication tokens are not returned to page
+              JavaScript. The access cookie follows the token’s expiry, and the
+              refresh cookie is retained for up to 30 days or until you sign
+              out. Account responses are not cached. Sign-out clears the browser
+              cookies and attempts to revoke only that browser’s provider
+              session. Desktop sign-in is separate.
+            </p>
+            <p>
+              If you complete your learning profile, your name, selected
+              interests, learning goals, and industries are stored in your
+              Supabase account metadata. You can edit these on the account page.
+              These preferences do not grant AI access, change billing, or
+              publish your profile.
             </p>
             <p>
               The account page displays your allowance and can open Stripe

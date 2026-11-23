@@ -667,3 +667,99 @@
     padding-left: 42px;
   }
 }
+
+.account-auth-options {
+  display: grid;
+  gap: 14px;
+  margin: 24px 0;
+}
+.account-panel input[type="password"],
+.account-panel textarea {
+  width: 100%;
+  padding: 15px;
+  border: 1px solid #cbd2ee;
+  border-radius: 12px;
+  background: #ffffffb0;
+  color: #172341;
+  font: inherit;
+}
+.account-panel fieldset {
+  border: 0;
+  padding: 0;
+  margin: 24px 0;
+}
+.account-panel legend {
+  font-weight: 650;
+  margin-bottom: 12px;
+}
+.profile-choices {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.profile-choices label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  background: #edf0ff80;
+  border-radius: 10px;
+  font-size: 14px;
+}
+.profile-choices input {
+  width: auto !important;
+  accent-color: #3548d4;
+}
+#profile-step {
+  padding-bottom: 30px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid #d9def0;
+}
+#profile-form > label {
+  display: block;
+  margin: 20px 0 8px;
+}
+#profile-form > input {
+  width: 100%;
+}
+@media (max-width: 480px) {
+  .profile-choices {
+    grid-template-columns: 1fr;
+  }
+}
+.account-panel #edit-profile {
+  padding: 0;
+  margin-bottom: 1.25rem;
+  border: 0;
+  background: none;
+  color: var(--accent, #2942ac);
+  font: inherit;
+  cursor: pointer;
+}
+.support-page .account-auth-options button {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 0.85rem;
+  text-align: left;
+  cursor: pointer;
+}
+.support-page .account-panel .profile-choices label {
+  display: flex;
+  margin: 0;
+  min-height: 44px;
+  padding: 10px 12px;
+  cursor: pointer;
+}
+.support-page .account-panel .profile-choices input[type="checkbox"] {
+  flex: 0 0 16px;
+  width: 16px;
+  height: 16px;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+}
+.support-page .account-panel #edit-profile {
+  color: #2942ac;
+}

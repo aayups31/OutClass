@@ -70,8 +70,8 @@
     <main id="main" tabindex="-1">
       <section class="account-layout wrap">
         <div class="account-intro">
-          <h1>Your OutClass account.</h1>
-          <p>Check your included AI allowance and manage your subscription.</p>
+          <h1>Your next chapter starts here.</h1>
+          <p>A workspace shaped around your curiosity, goals, and ambitions.</p>
           <div class="account-visual" aria-hidden="true">
             <div class="account-visual-brand">
               <img
@@ -116,8 +116,13 @@
               /><span class="account-preview">Included AI preview</span>
             </div>
             <div id="email-step">
-              <h2>Welcome to OutClass.</h2>
-              <p>Continue with your email. We’ll send you a sign-in code.</p>
+              <p class="account-fineprint" id="account-stage">
+                01 · Your account
+              </p>
+              <h2 id="auth-title">Create your account.</h2>
+              <p id="auth-description">
+                Start with your email and a password. Then verify your inbox.
+              </p>
               <form id="email-form">
                 <label for="account-email">Email address</label
                 ><input
@@ -128,19 +133,54 @@
                   placeholder="you@example.com"
                   required=""
                   maxlength="254"
-                /><button class="button primary account-submit" type="submit">
-                  Continue with email
+                />
+                <label for="account-password">Password</label
+                ><input
+                  id="account-password"
+                  name="password"
+                  type="password"
+                  minlength="12"
+                  maxlength="128"
+                  autocomplete="new-password"
+                  required
+                  aria-describedby="password-help"
+                />
+                <small id="password-help"
+                  >Use 12–128 characters. A long, unique passphrase works
+                  well.</small
+                >
+                <button
+                  id="credentials-submit"
+                  class="button primary account-submit"
+                  type="submit"
+                >
+                  Create account
                   <svg class="icon" aria-hidden="true">
                     <use href="assets/icons.svg#right"></use>
                   </svg>
                 </button>
               </form>
+              <div class="account-auth-options">
+                <button id="choose-signin" type="button" class="text-link">
+                  Already have an account? Sign in</button
+                ><button id="choose-code" type="button" class="text-link">
+                  Use an email code instead</button
+                ><button
+                  id="choose-signup"
+                  type="button"
+                  class="text-link"
+                  hidden
+                >
+                  Create an account
+                </button>
+              </div>
               <p class="account-fineprint">
                 Hosted AI is available to approved test accounts. The desktop
                 app supports your own API key or a local model.
               </p>
             </div>
             <div id="code-step" hidden="">
+              <p class="account-fineprint">02 · Verify your email</p>
               <button
                 class="text-link account-back"
                 id="change-email"
@@ -185,6 +225,46 @@
             <a class="account-privacy" href="privacy.html">Privacy policy</a>
           </div>
           <div id="account-dashboard" hidden="">
+            <section id="profile-step" hidden aria-labelledby="profile-title">
+              <p class="account-fineprint">03 · Make it yours</p>
+              <h2 id="profile-title">What would you like to explore?</h2>
+              <p>
+                Choose a few starting points. You can change these whenever your
+                interests evolve.
+              </p>
+              <form id="profile-form">
+                <label for="profile-name">Your name</label
+                ><input
+                  id="profile-name"
+                  name="name"
+                  autocomplete="name"
+                  maxlength="100"
+                  required
+                />
+                <fieldset>
+                  <legend>Things you’re curious about</legend>
+                  <div class="profile-choices" id="interest-choices"></div>
+                </fieldset>
+                <label for="profile-goals"
+                  >What would you like to learn or build?</label
+                ><textarea
+                  id="profile-goals"
+                  rows="3"
+                  maxlength="1500"
+                  placeholder="Build my first app, understand machine learning, change careers…"
+                ></textarea>
+                <fieldset>
+                  <legend>Industries you want to explore</legend>
+                  <div class="profile-choices" id="industry-choices"></div>
+                </fieldset>
+                <button class="button primary account-submit" type="submit">
+                  Save my profile ↗
+                </button>
+              </form>
+            </section>
+            <button id="edit-profile" class="text-link" type="button">
+              Your learning profile ↗
+            </button>
             <div class="account-panel-top">
               <span class="account-connected"
                 ><i class="status-dot"></i>Signed in</span

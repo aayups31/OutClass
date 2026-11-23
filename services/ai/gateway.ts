@@ -295,14 +295,12 @@ export function createGateway(deps: GatewayDependencies) {
           category === "answer" ? 12 : transfer ? 600 : 120,
         )
       ) {
-        res
-          .status(429)
-          .json({
-            error:
-              category === "answer"
-                ? "Please wait before sending another AI request."
-                : "Please wait before continuing account or course transfers.",
-          });
+        res.status(429).json({
+          error:
+            category === "answer"
+              ? "Please wait before sending another AI request."
+              : "Please wait before continuing account or course transfers.",
+        });
         return;
       }
       next();
@@ -405,7 +403,7 @@ export function productionDependencies(
     route: string,
     body?: unknown,
     token?: string,
-    method?: "POST",
+    method?: "POST" | "PUT",
   ) => {
     const response = await fetch(`${supabase.origin}/auth/v1/${route}`, {
       method: method || (body === undefined ? "GET" : "POST"),
@@ -470,6 +468,15 @@ export function productionDependencies(
         );
         if (!response.ok) throw Error("Account sign-out failed.");
       },
+      profile: async (token, value) => {
+        const user = await authFetch(
+          "user",
+          value ? { data: { outclass_profile: value } } : undefined,
+          token,
+          value ? "PUT" : undefined,
+        );
+        return user.user_metadata?.outclass_profile || null;
+      },
       ...(billing ? { plan: () => billing.publicPlan() } : {}),
     },
     allowance,
@@ -477,7 +484,7 @@ export function productionDependencies(
       (await authFetch("user", undefined, token)).id,
     auth: async (route, body) => {
       const result = await authFetch(route, body);
-      if (route === "otp") return { sent: true };
+      if (route === "otp" || route === "signup") return { sent: true };
       return {
         access_token: result.access_token,
         refresh_token: result.refresh_token,
