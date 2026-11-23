@@ -10,6 +10,11 @@ import {
 import { validateCourse } from "../../src/server/expansion.js";
 import { assertClean, UserError } from "../../src/server/safety.js";
 import { COURSE_LESSON_LIMIT } from "../../src/course-limits.js";
+import { HostedAcademyMedia } from "./academy-media.js";
+import { auditAcademy } from "../../src/server/academy-studio.js";
+import { assessmentKey } from "../../src/course-workshop-contract.js";
+import { HostedCourseAssessment } from "./academy-assessment.js";
+import {courseManifest,lessonHash} from "../../src/server/course-content.js";
 const publication = z
   .object({
     releaseId: z.string().uuid(),
@@ -18,6 +23,13 @@ const publication = z
     course: courseDraft,
     projectTemplate: z.enum(["python_activity_api_v1"]).nullable(),
     approvePublicRelease: z.literal(true),
+    review: z
+      .object({
+        courseHash: z.string().length(64),
+        acknowledged: z.array(z.string()).max(2000),
+      })
+      .strict(),
+    privateKeys: z.array(assessmentKey).max(800).default([]),
   })
   .strict();
 const errors: ErrorRequestHandler = (error, _req, res, next) => {
@@ -46,8 +58,9 @@ export type HostedCourse = {
   projectTemplate: "python_activity_api_v1" | null;
 };
 export class HostedAcademy {
+  readonly media = new HostedAcademyMedia(this);
   constructor(private pool: Pool) {}
-  private async scoped<T>(
+  async scoped<T>(
     actor: string | null,
     fn: (client: PoolClient) => Promise<T>,
   ) {
@@ -120,22 +133,65 @@ export class HostedAcademy {
   publish(actor: string, raw: unknown) {
     const value = publication.parse(raw),
       validation = validateCourse(value.course);
-    if (value.course.lessons.some((lesson) => lesson.resources?.length))
-      throw new UserError(
-        "Remove local attachments before publishing this release to the hosted catalog.",
-      );
     if (!validation.valid) throw new UserError(validation.issues.join(" "));
-    assertClean(JSON.stringify(value.course), "public course");
-    if (Buffer.byteLength(JSON.stringify(value.course)) > 350000)
+    const items = value.course.lessons.flatMap(
+      (lesson) => lesson.assessments || [],
+    );
+    if (
+      new Set(items.map((item) => item.id)).size !== items.length ||
+      value.privateKeys.length !== items.length ||
+      new Set(value.privateKeys.map((key) => key.itemId)).size !==
+        items.length ||
+      items.some((item) => {
+        const key = value.privateKeys.find((key) => key.itemId === item.id);
+        return (
+          !key ||
+          key.correctChoice >= item.choices.length ||
+          key.feedback.length !== item.choices.length
+        );
+      })
+    )
       throw new UserError(
-        "This public release exceeds the 350 KB course-content limit. Reduce embedded starter files.",
+        "Supply exactly one matching private grading key for every assessment item.",
+      );
+    const audit = auditAcademy({
+      ...value.course,
+      id: value.releaseId,
+      revision: value.revision,
+      updatedAt: "publication",
+    });
+    const required = audit.findings
+      .filter((f) => f.level === "review")
+      .map((f) => f.id);
+    if (
+      audit.findings.some((f) => f.level === "blocker") ||
+      value.review.courseHash !== audit.courseHash ||
+      required.some((id) => !value.review.acknowledged.includes(id)) ||
+      value.review.acknowledged.some((id) => !required.includes(id))
+    )
+      throw new UserError(
+        "Complete review of this exact course content before publication.",
+        409,
+      );
+    assertClean(JSON.stringify(value.course), "public course");
+    const manifest = courseManifest(value.course);
+    if (Buffer.byteLength(JSON.stringify(manifest)) > 350000)
+      throw new UserError(
+        "This course manifest exceeds 350 KB. Reduce assessment and overview metadata; lesson content is stored separately.",
       );
     const body = {
-        course: value.course,
+        course: manifest,
         projectTemplate: value.projectTemplate,
       },
-      hash = createHash("sha256").update(JSON.stringify(body)).digest("hex");
+      hash = createHash("sha256")
+        .update(JSON.stringify({ body, privateKeys: value.privateKeys }))
+        .digest("hex");
     return this.scoped(actor, async (db) => {
+      await this.media.assertUploaded(
+        db,
+        value.course.lessons.flatMap((lesson) => lesson.resources || []),
+        actor,
+      );
       await db.query("SELECT pg_advisory_xact_lock(hashtextextended($1,27))", [
         actor,
       ]);
@@ -183,6 +239,20 @@ export class HostedAcademy {
         throw new UserError(
           "This version conflicts with an existing immutable release. Create a new local version.",
           409,
+        );
+      for (const [position, lesson] of value.course.lessons.entries())
+        await db.query("INSERT INTO outclass_platform.course_lesson_content(course_id,position,hash,body) VALUES($1,$2,$3,$4)",[value.releaseId,position,lessonHash(lesson),JSON.stringify(lesson)]);
+      for (const resource of value.course.lessons.flatMap(
+        (lesson) => lesson.resources || [],
+      ))
+        await db.query(
+          "INSERT INTO outclass_platform.course_media(course_id,asset_id) VALUES($1,$2) ON CONFLICT DO NOTHING",
+          [value.releaseId, resource.id],
+        );
+      if (value.privateKeys.length)
+        await db.query(
+          "INSERT INTO outclass_platform.assessment_banks(course_id,author_id,keys) VALUES($1,$2,$3)",
+          [value.releaseId, actor, JSON.stringify(value.privateKeys)],
         );
       return {
         id: rows[0].id,
@@ -289,13 +359,20 @@ export class HostedAcademy {
       if (!course.rows.length)
         throw new UserError("Course access is no longer available.", 403);
       const row = course.rows[0];
+      let hydrated = row.body.course;
+      if (hydrated.lessonHashes) {
+        const content = await db.query("SELECT position,hash,body FROM outclass_platform.course_lesson_content WHERE course_id=$1 ORDER BY position",[row.id]);
+        if(content.rows.length!==hydrated.lessonHashes.length || content.rows.some((item,index)=>item.position!==index || item.hash!==hydrated.lessonHashes[index] || lessonHash(item.body)!==item.hash))throw new UserError("Course content is incomplete or corrupt. Contact its educator.",503);
+        const {lessonHashes: _hashes,...manifest}=hydrated;
+        hydrated={...manifest,lessons:content.rows.map(item=>item.body)};
+      }
       return {
         contractVersion: 1,
         id: row.id,
         title: row.title,
         revision: row.revision,
         lessonIndex: grant.lesson_index,
-        course: row.body.course,
+        course: hydrated,
         projectTemplate: row.body.projectTemplate,
         scopes: ["read_assignment"],
       };
@@ -314,6 +391,11 @@ export class HostedAcademy {
   }
   privateRoutes() {
     const router = Router();
+    router.use("/media", this.media.routes());
+    router.use(
+      "/courses/:id/assess",
+      new HostedCourseAssessment(this).routes(),
+    );
     router.get("/mine", async (_req, res) =>
       res.json(await this.mine(res.locals.user)),
     );

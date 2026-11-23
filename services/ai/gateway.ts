@@ -168,7 +168,7 @@ export function createGateway(deps: GatewayDependencies) {
         }
       },
     );
-  app.use(express.json({ limit: "512kb" }));
+  app.use(express.json({ limit: "24mb" }));
   const limits = new Map<string, { count: number; at: number }>(),
     active = new Set<string>();
   function limited(key: string, max: number) {
@@ -341,7 +341,7 @@ export function createGateway(deps: GatewayDependencies) {
           });
           return;
         }
-        const answer = answerSchema(input.task).parse(await deps.answer(input));
+        const answer = answerSchema(input.task,input.context).parse(await deps.answer(input));
         res.json({ answer, usage: await deps.allowance.usage(user) });
       } finally {
         active.delete(user);
@@ -464,7 +464,7 @@ export function productionDependencies(
       };
     },
     answer: async ({ task, context, history }) => {
-      const schema = answerSchema(task);
+      const schema = answerSchema(task,context);
       const response = await client.responses.parse({
         model: config.model,
         store: false,
@@ -485,7 +485,7 @@ export function productionDependencies(
         instructions: answerInstructions(task),
         input: [...history, { role: "user", content: context }],
         text: { format: zodTextFormat(schema, "outclass_answer") },
-      });
+      },{timeout:task.startsWith("course_")?180000:30000});
       return response.output_parsed;
     },
     ...(billing
