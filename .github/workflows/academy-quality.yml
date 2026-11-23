@@ -38,6 +38,14 @@ jobs:
           git config --global user.name "OutClass CI"
           git config --global user.email "ci@outclass.invalid"
           git config --global init.defaultBranch main
+      - name: Install media test runtime on Linux
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes ffmpeg
+      - name: Install media test runtime on Windows
+        if: runner.os == 'Windows'
+        run: choco install ffmpeg --yes --no-progress
       - run: npm test
       - run: npm run build
       - run: npm run build:ai
