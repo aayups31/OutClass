@@ -1,4 +1,5 @@
 import express from "express";
+import { signupResult } from "./signup-result.js";
 import { z } from "zod";
 import { randomUUID } from "node:crypto";
 import OpenAI from "openai";
@@ -416,10 +417,15 @@ export function productionDependencies(
       body: body === undefined ? undefined : JSON.stringify(body),
       signal: AbortSignal.timeout(15000),
     });
-    if (!response.ok)
+    if (!response.ok) {
+      const failure = await response.json().catch(() => ({}));
       throw Object.assign(new Error("Account request failed."), {
         status: response.status,
+        code: ["user_already_exists", "email_exists"].includes(failure.code)
+          ? "account_exists"
+          : undefined,
       });
+    }
     return response.json();
   };
   const client = new OpenAI({
@@ -484,6 +490,7 @@ export function productionDependencies(
       (await authFetch("user", undefined, token)).id,
     auth: async (route, body) => {
       const result = await authFetch(route, body);
+      if (route === "signup") return signupResult(result);
       if (route === "otp" || route === "signup" || route === "resend")
         return { sent: true };
       return {

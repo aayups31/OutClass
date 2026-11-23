@@ -12,6 +12,23 @@ const session = {
   expires_at: Math.floor(Date.now() / 1000) + 3600,
   email: "learner@example.com",
 };
+it("rejects duplicate registration without creating a browser session", async () => {
+  const f = await fixture({
+    auth: async () => {
+      throw Object.assign(Error("duplicate"), { code: "account_exists" });
+    },
+  });
+  const response = await f.post("register", {
+    email: session.email,
+    password: "Eight!42",
+  });
+  expect(response.status).toBe(409);
+  expect(await response.json()).toEqual({
+    error:
+      "An account with this email already exists. Sign in with your password.",
+  });
+  expect(response.headers.getSetCookie()).toHaveLength(0);
+});
 it("creates credentials without a session, verifies email, and protects profile writes", async () => {
   const f = await fixture();
   expect(

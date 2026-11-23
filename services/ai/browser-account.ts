@@ -191,7 +191,16 @@ export function browserAccountRoutes(
       const credentials = accountCredentials.parse(req.body);
       await deps.auth("signup", credentials);
       res.json({ sent: true });
-    } catch {
+    } catch (error) {
+      if ((error as { code?: string })?.code === "account_exists") {
+        res
+          .status(409)
+          .json({
+            error:
+              "An account with this email already exists. Sign in with your password.",
+          });
+        return;
+      }
       res.status(400).json({
         error:
           "Account creation could not be completed. Use at least 8 characters, check your email, or sign in if you already have an account.",

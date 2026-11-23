@@ -39,6 +39,16 @@ for (const width of [1440, 390])
           },
         };
       if (name === "register") {
+        if (body.email === "existing@example.com") {
+          await route.fulfill({
+            status: 409,
+            json: {
+              error:
+                "An account with this email already exists. Sign in with your password.",
+            },
+          });
+          return;
+        }
         expect(body.password).toBe("my unique learning passphrase");
         result = { sent: true };
       }
@@ -88,6 +98,15 @@ for (const width of [1440, 390])
       path: `.local/account-signup-${width}.png`,
       fullPage: true,
     });
+    await page
+      .getByLabel("Email address", { exact: true })
+      .fill("existing@example.com");
+    await page.getByLabel("Password", { exact: true }).fill("Eight!42");
+    await page.locator("#email-form button[type=submit]").click();
+    await expect(page.locator("#account-message")).toContainText(
+      "already exists",
+    );
+    await expect(page.locator("#code-step")).toBeHidden();
     await page
       .getByLabel("Email address", { exact: true })
       .fill("learner@example.com");
