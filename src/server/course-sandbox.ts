@@ -32,6 +32,29 @@ export type SandboxReport = {
   }[];
 };
 type Runner = typeof productionProcess;
+export function assertSandboxRuntime(
+  language: "python" | "javascript",
+  requested: string | undefined,
+  actual: string,
+) {
+  const found = (
+      language === "python" ? /Python (\d+\.\d+\.\d+)/ : /\bv?(\d+\.\d+\.\d+)/
+    ).exec(actual)?.[1],
+    expected = /\d+(?:\.\d+){0,2}/.exec(requested || "")?.[0];
+  if (
+    !found ||
+    (requested && !expected) ||
+    (expected &&
+      !expected
+        .split(".")
+        .every((part, index) => part === found.split(".")[index]))
+  )
+    throw new UserError(
+      `The isolated runtime (${actual || "unavailable"}) does not match ${requested || language}. Configure the matching pinned image before verification.`,
+      503,
+    );
+  return actual;
+}
 export function sandboxTestArgs(
   language: "python" | "javascript",
   files: { path: string }[],
@@ -142,6 +165,7 @@ export class CourseSandbox {
       );
     const dir = await mkdtemp(path.join(tmpdir(), "outclass-sandbox-"));
     const checks: SandboxReport["checks"] = [];
+    let runtime = "";
     try {
       for (const [candidate, replacement] of candidates) {
         for (const entry of input.files) {
@@ -179,6 +203,28 @@ export class CourseSandbox {
             : ["node", ...testArgs]),
         ];
         try {
+          if (!runtime) {
+            const version = await this.execute(
+              "docker",
+              [
+                ...args.slice(0, args.indexOf(image) + 1),
+                input.language === "python" ? "python" : "node",
+                "--version",
+              ],
+              dir,
+              15000,
+            );
+            if (version.code !== 0)
+              throw new UserError(
+                "The isolated runtime could not report its version.",
+                503,
+              );
+            runtime = assertSandboxRuntime(
+              input.language,
+              input.runtime,
+              version.output.trim(),
+            );
+          }
           const result = await this.execute("docker", args, dir, 15000);
           const count =
             input.language === "python"
@@ -208,6 +254,7 @@ export class CourseSandbox {
                 .filter((check) => check.candidate !== "reference")
                 .every((check) => check.code !== 0)),
         image,
+        runtime,
         at: new Date().toISOString(),
         checks,
       };

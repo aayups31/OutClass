@@ -9,7 +9,10 @@ import { CourseResearch } from "../src/server/course-research";
 import { CourseArchive } from "../src/server/course-archive";
 import { AcademyResources } from "../src/server/academy-resources";
 import { Expansion } from "../src/server/expansion";
-import { CourseSandbox } from "../src/server/course-sandbox";
+import {
+  CourseSandbox,
+  assertSandboxRuntime,
+} from "../src/server/course-sandbox";
 import { academyExample } from "../src/academy-example";
 import { writtenLesson } from "./helpers/course-workshop";
 let dir: string, store: Store, app: Application;
@@ -126,11 +129,19 @@ it("requires a pinned container and verifies reference, starter and mutation in 
     argsSeen.push(args);
     if (args[0] === "rm")
       return { code: 0, output: "", stdout: "", stderr: "" };
+    if (args.includes("--version"))
+      return {
+        code: 0,
+        output: "Python 3.12.16",
+        stdout: "Python 3.12.16",
+        stderr: "",
+      };
     const text = await readFile(path.join(cwd, "report.py"), "utf8");
     const code = text.includes("result+=value") ? 0 : 1;
     return { code, output: "Ran 2 tests", stdout: "", stderr: "" };
   });
   const report = await new CourseSandbox(run).verify(input);
+  expect(report.runtime).toBe("Python 3.12.16");
   expect(report.verified).toBe(true);
   for (const args of argsSeen.filter((args) => args[0] === "run")) {
     expect(args).toEqual(
@@ -144,4 +155,18 @@ it("requires a pinned container and verifies reference, starter and mutation in 
     );
     expect(args).not.toContain("--privileged");
   }
+});
+it("rejects an installed runtime that does not match the authored environment", () => {
+  expect(assertSandboxRuntime("python", "Python 3.12", "Python 3.12.16")).toBe(
+    "Python 3.12.16",
+  );
+  expect(assertSandboxRuntime("javascript", "Node.js 24", "v24.10.0")).toBe(
+    "v24.10.0",
+  );
+  expect(() =>
+    assertSandboxRuntime("python", "Python 3.12", "Python 3.14.8"),
+  ).toThrow(/does not match/);
+  expect(() =>
+    assertSandboxRuntime("javascript", "Node.js 24", "v22.1.0"),
+  ).toThrow(/does not match/);
 });

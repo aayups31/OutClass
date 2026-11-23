@@ -1,7 +1,7 @@
 import { Sandbox } from "@vercel/sandbox";
 import { Writable } from "node:stream";
 import type { SandboxReport } from "./course-sandbox.js";
-import { sandboxTestArgs } from "./course-sandbox.js";
+import { sandboxTestArgs, assertSandboxRuntime } from "./course-sandbox.js";
 import { UserError } from "./safety.js";
 export async function remoteCourseChecks(
   language: "python" | "javascript",
@@ -71,6 +71,12 @@ export async function remoteCourseChecks(
         cwd: "/vercel/sandbox",
       });
       runtime = (await version.stdout()).trim();
+      if (version.exitCode !== 0)
+        throw new UserError(
+          "The isolated runtime could not report its version.",
+          503,
+        );
+      assertSandboxRuntime(language, requestedRuntime, runtime);
       if (pythonVersion)
         pythonVersion =
           /Python (3\.\d+\.\d+)/.exec(runtime)?.[1] || pythonVersion;
