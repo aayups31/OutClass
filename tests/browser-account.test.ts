@@ -62,6 +62,19 @@ it("creates credentials without a session, verifies email, and protects profile 
     learningGoals: [],
   });
 });
+it("accepts eight-character passwords and rejects seven-character passwords", async () => {
+  const f = await fixture();
+  for (const route of ["register", "password"]) {
+    expect(
+      (await f.post(route, { email: session.email, password: "Seven!7" }))
+        .status,
+    ).toBe(400);
+    expect(
+      (await f.post(route, { email: session.email, password: "Eight!42" }))
+        .status,
+    ).toBe(200);
+  }
+});
 let server: Server | undefined;
 afterEach(async () => {
   if (server) await new Promise<void>((r) => server!.close(() => r()));

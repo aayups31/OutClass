@@ -11,6 +11,6 @@ export const accountProfile = z
 export const accountCredentials = z
   .object({
     email: z.string().trim().email().max(254),
-    password: z.string().min(12).max(128),
+    password: z.string().min(8).max(128),
   })
   .strict();

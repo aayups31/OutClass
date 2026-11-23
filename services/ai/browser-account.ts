@@ -194,7 +194,7 @@ export function browserAccountRoutes(
     } catch {
       res.status(400).json({
         error:
-          "Account creation could not be completed. Use a password of 12–128 characters, check your email, or sign in if you already have an account.",
+            "Account creation could not be completed. Use at least 8 characters, check your email, or sign in if you already have an account.",
       });
     }
   });
