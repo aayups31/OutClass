@@ -75,6 +75,19 @@ it("accepts eight-character passwords and rejects seven-character passwords", as
     ).toBe(200);
   }
 });
+it("resends signup verification without enabling passwordless browser sign-in", async () => {
+  const f = await fixture();
+  expect((await f.post("email", { email: session.email })).status).toBe(401);
+  expect(f.deps.auth).not.toHaveBeenCalled();
+  expect(
+    (await f.post("resend-verification", { email: session.email })).status,
+  ).toBe(200);
+  expect(f.deps.auth).toHaveBeenCalledWith("resend", {
+    email: session.email,
+    type: "signup",
+  });
+  expect(f.deps.auth).not.toHaveBeenCalledWith("otp", expect.anything());
+});
 let server: Server | undefined;
 afterEach(async () => {
   if (server) await new Promise<void>((r) => server!.close(() => r()));

@@ -484,7 +484,8 @@ export function productionDependencies(
       (await authFetch("user", undefined, token)).id,
     auth: async (route, body) => {
       const result = await authFetch(route, body);
-      if (route === "otp" || route === "signup") return { sent: true };
+      if (route === "otp" || route === "signup" || route === "resend")
+        return { sent: true };
       return {
         access_token: result.access_token,
         refresh_token: result.refresh_token,

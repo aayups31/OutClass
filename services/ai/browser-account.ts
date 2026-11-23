@@ -194,7 +194,7 @@ export function browserAccountRoutes(
     } catch {
       res.status(400).json({
         error:
-            "Account creation could not be completed. Use at least 8 characters, check your email, or sign in if you already have an account.",
+          "Account creation could not be completed. Use at least 8 characters, check your email, or sign in if you already have an account.",
       });
     }
   });
@@ -214,7 +214,7 @@ export function browserAccountRoutes(
     } catch {
       res.status(400).json({
         error:
-          "Sign-in failed. Check your credentials and verify your email, or use an email code.",
+          "Sign-in failed. Check your email and password. New accounts must verify their email first.",
       });
     }
   });
@@ -252,10 +252,10 @@ export function browserAccountRoutes(
     }
     res.json({ profile: await options.profile(account.token, parsed.data) });
   });
-  router.post("/email", async (req, res) => {
+  router.post("/resend-verification", async (req, res) => {
     if (limited(`auth:${req.ip}`, 6)) {
       res.status(429).json({
-        error: "Wait a minute before requesting another sign-in code.",
+        error: "Wait a minute before requesting another verification code.",
       });
       return;
     }
@@ -263,14 +263,14 @@ export function browserAccountRoutes(
       const { email } = z
         .object({ email: z.string().trim().email().max(254) })
         .parse(req.body);
-      await deps.auth("otp", { email, create_user: true });
+      await deps.auth("resend", { email, type: "signup" });
       res.json({ sent: true });
     } catch (error) {
       res.status(error instanceof z.ZodError ? 400 : 503).json({
         error:
           error instanceof z.ZodError
             ? "Enter a valid email address."
-            : "The sign-in email could not be sent. Included AI is currently limited to the connected test account. You can use the desktop app with a personal key or local model.",
+            : "The verification email could not be sent. Please try again later.",
       });
     }
   });
