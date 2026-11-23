@@ -1,4 +1,69 @@
 document.documentElement.classList.add("enhanced");
+// Account state stays in HttpOnly cookies; navbar identity is never cached on disk.
+window.OutClassAccount = {
+  avatar(target, account) {
+    const initial = (account.name?.trim() ||
+      account.email ||
+      "O")[0].toUpperCase();
+    target.replaceChildren(document.createTextNode(initial));
+    if (!account.avatarUrl) return;
+    try {
+      const url = new URL(account.avatarUrl);
+      if (
+        url.protocol !== "https:" ||
+        url.username ||
+        url.password ||
+        !(
+          url.hostname === "wdfitadfokxvulfbkcvd.supabase.co" ||
+          url.hostname === "lh3.googleusercontent.com"
+        )
+      )
+        return;
+      const img = document.createElement("img");
+      img.alt = "";
+      img.referrerPolicy = "no-referrer";
+      img.addEventListener(
+        "error",
+        () => target.replaceChildren(document.createTextNode(initial)),
+        { once: true },
+      );
+      img.src = url.href;
+      target.replaceChildren(img);
+    } catch {
+      /* Keep the initial when a photo URL is invalid. */
+    }
+  },
+  render(account) {
+    for (const link of document.querySelectorAll(
+      ".site-header .sign-in-link",
+    )) {
+      link.classList.toggle("nav-avatar", !!account.authenticated);
+      link.href = account.authenticated ? "profile.html" : "account.html";
+      if (account.authenticated) {
+        link.setAttribute("aria-label", "Your profile");
+        link.title = "Your profile";
+        this.avatar(link, account);
+      } else {
+        link.textContent = "Sign in";
+        link.removeAttribute("aria-label");
+        link.removeAttribute("title");
+      }
+    }
+  },
+};
+if (!location.pathname.startsWith("/welcome/")) {
+  fetch("/v1/browser/session", {
+    credentials: "same-origin",
+    cache: "no-store",
+    redirect: "error",
+    signal: AbortSignal.timeout(12000),
+  })
+    .then((response) => (response.ok ? response.json() : null))
+    .then((account) => {
+      if (account) window.OutClassAccount.render(account);
+    })
+    .catch(() => {});
+}
 const menu = document.querySelector(".menu-toggle");
 const navigation = document.querySelector("#site-navigation");
 function closeMenu() {
@@ -409,7 +474,13 @@ if (
       return response.json();
     })
     .then((release) => {
-      for (const id of ["learn", "educator", "windows", "extension", "editor"]) {
+      for (const id of [
+        "learn",
+        "educator",
+        "windows",
+        "extension",
+        "editor",
+      ]) {
         const link = document.getElementById(`${id}-download`);
         const asset = release[id];
         if (!link || !asset?.url) continue;

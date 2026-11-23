@@ -41,7 +41,12 @@ function action(button, fn) {
 }
 async function load() {
   try {
-    const { courses } = await request("catalog");
+    const courseId = new URLSearchParams(location.search).get("course");
+    if (courseId && !/^[0-9a-f-]{36}$/i.test(courseId))
+      throw Error("This course link is invalid.");
+    const courses = courseId
+      ? [await request(`courses/${encodeURIComponent(courseId)}`)]
+      : (await request("catalog")).courses;
     catalog.replaceChildren();
     notice.textContent = "";
     if (!courses.length) return;

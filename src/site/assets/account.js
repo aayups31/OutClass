@@ -187,6 +187,7 @@ function showCode() {
     : "Verify email";
 }
 function showEmail() {
+  window.OutClassAccount?.render({ authenticated: false });
   for (const field of fields) fieldError(field);
   byId("password-form").reset();
   byId("recovery-password").value = "";
@@ -200,6 +201,10 @@ function showEmail() {
   pendingEmail = "";
 }
 function showProfile(visible) {
+  if (!visible && !new URLSearchParams(location.search).has("settings")) {
+    location.replace("profile.html");
+    return;
+  }
   byId("profile-step").hidden = !visible;
   byId("account-summary").hidden = visible;
   document.body.classList.toggle("account-onboarding", visible);
@@ -244,6 +249,7 @@ function renderAccount(result) {
     return;
   }
   byId("auth-flow").hidden = true;
+  window.OutClassAccount?.render(result);
   byId("account-dashboard").hidden = false;
   byId("signed-in-email").textContent = result.email;
   currentUsage = result.usage;
@@ -371,6 +377,8 @@ async function loadProfile(email) {
     showProfile(!profile?.name);
   } catch {
     if (profileEmail === email) profileEmail = undefined;
+    if (!new URLSearchParams(location.search).has("settings"))
+      location.replace("profile.html");
     /* Existing account/allowance remains available during a profile-service failure. */
   }
 }
