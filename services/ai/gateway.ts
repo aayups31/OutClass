@@ -279,10 +279,30 @@ export function createGateway(deps: GatewayDependencies) {
         .uuid()
         .parse(await deps.authenticate(token));
       res.locals.user = user;
-      if (limited(`user:${user}`, 12)) {
+      const transfer =
+        /^\/academy\/(?:media\/[^/]+\/(?:chunk|finish|chunks\/\d+)|transfers(?:\/|$)|courses\/[^/]+\/lessons\/\d+\/chunks\/\d+)/.test(
+          req.path,
+        );
+      const category =
+        req.path === "/answer"
+          ? "answer"
+          : transfer
+            ? "course-transfer"
+            : "account-operation";
+      if (
+        limited(
+          `${category}:${user}`,
+          category === "answer" ? 12 : transfer ? 600 : 120,
+        )
+      ) {
         res
           .status(429)
-          .json({ error: "Please wait before sending another AI request." });
+          .json({
+            error:
+              category === "answer"
+                ? "Please wait before sending another AI request."
+                : "Please wait before continuing account or course transfers.",
+          });
         return;
       }
       next();

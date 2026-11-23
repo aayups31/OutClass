@@ -6,6 +6,49 @@ import {
   type GatewayDependencies,
 } from "../services/ai/gateway";
 const user = "b8a66e7b-50e0-4f9b-8e5b-24614926e490";
+it("keeps course transfer traffic separate from the inference rate limit", async () => {
+  const f = await fixture({
+    allowance: {
+      reserve: async () => true,
+      refund: async () => {},
+      usage: async () => ({
+        used: 0,
+        limit: 100,
+        remaining: 100,
+        period: "test",
+        plan: "free",
+      }),
+    },
+  });
+  for (let index = 0; index < 20; index++)
+    expect(
+      (
+        await f.get(
+          `/v1/academy/media/00000000-0000-4000-8000-000000000001/chunks/${index}`,
+        )
+      ).status,
+    ).toBe(404);
+  for (let index = 0; index < 12; index++)
+    expect(
+      (
+        await f.post("/v1/answer", {
+          task: "teacher",
+          context: "Original fixture",
+          history: [],
+        })
+      ).status,
+    ).toBe(200);
+  expect(
+    (
+      await f.post("/v1/answer", {
+        task: "teacher",
+        context: "Original fixture",
+        history: [],
+      })
+    ).status,
+  ).toBe(429);
+  expect((await f.get("/v1/usage")).status).toBe(200);
+});
 let server: Server | undefined;
 afterEach(async () => {
   if (server) await new Promise<void>((r) => server!.close(() => r()));
