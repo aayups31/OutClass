@@ -23,6 +23,7 @@ import type { AcademyAudit, AcademyFinding } from "../academy-design-contract";
 import { arrangeLessons } from "../academy-design";
 import {
   COURSE_CHAR_LIMIT,
+  COURSE_IMPORT_CHAR_LIMIT,
   COURSE_LESSON_LIMIT,
   COURSE_SOURCE_LIMIT,
 } from "../course-limits";
@@ -40,6 +41,7 @@ import "./academy-workbench.css";
 import { AcademyDialog } from "./academy-dialog";
 import { academyExample } from "../academy-example";
 import { AcademyReferences } from "./academy-references";
+import { CourseWorkshopPanel } from "./course-workshop";
 type API = <T>(route: string, body?: unknown) => Promise<T>;
 type Tab = "overview" | "lessons" | "project" | "review" | "releases";
 type Recovery = { course: AcademyDraft; id?: string; revision?: number };
@@ -66,6 +68,7 @@ const values = (c: AcademyDraft): AcademyDraft => ({
   rightsConfirmed: c.rightsConfirmed,
   lessons: c.lessons,
   ...(c.learningProject ? { learningProject: c.learningProject } : {}),
+  ...(c.design ? { design: c.design } : {}),
 });
 const newLesson = () => ({
   title: "",
@@ -127,6 +130,8 @@ export function AcademyWorkbench({
   const [showAgent, setShowAgent] = useState(false),
     [audit, setAudit] = useState<AcademyAudit>(),
     [ack, setAck] = useState<string[]>([]);
+  const [showWorkshop, setShowWorkshop] = useState(false);
+  const [workshopDirty, setWorkshopDirty] = useState(false);
   const [forgeRequest, setForgeRequest] = useState<{
     kind: "exercise" | "capstone";
   }>();
@@ -167,7 +172,7 @@ export function AcademyWorkbench({
       onDirty(false);
     };
   }, [api, onDirty]);
-  useEffect(() => onDirty(dirty), [dirty, onDirty]);
+  useEffect(() => onDirty(dirty || workshopDirty), [dirty, workshopDirty, onDirty]);
   useEffect(() => {
     if (!dirty || recovery) return;
     try {
@@ -486,6 +491,14 @@ export function AcademyWorkbench({
           </h1>
         </div>
         <div className="academy-top-actions">
+          <button
+            className="button"
+            disabled={dirty || busy || workshopDirty}
+            aria-expanded={showWorkshop}
+            onClick={() => setShowWorkshop(!showWorkshop)}
+          >
+            Full course workshop
+          </button>
           <small role="status">
             {busy
               ? "Working…"
@@ -511,6 +524,19 @@ export function AcademyWorkbench({
           </button>
         </div>
       </header>
+      {showWorkshop && (
+        <CourseWorkshopPanel
+          api={api}
+          onDirty={setWorkshopDirty}
+          onDelivered={async () => {
+            await reload();
+            setShowWorkshop(false);
+            setNotice(
+              "Course workshop delivered a new draft. Select it from Academy courses to review and release.",
+            );
+          }}
+        />
+      )}
       {error && (
         <p className="academy-message error" role="alert">
           {error}
@@ -554,7 +580,7 @@ export function AcademyWorkbench({
           </button>
         </div>
       )}
-      <div className={`academy-frame${showAgent ? " with-agent" : ""}`}>
+      <div hidden={showWorkshop} className={`academy-frame${showAgent ? " with-agent" : ""}`}>
         <aside className="academy-outline">
           <div className="academy-library">
             <label>
@@ -816,6 +842,70 @@ export function AcademyWorkbench({
                     call is needed. Imports open for review as a new draft.
                   </p>
                   <pre>{outlineTemplate}</pre>
+                </details>
+                <details className="academy-helper">
+                  <summary>Portable course backups</summary>
+                  <p>
+                    Portable packages include attached media. Instructor backups
+                    also include private marking keys and solutions; keep those
+                    files private. Restoring creates a separate draft and resets
+                    rights/source approvals.
+                  </p>
+                  {selected && (
+                    <div className="academy-next">
+                      <button
+                        className="button small"
+                        disabled={dirty || busy}
+                        onClick={() =>
+                          void action(async () =>
+                            download(
+                              "outclass-portable-course.json",
+                              await api(`academy-archive/${selected.id}`),
+                            ),
+                          )
+                        }
+                      >
+                        Export course with media
+                      </button>
+                      <button
+                        className="button small"
+                        disabled={dirty || busy}
+                        onClick={() =>
+                          void action(async () =>
+                            download(
+                              "outclass-private-instructor-backup.json",
+                              await api(
+                                `academy-archive/${selected.id}?private=1`,
+                              ),
+                            ),
+                          )
+                        }
+                      >
+                        Export private instructor backup
+                      </button>
+                    </div>
+                  )}
+                  <label>
+                    Restore a portable course
+                    <input
+                      type="file"
+                      accept=".json"
+                      disabled={busy || dirty}
+                      onChange={(event) => {
+                        const file = event.target.files?.[0];
+                        event.target.value = "";
+                        if (!file) return;
+                        if (file.size > 160000000) {
+                          setError("Split portable packages above 160 MB.");
+                          return;
+                        }
+                        void action(async () => {
+                          await api("academy-archive", file);
+                          await reload();
+                        }, "Portable course restored as a separate draft. Select it from Academy courses.");
+                      }}
+                    />
+                  </label>
                 </details>
                 <HandoffInbox api={api} domain="academy" />
               </div>
@@ -1787,8 +1877,10 @@ export function AcademyWorkbench({
           e.target.value = "";
           if (!f) return;
           const owner = epoch.current;
-          if (f.size > COURSE_CHAR_LIMIT * 4) {
-            setError("Choose a course outline under 1.2 MB.");
+          if (f.size > COURSE_IMPORT_CHAR_LIMIT * 4) {
+            setError(
+              "Choose a course import under 9.6 MB. Content limits are checked separately.",
+            );
             return;
           }
           await action(async () => {

@@ -972,6 +972,48 @@
 .academy-references a {
   overflow-wrap: anywhere;
 }
+.course-workshop {
+  padding: 24px;
+  border-bottom: 1px solid var(--line);
+  max-width: 1100px;
+  margin-inline: auto;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+.academy-frame[hidden] { display: none; }
+.course-workshop label {
+  display: grid;
+  gap: 7px;
+  margin-block: 12px;
+}
+.course-workshop label.product-checkbox {
+  display: flex;
+  align-items: flex-start;
+}
+.course-workshop textarea {
+  width: 100%;
+  min-height: 44px;
+  resize: vertical;
+}
+.course-workshop fieldset {
+  min-width: 0;
+  border: 0;
+  padding: 0;
+}
+.course-workshop pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 360px;
+  overflow: auto;
+}
+.course-workshop details {
+  margin-block: 14px;
+}
+.course-workshop .academy-lesson-tabs {
+  margin-bottom: 20px;
+}
 @media (max-width: 560px) {
   .academy-reference-results li {
     flex-direction: column;

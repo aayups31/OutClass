@@ -3,6 +3,7 @@ import "./learn-package.css";
 import type { LearnPackage } from "../learn-package-contract";
 import type { LearnDelivery } from "../server/learn-delivery";
 import { LearnResources } from "./academy-resources";
+import { CourseAssessmentView } from "./course-assessment";
 type API = <T>(route: string, body?: unknown) => Promise<T>;
 export const defaultLearnPackage = (): LearnPackage => ({
   minutes: 20,
@@ -255,6 +256,7 @@ export function LearnAssignment({
   return (
     <>
       <LearnResources api={api} courseId={courseId} lessonId={lessonId} />
+      <CourseAssessmentView api={api} courseId={courseId} lessonId={lessonId} />
       <AssignmentReview
         api={api}
         courseId={courseId}
