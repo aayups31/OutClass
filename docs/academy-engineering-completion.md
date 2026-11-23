@@ -17,6 +17,8 @@ November 23, 2026. This is the implementation follow-up to [the 32-gap audit](ac
 
 ## Evidence from this implementation
 
+- The final [GitHub quality-gate run](https://github.com/aayups31/OutClass/actions/runs/45225144496) passed on **Windows and Linux**: the full suite, production build, hosted service build, clean-workspace acceptance and all four browser journeys. The separate hidden Electron suite passed **3/3 tests** covering account encryption/sign-out, first-run and local files/bundled JavaScript, and real terminal behavior. An initial Electron account startup failed during first-time binary installation; its isolated rerun and the subsequent complete suite passed after installation. These desktop checks use development bundles, not an installed NSIS release.
+
 - The complete local suite passed **245 tests across 46 files** with no failures. Subsequent focused checks also passed the added runtime-version mismatch and hosted-image dependency checks. The service dependency audit reports **zero vulnerabilities** after compatible lockfile updates; this is separate from desktop packaging advisories.
 
 - An original **six-lesson Python reporting course** was generated with `gpt-5.4-2026-03-05`, repaired from actual technical/editorial findings, and independently critiqued. All six current lessons passed isolated reference/starter/mutation checks on Python **3.12.16**. The last editorial pass returned **zero blockers**. Earlier failed versions remain evidence: generated tests initially missed fixtures and weak or contradictory tasks needed correction. This is a successful repaired course, not a first-pass success-rate claim.
