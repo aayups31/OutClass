@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, rm, writeFile, realpath } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 vi.mock("../src/server/github", () => ({
@@ -19,7 +19,9 @@ beforeEach(async () => {
   vi.mocked(git.connectRemote).mockResolvedValue(remote);
   vi.mocked(git.push).mockResolvedValue(undefined);
   vi.mocked(git.run).mockResolvedValue("");
-  directory = await mkdtemp(path.join(tmpdir(), "gitlearn-github-flow-"));
+  directory = await realpath(
+    await mkdtemp(path.join(tmpdir(), "gitlearn-github-flow-")),
+  );
   store = new Store(path.join(directory, "data"));
   app = new Application(store);
   repo = path.join(directory, "history");

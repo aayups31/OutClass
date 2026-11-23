@@ -1,5 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { mkdtemp, mkdir, readFile, writeFile, rm } from "node:fs/promises";
+import {
+  mkdtemp,
+  mkdir,
+  readFile,
+  writeFile,
+  rm,
+  realpath,
+} from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
@@ -37,7 +44,9 @@ const observation = () => ({
   ],
 });
 beforeEach(async () => {
-  directory = await mkdtemp(path.join(tmpdir(), "gitlearn-test-"));
+  directory = await realpath(
+    await mkdtemp(path.join(tmpdir(), "gitlearn-test-")),
+  );
   store = new Store(path.join(directory, "data"));
   app = new Application(store);
   repo = path.join(directory, "history");

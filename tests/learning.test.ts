@@ -6,6 +6,7 @@ import {
   rename,
   rm,
   writeFile,
+  realpath,
 } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -17,7 +18,9 @@ import type { ResumeAnchor } from "../src/shared";
 
 let directory: string, store: Store, app: Application, workspace: Workspace;
 beforeEach(async () => {
-  directory = await mkdtemp(path.join(tmpdir(), "gitlearn-continue-"));
+  directory = await realpath(
+    await mkdtemp(path.join(tmpdir(), "gitlearn-continue-")),
+  );
   store = new Store(path.join(directory, "data"));
   app = new Application(store);
   workspace = new Workspace(app);
