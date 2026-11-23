@@ -19,6 +19,7 @@ export type BrowserAccount = {
   paidLimit: number;
   identity: (token: string) => Promise<{ id: string; email: string }>;
   signOut: (token: string) => Promise<void>;
+  changePassword?: (token: string, password: string) => Promise<void>;
   profile?: (
     token: string,
     value?: z.infer<typeof accountProfile>,
@@ -193,18 +194,107 @@ export function browserAccountRoutes(
       res.json({ sent: true });
     } catch (error) {
       if ((error as { code?: string })?.code === "account_exists") {
-        res
-          .status(409)
-          .json({
-            error:
-              "An account with this email already exists. Sign in with your password.",
-          });
+        res.status(409).json({
+          error:
+            "An account with this email already exists. Sign in with your password.",
+        });
         return;
       }
       res.status(400).json({
         error:
           "Account creation could not be completed. Use at least 8 characters, check your email, or sign in if you already have an account.",
       });
+    }
+  });
+  router.post("/recover", async (req, res) => {
+    if (limited(`auth:${req.ip}`, 6)) {
+      res.status(429).json({ error: "Wait a minute before trying again." });
+      return;
+    }
+    const parsed = z
+      .object({ email: z.string().trim().email().max(254) })
+      .strict()
+      .safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: "Enter a valid email." });
+      return;
+    }
+    try {
+      await deps.auth("recover", parsed.data);
+      res.json({ sent: true });
+    } catch {
+      res
+        .status(503)
+        .json({
+          error: "The recovery email could not be sent. Try again later.",
+        });
+    }
+  });
+  router.post("/reset-password", async (req, res) => {
+    if (limited(`auth:${req.ip}`, 6)) {
+      res.status(429).json({ error: "Wait a minute before trying again." });
+      return;
+    }
+    try {
+      const { email, code, password } = accountCredentials
+        .extend({ code: z.string().regex(/^\d{6,8}$/) })
+        .parse(req.body);
+      if (!options.changePassword) throw Error("unavailable");
+      const session = sessionSchema.parse(
+        await deps.auth("verify", { email, token: code, type: "recovery" }),
+      );
+      const account = await options.identity(session.access_token);
+      if (account.email.toLowerCase() !== email.toLowerCase())
+        throw Error("identity mismatch");
+      await options.changePassword(session.access_token, password);
+      save(res, session);
+      res.json({ updated: true });
+    } catch {
+      res
+        .status(400)
+        .json({
+          error:
+            "Password reset failed. Check the latest recovery code and use at least 8 characters.",
+        });
+    }
+  });
+  router.post("/change-password", async (req, res) => {
+    if (limited(`auth:${req.ip}`, 6)) {
+      res.status(429).json({ error: "Wait a minute before trying again." });
+      return;
+    }
+    const account = await identity(req, res);
+    if (!account) {
+      res.status(401).json({ error: "Sign in before changing your password." });
+      return;
+    }
+    try {
+      const { currentPassword, password } = z
+        .object({
+          currentPassword: z.string().min(1).max(128),
+          password: accountCredentials.shape.password,
+        })
+        .strict()
+        .parse(req.body);
+      if (!options.changePassword) throw Error("unavailable");
+      const session = sessionSchema.parse(
+        await deps.auth("token?grant_type=password", {
+          email: account.email,
+          password: currentPassword,
+        }),
+      );
+      const verified = await options.identity(session.access_token);
+      if (verified.id !== account.id) throw Error("identity mismatch");
+      await options.changePassword(session.access_token, password);
+      save(res, session);
+      res.json({ updated: true });
+    } catch {
+      res
+        .status(400)
+        .json({
+          error:
+            "Password could not be changed. Check your current password and use at least 8 characters for the new one.",
+        });
     }
   });
   router.post("/password", async (req, res) => {

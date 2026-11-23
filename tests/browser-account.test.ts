@@ -12,6 +12,66 @@ const session = {
   expires_at: Math.floor(Date.now() / 1000) + 3600,
   email: "learner@example.com",
 };
+it("requires authentication and current-password proof before a password change", async () => {
+  const f = await fixture(),
+    body = { currentPassword: "OldPass8!", password: "NewPass8!" },
+    cookie = "__Host-outclass-access=" + session.access_token;
+  expect((await f.post("change-password", body)).status).toBe(401);
+  expect(
+    (await f.post("change-password", body, cookie, "https://attacker.example"))
+      .status,
+  ).toBe(403);
+  expect(
+    (await f.post("change-password", { ...body, password: "short" }, cookie))
+      .status,
+  ).toBe(400);
+  expect(f.deps.browser!.changePassword).not.toHaveBeenCalled();
+  const response = await f.post("change-password", body, cookie);
+  expect(response.status).toBe(200);
+  expect(f.deps.auth).toHaveBeenCalledWith("token?grant_type=password", {
+    email: session.email,
+    password: body.currentPassword,
+  });
+  expect(f.deps.browser!.changePassword).toHaveBeenCalledWith(
+    session.access_token,
+    body.password,
+  );
+  expect(response.headers.getSetCookie()).toHaveLength(2);
+});
+it("rejects a wrong current password without updating the provider", async () => {
+  const f = await fixture({
+    auth: async () => {
+      throw Error("wrong password");
+    },
+  });
+  const response = await f.post(
+    "change-password",
+    { currentPassword: "WrongPass!", password: "NewPass8!" },
+    "__Host-outclass-access=" + session.access_token,
+  );
+  expect(response.status).toBe(400);
+  expect(f.deps.browser!.changePassword).not.toHaveBeenCalled();
+});
+it("requires a recovery verification before resetting and establishing cookies", async () => {
+  const f = await fixture();
+  expect((await f.post("recover", { email: session.email })).status).toBe(200);
+  expect(f.deps.auth).toHaveBeenCalledWith("recover", { email: session.email });
+  const body = { email: session.email, code: "000000", password: "NewPass8!" };
+  expect((await f.post("reset-password", body)).status).toBe(400);
+  expect(f.deps.browser!.changePassword).not.toHaveBeenCalled();
+  const response = await f.post("reset-password", { ...body, code: "123456" });
+  expect(response.status).toBe(200);
+  expect(f.deps.auth).toHaveBeenCalledWith("verify", {
+    email: session.email,
+    token: "123456",
+    type: "recovery",
+  });
+  expect(f.deps.browser!.changePassword).toHaveBeenCalledWith(
+    session.access_token,
+    body.password,
+  );
+  expect(response.headers.getSetCookie()).toHaveLength(2);
+});
 it("rejects duplicate registration without creating a browser session", async () => {
   const f = await fixture({
     auth: async () => {
@@ -145,6 +205,7 @@ async function fixture(overrides: Partial<GatewayDependencies> = {}) {
         return { id: user, email: session.email };
       }),
       signOut: vi.fn(async () => {}),
+      changePassword: vi.fn(async () => {}),
       profile: vi.fn(async (_token, value) => {
         if (value) profile = value;
         return profile;

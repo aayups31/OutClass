@@ -454,6 +454,9 @@ export function productionDependencies(
       preview: true,
       freeLimit: config.freeLimit,
       paidLimit: config.paidLimit,
+      changePassword: async (token, password) => {
+        await authFetch("user", { password }, token, "PUT");
+      },
       identity: async (token) => {
         const user = await authFetch("user", undefined, token);
         return { id: user.id, email: user.email };
@@ -491,7 +494,12 @@ export function productionDependencies(
     auth: async (route, body) => {
       const result = await authFetch(route, body);
       if (route === "signup") return signupResult(result);
-      if (route === "otp" || route === "signup" || route === "resend")
+      if (
+        route === "otp" ||
+        route === "signup" ||
+        route === "resend" ||
+        route === "recover"
+      )
         return { sent: true };
       return {
         access_token: result.access_token,
