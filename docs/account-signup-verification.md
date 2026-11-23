@@ -74,3 +74,16 @@ subjects/bodies should change. After applying, request a fresh recovery email an
 check that it contains a numeric code and no verification link. Old emails retain
 their old links. The live push requires an authenticated CLI or a scoped management
 token; the connected database tools cannot update Auth configuration.
+
+### Live verification — November 23, 2026
+
+Applied the declared configuration to production with Supabase CLI 3.3.0 after
+CLI authentication. Exactly five properties changed: site URL and the subject/body
+for confirmation and recovery emails. Seventeen undeclared settings were left
+unchanged. A subsequent config diff reported zero declared updates remaining.
+
+The deployed browser recovery endpoint returned HTTP 200 with `sent: true`.
+Resend reported the fresh recovery email delivered at 23:01:52 UTC (6:01 PM
+Toronto). Inspection confirmed a numeric code, the correct page instructions, no
+hyperlink, and no localhost reference. No recovery code was redeemed and no live
+password was changed. Use a fresh code; previous link-based emails are obsolete.
