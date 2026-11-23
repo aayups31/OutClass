@@ -127,6 +127,7 @@ export function writtenLesson(index: number): CourseLessonAnswer {
       "Keep inputs in minutes but return a total in seconds. Predict the new result before editing.",
     summary: `${lesson.title} turns a small data contract into an observable result.`,
     sourceIds: [],
+    grounding: [],
     assumptions: [
       "Inputs are non-negative integers; file loading is outside this task.",
     ],

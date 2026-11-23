@@ -29,7 +29,10 @@ import { LearnDelivery } from "./learn-delivery.js";
 import { AgentHandoffs, agentDomain } from "./agent-handoffs.js";
 import { AgentWorkService } from "./agent-work.js";
 import type { CreatorProduction } from "./creator-production.js";
-import { COURSE_LESSON_LIMIT } from "../course-limits.js";
+import { COURSE_LESSON_LIMIT, COURSE_CHAR_LIMIT } from "../course-limits.js";
+import {loadCourse,storeCourse} from "./course-content.js";
+import type { AssessmentKey } from "../course-workshop-contract.js";
+import { auditAcademy } from "./academy-studio.js";
 
 const key = "expansion:v1";
 const stamp = () => new Date().toISOString();
@@ -50,9 +53,9 @@ export function validateCourse(course: AcademyDraft) {
   if (!course.rightsConfirmed)
     issues.push("Confirm your rights to the course material.");
   if (!course.lessons.length) issues.push("Add at least one lesson.");
-  if (JSON.stringify(course).length > 300000)
+  if (JSON.stringify(course).length > COURSE_CHAR_LIMIT)
     issues.push(
-      "Keep a course release under 300,000 characters; split large source files into linked resources.",
+      "Keep course content under 6,000,000 characters; use media attachments for larger assets.",
     );
   course.lessons.forEach((lesson, i) => {
     if (
@@ -90,7 +93,7 @@ export class Expansion {
     this.compiler = new AcademyCompiler(app);
   }
   state(): ExpansionState {
-    return (
+    const state = (
       this.app.store.get<ExpansionState>(key) || {
         schemaVersion: 1,
         courses: [],
@@ -100,13 +103,14 @@ export class Expansion {
         campaigns: [],
       }
     );
+    return {...state,courses:state.courses.map(c=>loadCourse(this.app.store,c)),releases:state.releases.map(c=>loadCourse(this.app.store,c))};
   }
   private change<T>(fn: (state: ExpansionState) => T): T {
     let result!: T;
     this.app.store.transaction(() => {
       const state = this.state();
       result = fn(state);
-      this.app.store.put(key, state);
+      this.app.store.put(key, {...state,courses:state.courses.map(c=>storeCourse(this.app.store,c)),releases:state.releases.map(c=>storeCourse(this.app.store,c))});
     });
     return result;
   }
@@ -129,6 +133,19 @@ export class Expansion {
         updatedAt: stamp(),
       };
       state.courses = [...state.courses.filter((c) => c.id !== id), next];
+      if (
+        old &&
+        JSON.stringify(old.lessons.map((lesson) => lesson.assessments)) ===
+          JSON.stringify(draft.lessons.map((lesson) => lesson.assessments))
+      ) {
+        for (const prefix of ["academy:teacher", "academy:solutions"]) {
+          const value = this.app.store.get(
+            `${prefix}:${old.id}:${old.revision}`,
+          );
+          if (value)
+            this.app.store.put(`${prefix}:${next.id}:${next.revision}`, value);
+        }
+      }
       return next;
     });
   }
@@ -170,6 +187,11 @@ export class Expansion {
           : {}),
       };
       state.releases.push(release);
+      const keys = this.app.store.get<AssessmentKey[]>(
+        `academy:teacher:${id}:${draft.revision}`,
+      );
+      if (keys)
+        this.app.store.put(`academy:assessment-keys:${release.id}`, keys);
       return release;
     });
   }
@@ -187,10 +209,46 @@ export class Expansion {
   async publishHosted(releaseId: string) {
     const release = this.state().releases.find((r) => r.id === releaseId);
     if (!release) throw new UserError("Choose a local course release.", 404);
-    if (release.lessons.some((lesson) => lesson.resources?.length))
+    if (!this.app.store.get(`academy:release-review:${release.id}`))
       throw new UserError(
-        "Uploaded lesson resources are stored on this device. This release can be used in local Learn. Hosted publishing requires a release without local attachments.",
+        "Complete the guided instructor review before publishing. This local release is a preview, not a reviewed publication.",
+        409,
       );
+    const media = new Map(
+      release.lessons
+        .flatMap((lesson) => lesson.resources || [])
+        .map((resource) => [resource.id, resource]),
+    );
+    for (const resource of media.values()) {
+      const bytes = await new AcademyResources(this.app).bytes(resource);
+      const begun = (await this.app.ai.platform("media", resource)) as {
+        complete: boolean;
+        chunkBytes: number;
+      };
+      if (!begun.complete) {
+        if (begun.chunkBytes !== 240000)
+          throw new UserError(
+            "Update the app to match the hosted media contract.",
+          );
+        for (
+          let position = 0;
+          position < Math.ceil(bytes.length / 240000);
+          position++
+        )
+          await this.app.ai.platform(`media/${resource.id}/chunk`, {
+            position,
+            base64: bytes
+              .subarray(position * 240000, (position + 1) * 240000)
+              .toString("base64"),
+          });
+        await this.app.ai.platform(`media/${resource.id}/finish`, {});
+      }
+    }
+    const audit = auditAcademy({
+      ...release,
+      id: release.courseId,
+      updatedAt: release.publishedAt,
+    });
     const {
       title,
       audience,
@@ -210,7 +268,18 @@ export class Expansion {
         rightsConfirmed,
         lessons,
         ...(learningProject ? { learningProject } : {}),
+        ...(release.design ? { design: release.design } : {}),
       },
+      review: {
+        courseHash: audit.courseHash,
+        acknowledged: audit.findings
+          .filter((f) => f.level === "review")
+          .map((f) => f.id),
+      },
+      privateKeys:
+        this.app.store.get<AssessmentKey[]>(
+          `academy:assessment-keys:${release.id}`,
+        ) || [],
       projectTemplate: release.project?.verified
         ? "python_activity_api_v1"
         : null,
@@ -252,6 +321,27 @@ export class Expansion {
       hash: hash(payload.course),
       visibility: "local",
     };
+    for (const resource of new Map(
+      payload.course.lessons
+        .flatMap((lesson) => lesson.resources || [])
+        .map((resource) => [resource.id, resource]),
+    ).values()) {
+      const chunks: Buffer[] = [];
+      for (
+        let position = 0;
+        position < Math.ceil(resource.bytes / 240000);
+        position++
+      ) {
+        const result = (await this.app.ai.platform(
+          `media/${resource.id}/chunks/${position}`,
+        )) as { base64: string };
+        chunks.push(Buffer.from(result.base64, "base64"));
+      }
+      await new AcademyResources(this.app).restore(
+        resource,
+        Buffer.concat(chunks),
+      );
+    }
     this.change((state) => {
       const existing = state.releases.find((r) => r.id === release.id);
       if (
@@ -273,6 +363,7 @@ export class Expansion {
       `academy:template:${release.id}`,
       payload.projectTemplate,
     );
+    this.app.store.put(`academy:remote:${release.id}`, true);
     this.enroll(release.id);
     return this.launch(release.id, payload.lessonIndex);
   }

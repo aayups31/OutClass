@@ -33,6 +33,9 @@ import type { AgentWorkService } from "./agent-work.js";
 import { MediaTranscripts } from "./media-transcripts.js";
 import { AcademyStudio } from "./academy-studio.js";
 import { AcademyResources } from "./academy-resources.js";
+import { CourseWorkshop } from "./course-workshop.js";
+import { CourseAssessment } from "./course-assessment.js";
+import { CourseArchive } from "./course-archive.js";
 import type { OutClassEdition } from "../outclass-edition.js";
 import packageMetadata from "../../package.json" with { type: "json" };
 
@@ -54,6 +57,7 @@ export function createApp(
 ) {
   const app = express();
   let agentWork: AgentWorkService | undefined;
+  const courseWorkshop = new CourseWorkshop(application);
   const creatorProduction = new CreatorProduction(application, () =>
     new Expansion(application).state(),
   );
@@ -85,6 +89,7 @@ export function createApp(
     app.locals.closing = true;
     creatorProduction.stop();
     agentWork?.stop();
+    courseWorkshop.stop();
     publicationQueue.stop();
     live.stopAll();
     runtime.stopAll();
@@ -137,7 +142,7 @@ export function createApp(
     }
     next();
   });
-  app.use(express.json({ limit: "1mb" }));
+  app.use(express.json({ limit: "48mb" }));
   app.use("/creator-media", creatorProduction.publicRoutes());
   app.use("/social-image", publishing.images.publicRoutes());
   app.use("/social/callback", social.callbacks());
@@ -346,6 +351,37 @@ export function createApp(
     }),
   );
   const delivery = new LearnDelivery(application);
+  app.use(
+    "/api/academy-archive",
+    (req, res, next) =>
+      edition === "learn"
+        ? res
+            .status(403)
+            .json({
+              error: "Use Educator to restore instructor course packages.",
+            })
+        : next(),
+    new CourseArchive(application).routes(),
+  );
+  app.use("/api/course-assessment", new CourseAssessment(application).routes());
+  app.use(
+    "/api/academy-workshop",
+    (req, res, next) =>
+      edition === "learn"
+        ? res
+            .status(403)
+            .json({ error: "Use Educator for private course authoring." })
+        : next(),
+    courseWorkshop.routes(),
+  );
+  app.use(
+    "/api/academy-research",
+    (req, res, next) =>
+      edition === "learn"
+        ? res.status(403).json({ error: "Use Educator for private research." })
+        : next(),
+    courseWorkshop.research.routes(),
+  );
   app.use("/api/academy-resources", new AcademyResources(application).routes());
   app.get("/api/learn-resources", (req, res) =>
     res.json(

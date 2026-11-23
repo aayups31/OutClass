@@ -844,6 +844,7 @@ export class AgentWorkService {
             ...(course.learningProject
               ? { learningProject: course.learningProject }
               : {}),
+            ...(course.design ? { design: course.design } : {}),
           });
           row.delivery = [
             {

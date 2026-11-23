@@ -16,7 +16,7 @@ const codeExtensions = new Set(
     " ",
   ),
 );
-function classify(
+export function classify(
   name: string,
   bytes: Buffer,
 ): Pick<AcademyResource, "kind" | "mime"> {
@@ -53,6 +53,47 @@ export class AcademyResources {
 
   private all() {
     return this.app.store.get<Record<string, AcademyResource>>(key) || {};
+  }
+  async bytes(resource: AcademyResource) {
+    this.check([resource]);
+    return this.verifiedBytes(resource);
+  }
+  async restore(resource: AcademyResource, bytes: Buffer) {
+    const kind = classify(resource.name, bytes);
+    if (
+      bytes.length !== resource.bytes ||
+      createHash("sha256").update(bytes).digest("hex") !== resource.sha256 ||
+      kind.kind !== resource.kind ||
+      kind.mime !== resource.mime
+    )
+      throw new UserError(`Resource integrity failed for ${resource.name}.`);
+    const old = this.all()[resource.id];
+    if (old) {
+      if (JSON.stringify(old) !== JSON.stringify(resource))
+        throw new UserError(
+          "A resource identity already has different metadata.",
+          409,
+        );
+      try {
+        await this.verifiedBytes(old);
+        return old;
+      } catch {
+        await writeFile(this.file(old.id), bytes, { mode: 0o600 });
+        return old;
+      }
+    }
+    if (
+      Object.values(this.all()).reduce(
+        (sum, item) => sum + item.bytes,
+        bytes.length,
+      ) >
+      1024 ** 3
+    )
+      throw new UserError("The local resource library is full.", 413);
+    await mkdir(path.dirname(this.file(resource.id)), { recursive: true });
+    await writeFile(this.file(resource.id), bytes, { flag: "wx", mode: 0o600 });
+    this.app.store.put(key, { ...this.all(), [resource.id]: resource });
+    return resource;
   }
   private file(id: string) {
     return path.resolve(this.app.store.directory, "academy-resources", id);

@@ -118,7 +118,7 @@ export class AIProvider {
             : {}),
         },
         body: body === undefined ? undefined : JSON.stringify(body),
-        signal: AbortSignal.timeout(35000),
+        signal: AbortSignal.timeout(route==="answer" && typeof body==="object" && body && "task" in body && String(body.task).startsWith("course_")?190000:35000),
       });
       const result = await response.json();
       if (authenticated && revision !== this.authRevision)
@@ -335,7 +335,7 @@ export class AIProvider {
         const client = new OpenAI({
           apiKey: "local-model",
           baseURL: endpoint(c.localEndpoint, true),
-          timeout: 60000,
+          timeout: task.startsWith("course_") ? 180000 : 60000,
           maxRetries: 0,
         });
         const response = await client.chat.completions.create({
@@ -355,7 +355,7 @@ export class AIProvider {
       } else {
         const client = new OpenAI({
           apiKey: this.app.apiKey,
-          timeout: 25000,
+          timeout: task.startsWith("course_") ? 180000 : 25000,
           maxRetries: 0,
         });
         const response = await client.responses.parse({

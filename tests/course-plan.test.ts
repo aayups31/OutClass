@@ -1,7 +1,9 @@
 import { it,expect } from "vitest";
+import {zodTextFormat} from "openai/helpers/zod";
 import { courseBrief,coursePlan,courseLessonAnswer } from "../src/course-workshop-contract";
 import { validatePlan,validateWrittenLesson,renderTeaching } from "../src/course-workshop-quality";
 import { workshopBrief,workshopPlan,writtenLesson } from "./helpers/course-workshop";
+it("exposes provider-compatible structured output contracts",()=>{expect(()=>zodTextFormat(coursePlan,"course_plan")).not.toThrow();expect(()=>zodTextFormat(courseLessonAnswer,"course_lesson")).not.toThrow();});
 it("checks course-wide skill order, outcome alignment and time budget",()=>{
   expect(courseBrief.parse(workshopBrief)).toEqual(workshopBrief);expect(coursePlan.parse(workshopPlan)).toEqual(workshopPlan);
   expect(validatePlan(workshopBrief,workshopPlan)).toEqual([]);

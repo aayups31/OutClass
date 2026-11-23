@@ -12,6 +12,7 @@ import type {
 } from "../academy-design-contract.js";
 import {
   COURSE_CHAR_LIMIT,
+  COURSE_IMPORT_CHAR_LIMIT,
   COURSE_LESSON_LIMIT,
   COURSE_SOURCE_LIMIT,
 } from "../course-limits.js";
@@ -29,13 +30,14 @@ export function courseContent(c: AcademyDraft): AcademyDraft {
     rightsConfirmed: c.rightsConfirmed,
     lessons: c.lessons,
     ...(c.learningProject ? { learningProject: c.learningProject } : {}),
+    ...(c.design ? { design: c.design } : {}),
   };
 }
 export function importAcademy(raw: unknown) {
   const input = z
     .object({
       name: z.string().min(1).max(180),
-      text: z.string().max(COURSE_CHAR_LIMIT),
+      text: z.string().max(COURSE_IMPORT_CHAR_LIMIT),
     })
     .strict()
     .parse(raw);
@@ -141,6 +143,10 @@ export function importAcademy(raw: unknown) {
       "Choose an OutClass JSON or a Markdown/text course outline.",
     );
   // Importing never carries rights approval or silently changes a saved draft.
+  if (JSON.stringify(result).length > COURSE_CHAR_LIMIT)
+    throw new UserError(
+      `Keep imported course content under ${COURSE_CHAR_LIMIT.toLocaleString()} characters. Split the course or use linked resources; nothing was truncated.`,
+    );
   result.rightsConfirmed = false;
   for (const lesson of result.lessons)
     if (lesson.references)

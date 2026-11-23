@@ -71,6 +71,7 @@ export function validateWrittenLesson(
   index: number,
   answer: CourseLessonAnswer,
   sourceIds: string[],
+  sources: { id: string; text: string }[] = [],
 ): CourseFinding[] {
   const findings: CourseFinding[] = [],
     lesson = plan.lessons[index];
@@ -98,6 +99,30 @@ export function validateWrittenLesson(
       "example",
       "Supply concrete input and expected result lines in the independent task.",
     );
+  if (sourceIds.length && !answer.grounding.length)
+    add(
+      "grounding",
+      "Connect substantive source claims to literal supplied passages.",
+    );
+  for (const claim of answer.grounding) {
+    const source = sources.find((source) => source.id === claim.sourceId);
+    let passage = "";
+    if (source) {
+      try {
+        passage = JSON.parse(source.text).passage || "";
+      } catch {
+        passage = source.text;
+      }
+    }
+    if (
+      !answer.sourceIds.includes(claim.sourceId) ||
+      !passage.includes(claim.quote)
+    )
+      add(
+        "unsupported-quote",
+        "Every quoted grounding passage must occur literally in its cited source. Semantic support still needs editorial review.",
+      );
+  }
   if (answer.assignment.prerequisiteLessons.some((n) => n >= index))
     add("prerequisite", "Assignment prerequisites must be earlier lessons.");
   if (answer.assignment.hints.length < 2)

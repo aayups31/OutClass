@@ -6,6 +6,7 @@ import {
   planningInstructions,
   lessonWritingInstructions,
   courseCritiqueInstructions,
+  lessonGenerationSchema,
 } from "./course-workshop-contract.js";
 import {
   agentWorkAnswer,
@@ -85,9 +86,9 @@ export type AIUsage = {
   period: string;
   plan: "free" | "paid";
 };
-export function answerSchema(task: z.infer<typeof hostedRequest>["task"]) {
+export function answerSchema(task: z.infer<typeof hostedRequest>["task"], context?:string) {
   if (task === "course_plan") return coursePlan;
-  if (task === "course_lesson") return courseLessonAnswer;
+  if (task === "course_lesson") return context ? lessonGenerationSchema(context) : courseLessonAnswer;
   if (task === "course_critique") return courseCritique;
   if (task === "work") return agentWorkAnswer;
   if (task === "project_forge") return projectForgeAnswer;
