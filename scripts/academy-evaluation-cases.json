@@ -1,0 +1,71 @@
+[
+  {
+    "id": "volunteer-reports",
+    "brief": {
+      "title": "Reliable weekly reports for a volunteer club",
+      "audience": "Python learners who can define a function and iterate a list but have not built a complete tool",
+      "startingSkills": ["functions", "loops", "lists"],
+      "outcome": "Independently build and test a reproducible weekly activity report, diagnose incorrect totals, and explain input and presentation decisions",
+      "deliverable": "A local standard-library Python reporting tool with fixtures, tests, clear output and a handover README",
+      "constraints": "Python 3.12 standard library only; name/minutes records; no accounts; small deterministic fixtures; use exact skill strings consistently",
+      "exclusions": "Web frameworks, databases, machine learning, deployment, external packages and actual personal data",
+      "hours": 10,
+      "lessonCount": 6,
+      "language": "python",
+      "runtime": "Python 3.12"
+    },
+    "reviewChecks": [
+      "Repeated and empty records have explicit expected results",
+      "Input and presentation contracts agree across lessons",
+      "Tests reject overwriting instead of accumulating totals",
+      "Learners write meaningful checks without exposing private QA artifacts",
+      "The final tool is usable by a volunteer organizer"
+    ]
+  },
+  {
+    "id": "reading-queue",
+    "brief": {
+      "title": "A reliable reading queue in JavaScript",
+      "audience": "Learners who know JavaScript functions and arrays but have not tested a complete local application",
+      "startingSkills": ["functions", "arrays"],
+      "outcome": "Build and test a deterministic reading queue that preserves item identity, handles duplicate titles and explains its input decisions",
+      "deliverable": "A dependency-free Node.js command-line reading queue with JSON fixtures, node:test checks and a handover guide",
+      "constraints": "Node.js 24; built-in modules only; synthetic book titles; no network; deterministic IDs supplied by fixtures; use exact skill strings consistently",
+      "exclusions": "Browser UI, frameworks, package installation, databases, scraping and paid services",
+      "hours": 10,
+      "lessonCount": 6,
+      "language": "javascript",
+      "runtime": "Node.js 24"
+    },
+    "reviewChecks": [
+      "Duplicate titles remain separate items",
+      "Malformed persisted input is explained and handled",
+      "No hidden clock, random or network dependency enters tests",
+      "Public interfaces remain compatible between milestones",
+      "Transfer changes one real requirement instead of repeating the guided example"
+    ]
+  },
+  {
+    "id": "accessible-survey-analysis",
+    "brief": {
+      "title": "From a club survey to a defensible recommendation",
+      "audience": "Learners comfortable reading tables and calculating percentages who have not designed an analysis",
+      "startingSkills": ["tables", "percentages"],
+      "outcome": "Produce an accessible, reproducible analysis of a synthetic club survey and defend a bounded recommendation without causal overclaims",
+      "deliverable": "A documented Python standard-library survey analysis with fixtures, clear tables, missing-value decisions and a recommendation memo",
+      "constraints": "Python 3.12 standard library only; original synthetic non-sensitive survey; deterministic calculations; every numerical example includes checkable expected results",
+      "exclusions": "Personal data, inferential significance claims, causal claims, machine learning, external packages and web scraping",
+      "hours": 18,
+      "lessonCount": 12,
+      "language": "python",
+      "runtime": "Python 3.12"
+    },
+    "reviewChecks": [
+      "Denominators and missing-value decisions are explicit",
+      "Every numerical worked example is internally consistent",
+      "Reported percentages match released fixtures",
+      "No sample statistic is presented as a causal conclusion",
+      "Written recommendations state limitations and plausible alternatives"
+    ]
+  }
+]
