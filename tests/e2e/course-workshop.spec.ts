@@ -7,6 +7,7 @@ import path from "node:path";
 import { Store } from "../../src/server/store";
 import { Application } from "../../src/server/application";
 import { createApp } from "../../src/server/http";
+import { CourseSandbox } from "../../src/server/course-sandbox";
 import {
   workshopBrief,
   workshopPlan,
@@ -17,6 +18,7 @@ let dir: string,
   server: Server,
   web: ReturnType<typeof createApp>;
 const base = "http://127.0.0.1:47853";
+const originalVerify = CourseSandbox.prototype.verify;
 test.beforeAll(async () => {
   dir = await mkdtemp(path.join(tmpdir(), "outclass-course-browser-"));
   store = new Store(path.join(dir, "data"));
@@ -33,12 +35,28 @@ test.beforeAll(async () => {
               "Fixture workflow verification; no real provider was called.",
             ],
           }) as typeof app.ai.structured;
+  CourseSandbox.prototype.verify = async () => ({
+    hash: "a".repeat(64),
+    verified: true,
+    image: "browser-fixture@sha256:" + "b".repeat(64),
+    at: new Date().toISOString(),
+    checks: [
+      {
+        candidate: "reference",
+        code: 0,
+        tests: 2,
+        output:
+          "Controlled browser workflow fixture; isolated runtime is verified separately.",
+      },
+    ],
+  });
   web = createApp(app, 47853);
   web.use(express.static(path.resolve("dist/web")));
   server = web.listen(47853, "127.0.0.1");
   await new Promise<void>((resolve) => server.once("listening", resolve));
 });
 test.afterAll(async () => {
+  CourseSandbox.prototype.verify = originalVerify;
   await web.locals.stopPrograms();
   await new Promise<void>((resolve) => server.close(() => resolve()));
   store.close();
@@ -89,6 +107,25 @@ test("builds a complete course through the workshop and delivers private-key-bac
   await expect(
     page.getByRole("heading", { name: "Independent editorial review" }),
   ).toBeVisible();
+  for (const lesson of workshopPlan.lessons) {
+    await page
+      .getByRole("button", {
+        name: `${lesson.module} · ${lesson.title}`,
+        exact: true,
+      })
+      .click();
+    await page
+      .getByRole("button", {
+        name: "Verify starter, reference and deliberate mistake",
+        exact: true,
+      })
+      .click();
+    await expect(
+      page
+        .getByRole("status")
+        .filter({ hasText: "The supplied tests pass the reference" }),
+    ).toBeVisible();
+  }
   await page
     .getByLabel(
       "I reviewed the lessons, source evidence, private assessment keys and critique.",

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import type { CourseAssessment } from "../server/course-assessment";
 type View = ReturnType<CourseAssessment["view"]>;
 type API = <T>(route: string, body?: unknown) => Promise<T>;
@@ -11,6 +11,9 @@ export function CourseAssessmentView({
   courseId: string;
   lessonId: string;
 }) {
+  const [reviewLesson, setReviewLesson] = useState(lessonId);
+  useEffect(() => setReviewLesson(lessonId), [lessonId, courseId]);
+  const generation = useRef(0);
   const [view, setView] = useState<View>(),
     [choices, setChoices] = useState<Record<string, number>>({}),
     [feedback, setFeedback] = useState<Record<string, string>>({}),
@@ -18,12 +21,15 @@ export function CourseAssessmentView({
     [error, setError] = useState("");
   useEffect(() => {
     let live = true;
+    generation.current++;
+    setBusy("");
     setView(undefined);
     setFeedback({});
     setChoices({});
     setError("");
+    if (!/^academy(?:-preview)?:/.test(courseId)) return;
     api<View>(
-      `course-assessment?courseId=${encodeURIComponent(courseId)}&lessonId=${encodeURIComponent(lessonId)}`,
+      `course-assessment?courseId=${encodeURIComponent(courseId)}&lessonId=${encodeURIComponent(reviewLesson)}`,
     )
       .then((value) => {
         if (live) setView(value);
@@ -33,10 +39,12 @@ export function CourseAssessmentView({
       });
     return () => {
       live = false;
+      generation.current++;
     };
-  }, [api, courseId, lessonId]);
+  }, [api, courseId, reviewLesson]);
   async function submit(itemId: string) {
     if (!view) return;
+    const requestGeneration = generation.current;
     setBusy(itemId);
     try {
       const item = view.items.find((item) => item.id === itemId)!;
@@ -46,7 +54,7 @@ export function CourseAssessmentView({
         rationale: string;
       }>("course-assessment", {
         courseId,
-        lessonId,
+        lessonId: reviewLesson,
         submission: {
           itemId,
           choice: choices[itemId],
@@ -54,19 +62,20 @@ export function CourseAssessmentView({
           expectedAttempt: item.attempts,
         },
       });
+      if (requestGeneration !== generation.current) return;
       setFeedback((current) => ({
         ...current,
         [itemId]: `${result.correct ? "Correct for this item." : "Try tracing the example again."} ${result.feedback} ${result.rationale}`,
       }));
-      setView(
-        await api<View>(
-          `course-assessment?courseId=${encodeURIComponent(courseId)}&lessonId=${encodeURIComponent(lessonId)}`,
-        ),
+      const updated = await api<View>(
+        `course-assessment?courseId=${encodeURIComponent(courseId)}&lessonId=${encodeURIComponent(reviewLesson)}`,
       );
+      if (requestGeneration === generation.current) setView(updated);
     } catch (error) {
-      setError((error as Error).message);
+      if (requestGeneration === generation.current)
+        setError((error as Error).message);
     } finally {
-      setBusy("");
+      if (requestGeneration === generation.current) setBusy("");
     }
   }
   if (!view?.items.length) return error ? <p role="alert">{error}</p> : null;
@@ -78,6 +87,27 @@ export function CourseAssessmentView({
         independent project mastery.
       </p>
       {error && <p role="alert">{error}</p>}
+      {reviewLesson !== lessonId && (
+        <button
+          className="text-button"
+          onClick={() => setReviewLesson(lessonId)}
+        >
+          Return to this lesson's questions
+        </button>
+      )}
+      {view.reviewQueue.length > 0 && (
+        <nav aria-label="Spaced course review">
+          {view.reviewQueue.map((item) => (
+            <button
+              className="button small"
+              key={item.lessonId}
+              onClick={() => setReviewLesson(item.lessonId)}
+            >
+              Revisit {item.title} · {item.due} due
+            </button>
+          ))}
+        </nav>
+      )}
       {view.items.map((item) => (
         <fieldset key={item.id} disabled={!!busy}>
           <legend>{item.prompt}</legend>
@@ -116,6 +146,15 @@ export function CourseAssessmentView({
             </p>
           )}
           {feedback[item.id] && <p role="status">{feedback[item.id]}</p>}
+          {item.remediation.map((lesson) => (
+            <button
+              className="text-button"
+              key={lesson.lessonId}
+              onClick={() => setReviewLesson(lesson.lessonId)}
+            >
+              Revisit {lesson.title}
+            </button>
+          ))}
         </fieldset>
       ))}
     </details>

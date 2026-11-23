@@ -1,10 +1,23 @@
 import React, { useEffect, useState } from "react";
 import { BookOpen, Check, Download, Play, Save, Square } from "lucide-react";
 import type { CourseJob } from "../server/course-workshop";
-import type { CourseBrief } from "../course-workshop-contract";
+import { courseBrief, type CourseBrief } from "../course-workshop-contract";
 import type { AcademyReference } from "../academy-reference-contract";
+import type { CourseResearch } from "../server/course-research";
 import { AcademyReferences } from "./academy-references";
 type API = <T>(route: string, body?: unknown) => Promise<T>;
+async function digest(value: unknown) {
+  return [
+    ...new Uint8Array(
+      await crypto.subtle.digest(
+        "SHA-256",
+        new TextEncoder().encode(JSON.stringify(value)),
+      ),
+    ),
+  ]
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
+}
 const initial: CourseBrief = {
   title: "",
   audience: "",
@@ -49,8 +62,68 @@ export function CourseWorkshopPanel({
     [selected, setSelected] = useState(""),
     [tab, setTab] = useState<"course" | "research">("course"),
     [dirty, setDirty] = useState(false),
-    [reviewed, setReviewed] = useState(false);
-  useEffect(() => { onDirty(dirty || busy); return () => onDirty(false); }, [dirty, busy, onDirty]);
+    [reviewed, setReviewed] = useState(false),
+    [feedback, setFeedback] = useState(""),
+    [callBudget, setCallBudget] = useState(17),
+    [approveChange, setApproveChange] = useState(false),
+    [planJson, setPlanJson] = useState(""),
+    [lessonJson, setLessonJson] = useState("");
+  const [runtimeBackend, setRuntimeBackend] = useState("configured sandbox");
+  const [restoreCandidate, setRestoreCandidate] = useState<{
+      backup: unknown;
+      brief: CourseBrief;
+    }>(),
+    [approveRestore, setApproveRestore] = useState(false);
+  useEffect(() => {
+    let live = true;
+    api<{ backend: string }>("academy-workshop/runtime")
+      .then((value) => {
+        if (live) setRuntimeBackend(value.backend);
+      })
+      .catch(() => {});
+    return () => {
+      live = false;
+    };
+  }, [api]);
+  const [critiqueHashes, setCritiqueHashes] = useState<string[]>([]),
+    [critiqueReasons, setCritiqueReasons] = useState<Record<number, string>>(
+      {},
+    );
+  useEffect(() => {
+    let live = true;
+    setCritiqueHashes([]);
+    if (job?.critique)
+      void Promise.all([
+        digest(job.critique),
+        ...job.critique.findings.map(digest),
+      ]).then((hashes) => {
+        if (live) setCritiqueHashes(hashes);
+      });
+    return () => {
+      live = false;
+    };
+  }, [job?.revision]);
+  useEffect(() => {
+    setFeedback(job?.feedback || "");
+    setCallBudget(job?.maxCalls || 17);
+    setApproveChange(false);
+    setPlanJson(JSON.stringify(job?.plan || job?.proposedPlan || {}, null, 2));
+  }, [job?.id, job?.revision]);
+  useEffect(
+    () =>
+      setLessonJson(
+        JSON.stringify(
+          job?.pendingLessons?.[selected] || job?.lessons[selected] || {},
+          null,
+          2,
+        ),
+      ),
+    [job?.revision, selected],
+  );
+  useEffect(() => {
+    onDirty(dirty || busy);
+    return () => onDirty(false);
+  }, [dirty, busy, onDirty]);
   useEffect(() => {
     let live = true;
     api<typeof jobs>("academy-workshop")
@@ -64,7 +137,7 @@ export function CourseWorkshopPanel({
       live = false;
     };
   }, [api]);
-  async function act(task: () => Promise<CourseJob>) {
+  async function act(task: () => Promise<CourseJob>, delivered = false) {
     setBusy(true);
     setError("");
     try {
@@ -72,14 +145,14 @@ export function CourseWorkshopPanel({
       setJob(value);
       setDirty(false);
       setReviewed(false);
-      if (value.delivery) await onDelivered();
+      if (delivered && value.delivery) await onDelivered();
     } catch (error) {
       setError((error as Error).message);
     } finally {
       setBusy(false);
     }
   }
-  const written = job?.lessons[selected],
+  const written = job?.pendingLessons?.[selected] || job?.lessons[selected],
     planned = job?.plan?.lessons.find((lesson) => lesson.id === selected);
   function patch<K extends keyof CourseBrief>(key: K, value: CourseBrief[K]) {
     setBrief((current) => ({ ...current, [key]: value }));
@@ -142,6 +215,90 @@ export function CourseWorkshopPanel({
               ))}
             </select>
           </label>
+          <label>
+            Restore instructor workshop backup
+            <input
+              type="file"
+              accept=".json"
+              disabled={busy || dirty}
+              onChange={(event) => {
+                const file = event.target.files?.[0];
+                if (!file) return;
+                if (file.size > 40000000) {
+                  setError("Choose a backup under 40 MB.");
+                  return;
+                }
+                event.target.value = "";
+                void file
+                  .text()
+                  .then((text) => {
+                    const backup = JSON.parse(text);
+                    setRestoreCandidate({
+                      backup,
+                      brief: courseBrief.parse(backup.job?.brief),
+                    });
+                    setApproveRestore(false);
+                  })
+                  .catch((error) => setError(error.message));
+              }}
+            />
+          </label>
+          {restoreCandidate && (
+            <fieldset disabled={busy}>
+              <legend>Review workshop restore</legend>
+              <h3>{restoreCandidate.brief.title}</h3>
+              <p>
+                {restoreCandidate.brief.lessonCount} lessons ·{" "}
+                {restoreCandidate.brief.runtime}. This creates a separate
+                workshop. Its plan, source permissions, critique and code checks
+                require fresh review.
+              </p>
+              <label className="product-checkbox">
+                <input
+                  type="checkbox"
+                  checked={approveRestore}
+                  onChange={(event) => setApproveRestore(event.target.checked)}
+                />
+                I approve up to{" "}
+                {Math.min(100, restoreCandidate.brief.lessonCount * 2 + 5)}{" "}
+                future provider calls for this restored workshop. Restoring does
+                not call the provider.
+              </label>
+              <button
+                className="button"
+                disabled={!approveRestore}
+                onClick={() =>
+                  void act(async () => {
+                    const value = await api<CourseJob>(
+                      "academy-workshop/restore",
+                      {
+                        backup: restoreCandidate.backup,
+                        maxCalls: Math.min(
+                          100,
+                          restoreCandidate.brief.lessonCount * 2 + 5,
+                        ),
+                        approveProvider: true,
+                      },
+                    );
+                    setJobs((rows) => [
+                      ...rows,
+                      { id: value.id, brief: value.brief, phase: value.phase },
+                    ]);
+                    setRestoreCandidate(undefined);
+                    return value;
+                  })
+                }
+              >
+                Restore as separate workshop
+              </button>
+              <button
+                className="button"
+                onClick={() => setRestoreCandidate(undefined)}
+              >
+                Cancel restore
+              </button>
+            </fieldset>
+          )}
           {!job ? (
             <fieldset disabled={busy} className="course-brief">
               <legend>Course brief</legend>
@@ -279,6 +436,61 @@ export function CourseWorkshopPanel({
                 lessons written
               </p>
               {job.error && <p role="alert">{job.error}</p>}
+              {!job.delivery && (
+                <details>
+                  <summary>Instructor guidance and provider budget</summary>
+                  <label>
+                    Editorial direction
+                    <textarea
+                      value={feedback}
+                      maxLength={4000}
+                      onChange={(event) => {
+                        setFeedback(event.target.value);
+                        setDirty(true);
+                      }}
+                    />
+                  </label>
+                  <label>
+                    Maximum provider calls
+                    <input
+                      type="number"
+                      min={job.calls}
+                      max={100}
+                      value={callBudget}
+                      onChange={(event) =>
+                        setCallBudget(Number(event.target.value))
+                      }
+                    />
+                  </label>
+                  <label className="product-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={approveChange}
+                      onChange={(event) =>
+                        setApproveChange(event.target.checked)
+                      }
+                    />
+                    I approve this total call budget and guidance for future
+                    stages.
+                  </label>
+                  <button
+                    className="button"
+                    disabled={busy || !approveChange}
+                    onClick={() =>
+                      void act(() =>
+                        api<CourseJob>(`academy-workshop/${job.id}/configure`, {
+                          revision: job.revision,
+                          feedback,
+                          maxCalls: callBudget,
+                          approveProvider: true,
+                        }),
+                      )
+                    }
+                  >
+                    Save guidance and budget
+                  </button>
+                </details>
+              )}
               <div className="academy-next">
                 <button
                   className="button"
@@ -320,13 +532,72 @@ export function CourseWorkshopPanel({
                 <button
                   className="text-button"
                   onClick={() =>
-                    download(`instructor-workshop-${job.id}.json`, job)
+                    download(`instructor-workshop-${job.id}.json`, {
+                      format: "outclass-course-workshop",
+                      version: 1,
+                      job,
+                    })
                   }
                 >
                   <Download size={13} />
                   Export instructor workshop · includes private solutions
                 </button>
               </div>
+              <details>
+                <summary>Remove this workshop from this device</summary>
+                <p>
+                  Export its instructor backup first. Removing a workshop keeps
+                  its delivered course draft.
+                </p>
+                <button
+                  className="button"
+                  disabled={busy || dirty}
+                  onClick={() => {
+                    setBusy(true);
+                    void api(`academy-workshop/${job.id}/remove`, {
+                      revision: job.revision,
+                    })
+                      .then(() => {
+                        setJobs((rows) =>
+                          rows.filter((row) => row.id !== job.id),
+                        );
+                        setJob(undefined);
+                      })
+                      .catch((error) => setError(error.message))
+                      .finally(() => setBusy(false));
+                  }}
+                >
+                  Remove saved workshop
+                </button>
+              </details>
+              {(job.plan || job.proposedPlan) && !job.planAccepted && (
+                <details open={!!job.proposedPlan}>
+                  <summary>Edit proposed syllabus and skill map</summary>
+                  <textarea
+                    aria-label="Proposed course plan"
+                    rows={18}
+                    value={planJson}
+                    onChange={(event) => {
+                      setPlanJson(event.target.value);
+                      setDirty(true);
+                    }}
+                  />
+                  <button
+                    className="button"
+                    disabled={busy}
+                    onClick={() =>
+                      void act(() =>
+                        api<CourseJob>(`academy-workshop/${job.id}/plan`, {
+                          revision: job.revision,
+                          plan: JSON.parse(planJson),
+                        }),
+                      )
+                    }
+                  >
+                    Validate and accept edited plan
+                  </button>
+                </details>
+              )}
               {job.plan && (
                 <>
                   <h3>Course plan</h3>
@@ -378,6 +649,53 @@ export function CourseWorkshopPanel({
               {written && planned && (
                 <section aria-label="Workshop lesson editor">
                   <h3>{planned.title}</h3>
+                  <details>
+                    <summary>Protect instructor wording</summary>
+                    <p>
+                      Saved manual wording is protected during regeneration.
+                      Clear a section here to let the agent rewrite it.
+                    </p>
+                    {written.sections.map((section) => (
+                      <label className="product-checkbox" key={section.title}>
+                        <input
+                          type="checkbox"
+                          disabled={
+                            busy ||
+                            dirty ||
+                            !!job.delivery ||
+                            !job.lessons[selected]
+                          }
+                          checked={
+                            job.sectionLocks?.[selected]?.includes(
+                              section.title,
+                            ) || false
+                          }
+                          onChange={(event) =>
+                            void act(() =>
+                              api<CourseJob>(
+                                `academy-workshop/${job.id}/section-locks`,
+                                {
+                                  revision: job.revision,
+                                  lessonId: selected,
+                                  titles: event.target.checked
+                                    ? [
+                                        ...(job.sectionLocks?.[selected] || []),
+                                        section.title,
+                                      ]
+                                    : (
+                                        job.sectionLocks?.[selected] || []
+                                      ).filter(
+                                        (title) => title !== section.title,
+                                      ),
+                                },
+                              ),
+                            )
+                          }
+                        />
+                        {section.title}
+                      </label>
+                    ))}
+                  </details>
                   {written.sections.map((section, index) => (
                     <label key={index}>
                       {section.title}
@@ -428,6 +746,40 @@ export function CourseWorkshopPanel({
                     ))}
                   </details>
                   <p>{written.independentTask}</p>
+                  {job.pendingLessons?.[selected] && (
+                    <p role="alert">
+                      This candidate failed validation. Accepted teaching is
+                      preserved until the repaired candidate is saved.
+                    </p>
+                  )}
+                  <details>
+                    <summary>
+                      Edit complete lesson and assessment artifact
+                    </summary>
+                    <textarea
+                      aria-label="Complete workshop lesson"
+                      rows={20}
+                      value={lessonJson}
+                      onChange={(event) => {
+                        setLessonJson(event.target.value);
+                        setDirty(true);
+                      }}
+                    />
+                    <button
+                      className="button"
+                      disabled={busy || !!job.delivery}
+                      onClick={() =>
+                        void act(() =>
+                          api<CourseJob>(`academy-workshop/${job.id}/lesson`, {
+                            revision: job.revision,
+                            lesson: JSON.parse(lessonJson),
+                          }),
+                        )
+                      }
+                    >
+                      Validate and save complete lesson
+                    </button>
+                  </details>
                   <p>Transfer: {written.transferTask}</p>
                   <details>
                     <summary>
@@ -469,6 +821,12 @@ export function CourseWorkshopPanel({
                     <h4>Deliberately faulty implementation</h4>
                     <pre>{written.faultyImplementation}</pre>
                   </details>
+                  <p>
+                    Isolated checks use {runtimeBackend}.
+                    {runtimeBackend === "Vercel Sandbox"
+                      ? " This sends this assignment's code to a temporary remote machine."
+                      : " Generated code is never run directly on your computer."}
+                  </p>
                   <button
                     className="button"
                     disabled={busy || dirty || !!job.delivery}
@@ -554,17 +912,71 @@ export function CourseWorkshopPanel({
                 <section>
                   <h3>Independent editorial review</h3>
                   {job.critique.findings.map((finding, index) => (
-                    <p key={index}>
-                      <strong>
-                        {finding.severity} · {finding.lessonId}
-                      </strong>
-                      <br />
-                      {finding.claim}
-                      <br />
-                      Evidence: {finding.evidence}
-                      <br />
-                      Proposed correction: {finding.correction}
-                    </p>
+                    <div key={index}>
+                      <p>
+                        <strong>
+                          {finding.severity} · {finding.lessonId}
+                        </strong>
+                        <br />
+                        {finding.claim}
+                        <br />
+                        Evidence: {finding.evidence}
+                        <br />
+                        Proposed correction: {finding.correction}
+                      </p>
+                      {job.critiqueDecisions?.[critiqueHashes[index + 1]] ? (
+                        <p>
+                          Instructor disposition:{" "}
+                          {
+                            job.critiqueDecisions[critiqueHashes[index + 1]]
+                              .reason
+                          }
+                        </p>
+                      ) : (
+                        <details>
+                          <summary>
+                            Record resolution or dispute with evidence
+                          </summary>
+                          <label>
+                            Artifact location, observed evidence and editorial
+                            decision
+                            <textarea
+                              value={critiqueReasons[index] || ""}
+                              maxLength={2000}
+                              onChange={(event) =>
+                                setCritiqueReasons((values) => ({
+                                  ...values,
+                                  [index]: event.target.value,
+                                }))
+                              }
+                            />
+                          </label>
+                          <button
+                            className="button"
+                            disabled={
+                              busy ||
+                              !critiqueHashes.length ||
+                              (critiqueReasons[index] || "").trim().length < 40
+                            }
+                            onClick={() =>
+                              void act(() =>
+                                api<CourseJob>(
+                                  `academy-workshop/${job.id}/critique-review`,
+                                  {
+                                    revision: job.revision,
+                                    critiqueHash: critiqueHashes[0],
+                                    findingHash: critiqueHashes[index + 1],
+                                    reason: critiqueReasons[index],
+                                  },
+                                ),
+                              )
+                            }
+                          >
+                            Record instructor disposition
+                          </button>
+                        </details>
+                      )}
+                    </div>
                   ))}
                   {!job.critique.findings.length && (
                     <p>
@@ -588,11 +1000,13 @@ export function CourseWorkshopPanel({
                     className="button primary"
                     disabled={!reviewed || busy || dirty || !!job.delivery}
                     onClick={() =>
-                      void act(() =>
-                        api<CourseJob>(`academy-workshop/${job.id}/deliver`, {
-                          revision: job.revision,
-                          approve: true,
-                        }),
+                      void act(
+                        () =>
+                          api<CourseJob>(`academy-workshop/${job.id}/deliver`, {
+                            revision: job.revision,
+                            approve: true,
+                          }),
+                        true,
                       )
                     }
                   >
@@ -643,6 +1057,23 @@ function ResearchLibrary({ api }: { api: API }) {
     >([]),
     [status, setStatus] = useState(""),
     [busy, setBusy] = useState(false);
+  const [documents, setDocuments] = useState<
+    ReturnType<CourseResearch["list"]>
+  >([]);
+  async function refresh() {
+    setDocuments(await api("academy-research"));
+  }
+  useEffect(() => {
+    let live = true;
+    api<ReturnType<CourseResearch["list"]>>("academy-research")
+      .then((rows) => {
+        if (live) setDocuments(rows);
+      })
+      .catch((e) => setStatus(e.message));
+    return () => {
+      live = false;
+    };
+  }, [api]);
   async function ingest() {
     setBusy(true);
     try {
@@ -660,6 +1091,7 @@ function ResearchLibrary({ api }: { api: API }) {
       setStatus(
         "Indexed with attribution and source version. Its approved passages can now support course writing.",
       );
+      await refresh();
     } catch (error) {
       setStatus((error as Error).message);
     } finally {
@@ -669,6 +1101,96 @@ function ResearchLibrary({ api }: { api: API }) {
   return (
     <section>
       <h3>Permissioned research library</h3>
+      <details>
+        <summary>Source versions and portable backup</summary>
+        <button
+          className="button"
+          disabled={busy}
+          onClick={() =>
+            void api("academy-research/backup")
+              .then((value) =>
+                download("outclass-research-library.json", value),
+              )
+              .catch((error) => setStatus(error.message))
+          }
+        >
+          Export attributed research library
+        </button>
+        <label>
+          Restore research backup
+          <input
+            type="file"
+            accept=".json"
+            disabled={busy}
+            onChange={(event) => {
+              const file = event.target.files?.[0];
+              if (!file) return;
+              if (file.size > 32000000) {
+                setStatus("Choose a research backup under 32 MB.");
+                return;
+              }
+              setBusy(true);
+              void file
+                .text()
+                .then((text) =>
+                  api("academy-research/restore", JSON.parse(text)),
+                )
+                .then(refresh)
+                .then(() =>
+                  setStatus(
+                    "Research restored inactive. Review each permission record before enabling retrieval.",
+                  ),
+                )
+                .catch((error) => setStatus(error.message))
+                .finally(() => setBusy(false));
+            }}
+          />
+        </label>
+        {documents.map((document) => (
+          <article key={document.id}>
+            <strong>{document.metadata.reference.title}</strong>
+            <small>
+              {" "}
+              · version {document.version} ·{" "}
+              {document.active ? "available" : "inactive"}
+            </small>
+            <p>
+              {document.metadata.reference.license} ·{" "}
+              {document.metadata.reference.permissionNote}{" "}
+              {document.metadata.expiresOn &&
+                `· expires ${document.metadata.expiresOn}`}
+            </p>
+            <a
+              href={
+                document.metadata.reference.licenseUrl ||
+                document.metadata.reference.url
+              }
+              target="_blank"
+              rel="noreferrer"
+            >
+              Read the permission record
+            </a>
+            <button
+              className="text-button"
+              disabled={busy}
+              onClick={() => {
+                setBusy(true);
+                void api(
+                  `academy-research/${document.id}/${document.active ? "revoke" : "approve"}`,
+                  document.active ? {} : { reviewedPermission: true },
+                )
+                  .then(refresh)
+                  .catch((error) => setStatus(error.message))
+                  .finally(() => setBusy(false));
+              }}
+            >
+              {document.active
+                ? "Revoke this source"
+                : "I reviewed permission; enable this version"}
+            </button>
+          </article>
+        ))}
+      </details>
       <p>
         Import material you have permission to use. The library retains versions
         and locations; it does not treat a free course link as permission.

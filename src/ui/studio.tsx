@@ -1704,6 +1704,14 @@ export function Studio({
               <LearnAssignment
                 api={api}
                 onDirty={setAssignmentDirty}
+                upgradeBlocked={
+                  dirty || assignmentDirty || busy || running || projectRunning
+                }
+                onUpgraded={async (id) => {
+                  const refreshed = (await onRefresh()) as Status;
+                  onNoteChange(refreshed.session?.note || "");
+                  onSelectCourse(id);
+                }}
                 courseId={course.id}
                 lessonId={session.lessonId}
               />

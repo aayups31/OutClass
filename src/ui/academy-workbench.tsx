@@ -42,6 +42,8 @@ import { AcademyDialog } from "./academy-dialog";
 import { academyExample } from "../academy-example";
 import { AcademyReferences } from "./academy-references";
 import { CourseWorkshopPanel } from "./course-workshop";
+import { LessonBlocksEditor } from "./lesson-blocks";
+import { CoursePortableFolder } from "./course-portable-folder";
 type API = <T>(route: string, body?: unknown) => Promise<T>;
 type Tab = "overview" | "lessons" | "project" | "review" | "releases";
 type Recovery = { course: AcademyDraft; id?: string; revision?: number };
@@ -132,6 +134,10 @@ export function AcademyWorkbench({
     [ack, setAck] = useState<string[]>([]);
   const [showWorkshop, setShowWorkshop] = useState(false);
   const [workshopDirty, setWorkshopDirty] = useState(false);
+  const [blocksDirty, setBlocksDirty] = useState(false);
+  const [history, setHistory] = useState<
+    (AcademyDraft & { revision: number })[]
+  >([]);
   const [forgeRequest, setForgeRequest] = useState<{
     kind: "exercise" | "capstone";
   }>();
@@ -156,7 +162,7 @@ export function AcademyWorkbench({
     locked = useRef(false),
     activeCourse = useRef<string | undefined>(undefined);
   activeCourse.current = selected?.id;
-  unsaved.current = dirty;
+  unsaved.current = dirty || blocksDirty;
   locked.current = busy;
   useEffect(() => {
     mounted.current = true;
@@ -172,7 +178,10 @@ export function AcademyWorkbench({
       onDirty(false);
     };
   }, [api, onDirty]);
-  useEffect(() => onDirty(dirty || workshopDirty), [dirty, workshopDirty, onDirty]);
+  useEffect(
+    () => onDirty(dirty || workshopDirty || blocksDirty),
+    [dirty, workshopDirty, blocksDirty, onDirty],
+  );
   useEffect(() => {
     if (!dirty || recovery) return;
     try {
@@ -288,6 +297,12 @@ export function AcademyWorkbench({
     }
   }
   async function save() {
+    if (blocksDirty) {
+      setError(
+        "Apply or correct the structured teaching blocks before saving this course.",
+      );
+      return;
+    }
     return action(async () => {
       const c = await api<Revision<AcademyDraft>>("expansion/courses/save", {
         ...course,
@@ -425,7 +440,15 @@ export function AcademyWorkbench({
     change({
       ...course,
       lessons: course.lessons.map((l, i) =>
-        i === lessonIndex ? { ...l, ...updates } : l,
+        i === lessonIndex
+          ? {
+              ...l,
+              ...updates,
+              ...(updates.learn || updates.codeCheck
+                ? { technicalVerification: undefined }
+                : {}),
+            }
+          : l,
       ),
     });
   function uploadResource(file: File) {
@@ -580,7 +603,10 @@ export function AcademyWorkbench({
           </button>
         </div>
       )}
-      <div hidden={showWorkshop} className={`academy-frame${showAgent ? " with-agent" : ""}`}>
+      <div
+        hidden={showWorkshop}
+        className={`academy-frame${showAgent ? " with-agent" : ""}`}
+      >
         <aside className="academy-outline">
           <div className="academy-library">
             <label>
@@ -835,6 +861,61 @@ export function AcademyWorkbench({
                   </button>
                 </div>
                 <details className="academy-helper">
+                  <summary>Earlier saved drafts</summary>
+                  {selected && (
+                    <>
+                      <button
+                        className="button"
+                        disabled={busy || dirty}
+                        onClick={() =>
+                          void action(async () =>
+                            setHistory(
+                              await api(
+                                `expansion/courses/${selected.id}/history`,
+                              ),
+                            ),
+                          )
+                        }
+                      >
+                        Load saved draft history
+                      </button>
+                      {history.map((previous) => (
+                        <article key={previous.revision}>
+                          <strong>
+                            Revision {previous.revision} · {previous.title}
+                          </strong>
+                          <p>
+                            {previous.lessons.length} lessons ·{" "}
+                            {previous.outcome}
+                          </p>
+                          <button
+                            className="button small"
+                            disabled={busy || dirty}
+                            onClick={() =>
+                              void action(async () => {
+                                const restored = await api<
+                                  Revision<AcademyDraft>
+                                >(`expansion/courses/${selected.id}/restore`, {
+                                  expectedRevision: selected.revision,
+                                  revision: previous.revision,
+                                  approve: true,
+                                });
+                                setSelected(restored);
+                                setCourse(values(restored));
+                                setHistory([]);
+                                setDirty(false);
+                                await reload();
+                              }, "Restored as a new draft revision. Review permission and release findings again.")
+                            }
+                          >
+                            Restore this draft as a new revision
+                          </button>
+                        </article>
+                      ))}
+                    </>
+                  )}
+                </details>
+                <details className="academy-helper">
                   <summary>How to import an existing course</summary>
                   <p>
                     Use an OutClass JSON export, or a Markdown outline with a
@@ -906,6 +987,13 @@ export function AcademyWorkbench({
                       }}
                     />
                   </label>
+                  <CoursePortableFolder
+                    api={api}
+                    courseId={selected?.id}
+                    onRestored={async () => {
+                      await reload();
+                    }}
+                  />
                 </details>
                 <HandoffInbox api={api} domain="academy" />
               </div>
@@ -1054,6 +1142,12 @@ export function AcademyWorkbench({
                       spellCheck={false}
                       placeholder="Paste your transcript, teaching notes or source material. The agent uses this evidence."
                       onChange={(e) => lessonChange("content", e.target.value)}
+                    />
+                    <LessonBlocksEditor
+                      key={`${selected?.id}:${lessonIndex}`}
+                      value={lesson.blocks || []}
+                      onChange={(blocks) => updateLesson({ blocks })}
+                      onDirty={setBlocksDirty}
                     />
                     <small className="academy-fineprint">
                       Plain text, Markdown and timed captions are preserved as

@@ -67,3 +67,48 @@
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
+.lesson-teaching {
+  line-height: 1.75;
+  margin-block: 24px;
+}
+.lesson-teaching figure {
+  margin: 22px 0;
+}
+.lesson-teaching pre {
+  overflow: auto;
+  padding: 16px;
+  background: var(--soft);
+  border-radius: 8px;
+}
+.lesson-teaching table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.lesson-teaching th,
+.lesson-teaching td {
+  text-align: left;
+  border-bottom: 1px solid var(--line);
+  padding: 10px;
+}
+.lesson-teaching caption,
+.lesson-teaching figcaption {
+  text-align: left;
+  color: var(--muted);
+  font-size: 12px;
+}
+.lesson-teaching video {
+  width: 100%;
+  max-height: 480px;
+}
+.lesson-diagram {
+  display: flex;
+  flex-wrap: wrap;
+  list-style: decimal;
+  gap: 30px;
+  padding: 20px 30px;
+  background: var(--soft);
+}
+.lesson-diagram li {
+  flex: 1;
+  min-width: 140px;
+}

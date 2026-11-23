@@ -1,9 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "./learn-package.css";
 import type { LearnPackage } from "../learn-package-contract";
 import type { LearnDelivery } from "../server/learn-delivery";
 import { LearnResources } from "./academy-resources";
 import { CourseAssessmentView } from "./course-assessment";
+import { LessonBlocks } from "./lesson-blocks";
+import { CourseSubmissionView } from "./course-submissions";
+import { CourseUpgradeView } from "./course-upgrades";
 type API = <T>(route: string, body?: unknown) => Promise<T>;
 export const defaultLearnPackage = (): LearnPackage => ({
   minutes: 20,
@@ -247,21 +250,43 @@ export function LearnAssignment({
   courseId,
   lessonId,
   onDirty,
+  onUpgraded,
+  upgradeBlocked = true,
 }: {
   api: API;
   courseId: string;
   lessonId: string;
   onDirty: (dirty: boolean) => void;
+  onUpgraded?: (courseId: string) => Promise<void>;
+  upgradeBlocked?: boolean;
 }) {
+  const [reviewDirty, setReviewDirty] = useState(false),
+    [submissionDirty, setSubmissionDirty] = useState(false),
+    [upgradeBusy, setUpgradeBusy] = useState(false);
+  useEffect(() => {
+    onDirty(reviewDirty || submissionDirty || upgradeBusy);
+    return () => onDirty(false);
+  }, [onDirty, reviewDirty, submissionDirty, upgradeBusy]);
   return (
     <>
       <LearnResources api={api} courseId={courseId} lessonId={lessonId} />
       <CourseAssessmentView api={api} courseId={courseId} lessonId={lessonId} />
+      {onUpgraded && (
+        <CourseUpgradeView
+          key={courseId}
+          api={api}
+          courseId={courseId}
+          blocked={upgradeBlocked || reviewDirty || submissionDirty}
+          onUpgraded={onUpgraded}
+          onBusy={setUpgradeBusy}
+        />
+      )}
       <AssignmentReview
         api={api}
         courseId={courseId}
         lessonId={lessonId}
-        onDirty={onDirty}
+        onDirty={setReviewDirty}
+        onSubmissionDirty={setSubmissionDirty}
       />
     </>
   );
@@ -271,21 +296,26 @@ function AssignmentReview({
   courseId,
   lessonId,
   onDirty,
+  onSubmissionDirty,
 }: {
   api: API;
   courseId: string;
   lessonId: string;
   onDirty: (dirty: boolean) => void;
+  onSubmissionDirty: (dirty: boolean) => void;
 }) {
+  const generation = useRef(0);
   const [value, setValue] = useState<Assignment | null>(null),
     [checked, setChecked] = useState<number[]>([]),
     [reflection, setReflection] = useState(""),
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false);
   useEffect(() => {
+    const owner = ++generation.current;
     let live = true;
     setValue(null);
     setError("");
+    setBusy(false);
     api<Assignment | null>(
       `learn-assignment?courseId=${encodeURIComponent(courseId)}&lessonId=${encodeURIComponent(lessonId)}`,
     )
@@ -301,6 +331,7 @@ function AssignmentReview({
       });
     return () => {
       live = false;
+      if (generation.current === owner) generation.current++;
     };
   }, [api, courseId, lessonId]);
   const dirty =
@@ -309,22 +340,24 @@ function AssignmentReview({
       JSON.stringify([...checked].sort()) !==
         JSON.stringify([...value.progress.checked].sort()));
   useEffect(() => {
-    onDirty(dirty);
+    onDirty(dirty || busy);
     return () => onDirty(false);
-  }, [dirty, onDirty]);
+  }, [dirty, busy, onDirty]);
   if (!value) return error ? <p role="alert">{error}</p> : null;
   async function act(fn: () => Promise<Assignment>) {
+    const owner = generation.current;
     setBusy(true);
     setError("");
     try {
       const result = await fn();
+      if (owner !== generation.current) return;
       setValue(result);
       if (result.progress.reflection === reflection.trim())
         setReflection(result.progress.reflection);
     } catch (e) {
-      setError((e as Error).message);
+      if (owner === generation.current) setError((e as Error).message);
     } finally {
-      setBusy(false);
+      if (owner === generation.current) setBusy(false);
     }
   }
   return (
@@ -343,6 +376,17 @@ function AssignmentReview({
         </p>
       )}
       <p className="learn-practice-brief">{value.brief}</p>
+      <CourseSubmissionView
+        api={api}
+        courseId={courseId}
+        lessonId={lessonId}
+        onDirty={onSubmissionDirty}
+      />
+      <LessonBlocks
+        api={api}
+        resources={value.resources}
+        blocks={[{ kind: "text", body: value.content }, ...value.blocks]}
+      />
       {!!value.references?.length && (
         <details className="learn-source-acknowledgments">
           <summary>Readings & source acknowledgments</summary>
