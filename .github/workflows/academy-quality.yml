@@ -33,6 +33,11 @@ jobs:
         with:
           python-version: "3.12"
       - run: npm ci --ignore-scripts
+      - name: Configure disposable learning-history identity
+        run: |
+          git config --global user.name "OutClass CI"
+          git config --global user.email "ci@outclass.invalid"
+          git config --global init.defaultBranch main
       - run: npm test
       - run: npm run build
       - run: npm run build:ai
