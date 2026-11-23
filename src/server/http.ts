@@ -34,6 +34,7 @@ import { MediaTranscripts } from "./media-transcripts.js";
 import { AcademyStudio } from "./academy-studio.js";
 import { AcademyResources } from "./academy-resources.js";
 import { CourseSubmissions } from "./course-submissions.js";
+import {CourseUpgrades} from "./course-upgrades.js";
 import { CourseWorkshop } from "./course-workshop.js";
 import { CourseAssessment } from "./course-assessment.js";
 import { CourseArchive } from "./course-archive.js";
@@ -386,6 +387,7 @@ export function createApp(
     "/api/course-submissions",
     new CourseSubmissions(application).routes(),
   );
+  app.use("/api/course-upgrades",new CourseUpgrades(application).routes());
   app.get("/api/learn-resources", (req, res) =>
     res.json(
       delivery.resources(

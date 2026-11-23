@@ -63,6 +63,7 @@ export const academyLesson = z
     technicalVerification: z
       .object({
         hash: z.string().length(64),
+        inputHash: z.string().length(64).optional(),
         verified: z.boolean(),
         image: z.string().max(300),
         at: z.iso.datetime(),

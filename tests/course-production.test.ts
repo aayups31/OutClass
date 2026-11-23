@@ -9,6 +9,7 @@ import { Expansion } from "../src/server/expansion";
 import { CourseArchive } from "../src/server/course-archive";
 import { CourseResearch } from "../src/server/course-research";
 import { CourseSubmissions } from "../src/server/course-submissions";
+import {CourseUpgrades} from "../src/server/course-upgrades";
 import { CourseSandbox } from "../src/server/course-sandbox";
 import { Workspace } from "../src/server/workspace";
 import { academyExample } from "../src/academy-example";
@@ -17,7 +18,18 @@ import { lessonBlocks, blocksText } from "../src/lesson-blocks";
 import { importAcademy, AcademyStudio } from "../src/server/academy-studio";
 import { COURSE_CHAR_LIMIT, COURSE_SOURCE_LIMIT } from "../src/course-limits";
 import { writtenLesson } from "./helpers/course-workshop";
+import {readFile} from "node:fs/promises";
+import {technicalInputHash} from "../src/course-integrity";
+import {validateCourse} from "../src/academy-quality";
 let directory: string, store: Store, app: Application;
+it("invalidates technical evidence after a starter or runtime changes",()=>{
+  const course=academyExample(),lesson=course.lessons[0];course.rightsConfirmed=true;
+  lesson.learn=writtenLesson(0).assignment;lesson.codeCheck={language:"python",runtime:"Python 3.12",sourcePath:"report.py"};
+  lesson.technicalVerification={hash:"a".repeat(64),inputHash:technicalInputHash(lesson),verified:true,image:"fixture@sha256:"+"b".repeat(64),at:new Date().toISOString()};
+  expect(validateCourse(course).issues.some(issue=>issue.includes("after verification"))).toBe(false);
+  lesson.learn.starterFiles[0].content+="\n# changed after checks";
+  expect(validateCourse(course).issues.join(" ")).toMatch(/changed after verification/);
+});
 beforeEach(async () => {
   directory = await mkdtemp(path.join(tmpdir(), "outclass-course-production-"));
   store = new Store(path.join(directory, "data"));
@@ -304,4 +316,18 @@ it("binds project evidence to exact learner versions and grades against immutabl
   expect((await submissions.view(courseId, "lesson-0")).history[0].stale).toBe(
     true,
   );
+});
+it("keeps learners pinned and copies a reviewed upgrade without replacing conflicting work or evidence",async()=>{
+  await app.setup(path.join(directory,"upgrade-history"),false);
+  const expansion=new Expansion(app),course=academyExample();course.rightsConfirmed=true;course.lessons[0].learn=writtenLesson(0).assignment;
+  const first=expansion.saveCourse({...course,expectedRevision:0}),oldRelease=expansion.release(first.id,{expectedRevision:1,approve:true});expansion.enroll(oldRelease.id);const started=await expansion.launch(oldRelease.id,0),oldSession=store.state().session!,workspace=new Workspace(app),sourcePath="assignments/lesson-0/report.py",source=await workspace.read(started.sessionId,sourcePath),personal=source.content+"\n# my independent work";
+  await workspace.save(started.sessionId,sourcePath,personal,source.version);store.put(`academy:progress:${started.courseId}:lesson-0`,{reviewedAt:new Date().toISOString()});
+  const newer=expansion.saveCourse({...course,id:first.id,expectedRevision:1,outcome:"An updated report and clearer checks"}),next=expansion.release(newer.id,{expectedRevision:2,approve:true});
+  expect(store.state().session?.courseId).toBe(started.courseId);
+  const upgrades=new CourseUpgrades(app),preview=await upgrades.preview(started.courseId,next.id),selected=preview.files.find(file=>file.path===sourcePath)!;
+  const prepared=await upgrades.prepare({courseId:started.courseId,toReleaseId:next.id,previewHash:preview.hash,paths:[{path:selected.path,version:selected.version}],approve:true}),result=await upgrades.apply(prepared.id);
+  expect(result.state).toBe("complete");expect(result.results[0].status).toBe("conflict preserved for manual merge");expect((await workspace.read(store.state().session!.id,result.results[0].target)).content).toBe(personal);
+  expect((await workspace.read(store.state().session!.id,sourcePath)).content).toBe(source.content);
+  expect(await readFile(path.join(oldSession.workspace,...sourcePath.split("/")),"utf8")).toBe(personal);
+  expect(store.get(`academy:progress:${result.courseId}:lesson-0`)).toBeUndefined();expect(store.get(`academy:progress:${started.courseId}:lesson-0`)).toBeDefined();expect((await upgrades.apply(prepared.id)).results).toHaveLength(1);
 });

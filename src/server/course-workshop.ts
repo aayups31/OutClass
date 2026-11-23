@@ -1,5 +1,6 @@
 import { createHash, randomUUID } from "node:crypto";
 import { Router } from "express";
+import { technicalInputHash } from "../course-integrity.js";
 import { z } from "zod";
 import {
   courseBrief,
@@ -39,7 +40,7 @@ export type CourseJob = {
   plan?: CoursePlan;
   proposedPlan?: CoursePlan;
   feedback?: string;
-  sectionLocks?:Record<string,string[]>;
+  sectionLocks?: Record<string, string[]>;
   planAccepted: boolean;
   lessons: Record<string, CourseLessonAnswer>;
   pendingLessons?: Record<string, CourseLessonAnswer>;
@@ -67,6 +68,27 @@ export class CourseWorkshop {
   readonly research: CourseResearch;
   constructor(private app: Application) {
     this.research = new CourseResearch(app);
+    const legacy = this.app.store.get<CourseJob[]>("academy:course-jobs:v1");
+    if (legacy)
+      this.app.store.transaction(() => {
+        for (const job of legacy)
+          this.app.store.put(`academy:workshop:${job.id}`, job);
+        this.app.store.put(
+          "academy:workshop-index:v2",
+          legacy.map(
+            ({ id, revision, brief, phase, calls, maxCalls, delivery }) => ({
+              id,
+              revision,
+              brief,
+              phase,
+              calls,
+              maxCalls,
+              delivery,
+            }),
+          ),
+        );
+        this.app.store.remove("academy:course-jobs:v1");
+      });
     for (const job of this.list())
       if (job.phase === "running") {
         job.phase = "interrupted";
@@ -77,10 +99,26 @@ export class CourseWorkshop {
       }
   }
   list() {
-    return this.app.store.get<CourseJob[]>("academy:course-jobs:v1") || [];
+    return this.index().map(({ id }) => this.get(id));
+  }
+  private index() {
+    return (
+      this.app.store.get<
+        Pick<
+          CourseJob,
+          | "id"
+          | "revision"
+          | "brief"
+          | "phase"
+          | "calls"
+          | "maxCalls"
+          | "delivery"
+        >[]
+      >("academy:workshop-index:v2") || []
+    );
   }
   get(id: string) {
-    const job = this.list().find((job) => job.id === id);
+    const job = this.app.store.get<CourseJob>(`academy:workshop:${id}`);
     if (!job) throw new UserError("Course workshop not found.", 404);
     return job;
   }
@@ -88,10 +126,14 @@ export class CourseWorkshop {
     job.revision++;
     job.events.push({ at: new Date().toISOString(), message });
     job.events = job.events.slice(-100);
-    this.app.store.put("academy:course-jobs:v1", [
-      ...this.list().filter((row) => row.id !== job.id),
-      job,
-    ]);
+    this.app.store.transaction(() => {
+      this.app.store.put(`academy:workshop:${job.id}`, job);
+      const { id, revision, brief, phase, calls, maxCalls, delivery } = job;
+      this.app.store.put("academy:workshop-index:v2", [
+        ...this.index().filter((row) => row.id !== id),
+        { id, revision, brief, phase, calls, maxCalls, delivery },
+      ]);
+    });
   }
   private editable(id: string, revision: number) {
     const job = this.get(id);
@@ -119,7 +161,7 @@ export class CourseWorkshop {
       .strict()
       .parse(raw);
     assertClean(JSON.stringify(input), "course brief");
-    if (this.list().length >= 30)
+    if (this.index().length >= 30)
       throw new UserError(
         "Export or complete existing workshops before creating more than 30.",
       );
@@ -224,7 +266,33 @@ export class CourseWorkshop {
     );
     return job;
   }
-  lockSections(id:string,revision:number,raw:unknown){const input=z.object({lessonId:stableIdForLock,titles:z.array(z.string().max(160)).max(8)}).strict().parse(raw),job=this.editable(id,revision),lesson=job.lessons[input.lessonId];if(!lesson||input.titles.some(title=>!lesson.sections.some(section=>section.title===title)))throw new UserError("Choose existing lesson sections to protect.");job.sectionLocks={...job.sectionLocks,[input.lessonId]:[...new Set(input.titles)]};this.save(job,"Updated protected instructor wording for the next regeneration.");return job;}
+  lockSections(id: string, revision: number, raw: unknown) {
+    const input = z
+        .object({
+          lessonId: stableIdForLock,
+          titles: z.array(z.string().max(160)).max(8),
+        })
+        .strict()
+        .parse(raw),
+      job = this.editable(id, revision),
+      lesson = job.lessons[input.lessonId];
+    if (
+      !lesson ||
+      input.titles.some(
+        (title) => !lesson.sections.some((section) => section.title === title),
+      )
+    )
+      throw new UserError("Choose existing lesson sections to protect.");
+    job.sectionLocks = {
+      ...job.sectionLocks,
+      [input.lessonId]: [...new Set(input.titles)],
+    };
+    this.save(
+      job,
+      "Updated protected instructor wording for the next regeneration.",
+    );
+    return job;
+  }
   backup(id: string) {
     return {
       format: "outclass-course-workshop",
@@ -323,10 +391,13 @@ export class CourseWorkshop {
         "Wait for this workshop stage or reload its revision.",
         409,
       );
-    this.app.store.put(
-      "academy:course-jobs:v1",
-      this.list().filter((job) => job.id !== id),
-    );
+    this.app.store.transaction(() => {
+      this.app.store.put(
+        "academy:workshop-index:v2",
+        this.index().filter((job) => job.id !== id),
+      );
+      this.app.store.remove(`academy:workshop:${id}`);
+    });
     return { removed: true };
   }
   editLesson(id: string, revision: number, raw: unknown) {
@@ -360,10 +431,23 @@ export class CourseWorkshop {
       });
     job.history = job.history.slice(-40);
     job.lessons[lesson.lessonId] = lesson;
-    const protectedTitles=new Set(job.sectionLocks?.[lesson.lessonId]||[]);
-    const previous=job.history.filter(row=>row.lessonId===lesson.lessonId).at(-1)?.lesson;
-    if(previous)for(const section of lesson.sections)if(previous.sections.find(old=>old.title===section.title)?.body!==section.body)protectedTitles.add(section.title);
-    job.sectionLocks={...job.sectionLocks,[lesson.lessonId]:[...protectedTitles].filter(title=>lesson.sections.some(section=>section.title===title))};
+    const protectedTitles = new Set(job.sectionLocks?.[lesson.lessonId] || []);
+    const previous = job.history
+      .filter((row) => row.lessonId === lesson.lessonId)
+      .at(-1)?.lesson;
+    if (previous)
+      for (const section of lesson.sections)
+        if (
+          previous.sections.find((old) => old.title === section.title)?.body !==
+          section.body
+        )
+          protectedTitles.add(section.title);
+    job.sectionLocks = {
+      ...job.sectionLocks,
+      [lesson.lessonId]: [...protectedTitles].filter((title) =>
+        lesson.sections.some((section) => section.title === title),
+      ),
+    };
     if (job.pendingEvidence?.[lesson.lessonId])
       job.evidence[lesson.lessonId] = job.pendingEvidence[lesson.lessonId];
     if (job.pendingLessons) delete job.pendingLessons[lesson.lessonId];
@@ -498,7 +582,17 @@ export class CourseWorkshop {
           context,
         });
         job.pendingLessons = { ...job.pendingLessons, [selected.id]: answer };
-        for(const title of job.sectionLocks?.[selected.id]||[]){const original=job.lessons[selected.id]?.sections.find(section=>section.title===title);if(!original)continue;const position=answer.sections.findIndex(section=>section.title===title);if(position>=0)answer.sections[position]={...original};else answer.sections.push({...original});}
+        for (const title of job.sectionLocks?.[selected.id] || []) {
+          const original = job.lessons[selected.id]?.sections.find(
+            (section) => section.title === title,
+          );
+          if (!original) continue;
+          const position = answer.sections.findIndex(
+            (section) => section.title === title,
+          );
+          if (position >= 0) answer.sections[position] = { ...original };
+          else answer.sections.push({ ...original });
+        }
         courseLessonAnswer.parse(answer);
         job.pendingEvidence = {
           ...job.pendingEvidence,
@@ -772,6 +866,11 @@ export class CourseWorkshop {
         ].map((id) => documentIds.get(id)!.metadata.reference),
       };
     });
+    for (const lesson of lessons)
+      if (lesson.technicalVerification)
+        Object.assign(lesson.technicalVerification, {
+          inputHash: technicalInputHash(lesson),
+        });
     const draft = {
       title: job.brief.title,
       audience: job.brief.audience,
@@ -830,10 +929,17 @@ export class CourseWorkshop {
   }
   routes() {
     const router = Router();
-    router.get("/runtime",(_req,res)=>res.json({backend:process.env.OUTCLASS_SANDBOX_BACKEND==="vercel"?"Vercel Sandbox":"local Docker"}));
+    router.get("/runtime", (_req, res) =>
+      res.json({
+        backend:
+          process.env.OUTCLASS_SANDBOX_BACKEND === "vercel"
+            ? "Vercel Sandbox"
+            : "local Docker",
+      }),
+    );
     router.get("/", (_req, res) =>
       res.json(
-        this.list().map(
+        this.index().map(
           ({ id, revision, brief, phase, calls, maxCalls, delivery }) => ({
             id,
             revision,
@@ -927,7 +1033,17 @@ export class CourseWorkshop {
         .parse(req.body);
       res.json(this.editLesson(req.params.id, input.revision, input.lesson));
     });
-    router.post("/:id/section-locks",(req,res)=>{const {revision,...input}=z.object({revision:z.number().int(),lessonId:stableIdForLock,titles:z.array(z.string().max(160)).max(8)}).strict().parse(req.body);res.json(this.lockSections(req.params.id,revision,input));});
+    router.post("/:id/section-locks", (req, res) => {
+      const { revision, ...input } = z
+        .object({
+          revision: z.number().int(),
+          lessonId: stableIdForLock,
+          titles: z.array(z.string().max(160)).max(8),
+        })
+        .strict()
+        .parse(req.body);
+      res.json(this.lockSections(req.params.id, revision, input));
+    });
     router.post("/:id/cancel", (req, res) =>
       res.json(this.cancel(req.params.id)),
     );

@@ -1,10 +1,15 @@
-import {createHash} from 'node:crypto';
-import type {AcademyDraft,Revision} from './expansion-contract.js';
-import type {AcademyAudit,AcademyFinding} from './academy-design-contract.js';
-import {COURSE_CHAR_LIMIT} from './course-limits.js';
-import {learnPackageIssues} from './learn-package-contract.js';
-import {validatePlan} from './course-workshop-quality.js';
-const digest=(value:unknown)=>createHash('sha256').update(JSON.stringify(value)).digest('hex');
+import { createHash } from "node:crypto";
+import type { AcademyDraft, Revision } from "./expansion-contract.js";
+import type {
+  AcademyAudit,
+  AcademyFinding,
+} from "./academy-design-contract.js";
+import { COURSE_CHAR_LIMIT } from "./course-limits.js";
+import { learnPackageIssues } from "./learn-package-contract.js";
+import { validatePlan } from "./course-workshop-quality.js";
+import { technicalInputHash } from "./course-integrity.js";
+const digest = (value: unknown) =>
+  createHash("sha256").update(JSON.stringify(value)).digest("hex");
 export function courseContent(c: AcademyDraft): AcademyDraft {
   return {
     title: c.title,
@@ -54,6 +59,13 @@ export function validateCourse(course: AcademyDraft) {
       "Keep course content under 6,000,000 characters; use media attachments for larger assets.",
     );
   course.lessons.forEach((lesson, i) => {
+    if (
+      lesson.technicalVerification?.verified &&
+      lesson.technicalVerification.inputHash !== technicalInputHash(lesson)
+    )
+      issues.push(
+        `Lesson ${i + 1}: code or environment changed after verification. Rerun isolated checks or remove the outdated verification receipt.`,
+      );
     if (
       lesson.codeCheck &&
       !lesson.learn?.starterFiles.some(
