@@ -7,11 +7,10 @@ import {
   courseDraft,
   type AcademyDraft,
 } from "../../src/expansion-contract.js";
-import { validateCourse } from "../../src/server/expansion.js";
+import { validateCourse,auditAcademy } from "../../src/academy-quality.js";
 import { assertClean, UserError } from "../../src/server/safety.js";
 import { COURSE_LESSON_LIMIT } from "../../src/course-limits.js";
 import { HostedAcademyMedia } from "./academy-media.js";
-import { auditAcademy } from "../../src/server/academy-studio.js";
 import { assessmentKey } from "../../src/course-workshop-contract.js";
 import { HostedCourseAssessment } from "./academy-assessment.js";
 import {courseManifest,lessonHash} from "../../src/server/course-content.js";
@@ -353,7 +352,7 @@ export class HostedAcademy {
         );
       const grant = granted.rows[0],
         course = await db.query(
-          "SELECT c.id,c.title,c.revision,c.body FROM outclass_platform.courses c JOIN outclass_platform.enrollments e ON e.course_id=c.id WHERE c.id=$1 AND e.user_id=$2 AND c.status='published'",
+          "SELECT c.id,c.title,c.revision,c.lineage_id,c.body FROM outclass_platform.courses c JOIN outclass_platform.enrollments e ON e.course_id=c.id WHERE c.id=$1 AND e.user_id=$2 AND c.status='published'",
           [grant.course_id, actor],
         );
       if (!course.rows.length)
@@ -369,6 +368,7 @@ export class HostedAcademy {
       return {
         contractVersion: 1,
         id: row.id,
+        lineageId:row.lineage_id,
         title: row.title,
         revision: row.revision,
         lessonIndex: grant.lesson_index,

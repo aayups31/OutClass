@@ -7,6 +7,7 @@ import { Application } from "../src/server/application";
 import { CourseWorkshop } from "../src/server/course-workshop";
 import { Expansion } from "../src/server/expansion";
 import { CourseAssessment } from "../src/server/course-assessment";
+import { CourseSandbox } from "../src/server/course-sandbox";
 import {
   validatePlan,
   validateWrittenLesson,
@@ -70,6 +71,25 @@ it("plans, writes, independently critiques and delivers a complete course withou
     job = await workshop.next(job.id, job.revision);
   expect(job.phase).toBe("ready");
   expect(provider).toHaveBeenCalledTimes(7);
+  expect(() => workshop.deliver(job.id, job.revision, true)).toThrow(
+    /Verify each/,
+  );
+  vi.spyOn(CourseSandbox.prototype, "verify").mockResolvedValue({
+    hash: "a".repeat(64),
+    verified: true,
+    image: "fixture@sha256:" + "b".repeat(64),
+    at: new Date().toISOString(),
+    checks: [
+      {
+        candidate: "reference",
+        code: 0,
+        tests: 2,
+        output: "Controlled workflow fixture",
+      },
+    ],
+  });
+  for (const lesson of job.plan!.lessons)
+    job = await workshop.verify(job.id, job.revision, lesson.id);
   job = workshop.deliver(job.id, job.revision, true);
   expect(workshop.deliver(job.id, job.revision, true).delivery).toEqual(
     job.delivery,

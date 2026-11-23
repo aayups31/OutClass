@@ -56,6 +56,9 @@ export class LearnDelivery {
       lessonTitle: lesson.title,
       objective: lesson.objective,
       brief: lesson.practice,
+      content: lesson.content,
+      blocks: lesson.blocks || [],
+      resources: lesson.resources || [],
       references: (lesson.references || [])
         .filter((reference) => reference.approved)
         .map(({ excerpt: _, ...reference }) => reference),

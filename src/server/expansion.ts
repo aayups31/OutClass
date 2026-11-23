@@ -30,9 +30,12 @@ import { AgentHandoffs, agentDomain } from "./agent-handoffs.js";
 import { AgentWorkService } from "./agent-work.js";
 import type { CreatorProduction } from "./creator-production.js";
 import { COURSE_LESSON_LIMIT, COURSE_CHAR_LIMIT } from "../course-limits.js";
-import {loadCourse,storeCourse} from "./course-content.js";
+import { loadCourse, storeCourse } from "./course-content.js";
 import type { AssessmentKey } from "../course-workshop-contract.js";
-import { auditAcademy } from "./academy-studio.js";
+import {auditAcademy,courseContent,validateCourse} from "../academy-quality.js";
+import { validatePlan } from "../course-workshop-quality.js";
+import { blocksText } from "../lesson-blocks.js";
+import { CourseResearch } from "./course-research.js";
 
 const key = "expansion:v1";
 const stamp = () => new Date().toISOString();
@@ -45,72 +48,37 @@ const edit = {
 const releaseRequest = z
   .object({ expectedRevision: z.number().int(), approve: z.literal(true) })
   .strict();
-export function validateCourse(course: AcademyDraft) {
-  const issues: string[] = learnPackageIssues(course.lessons);
-  if (!course.audience) issues.push("Describe who the course is for.");
-  if (!course.outcome)
-    issues.push("Define what the learner will build or demonstrate.");
-  if (!course.rightsConfirmed)
-    issues.push("Confirm your rights to the course material.");
-  if (!course.lessons.length) issues.push("Add at least one lesson.");
-  if (JSON.stringify(course).length > COURSE_CHAR_LIMIT)
-    issues.push(
-      "Keep course content under 6,000,000 characters; use media attachments for larger assets.",
-    );
-  course.lessons.forEach((lesson, i) => {
-    if (
-      lesson.references?.some(
-        (reference) => reference.excerpt && !reference.approved,
-      )
-    )
-      issues.push(
-        `Lesson ${i + 1}: review permission for each reference excerpt or remove its text before release.`,
-      );
-    if (
-      lesson.references?.some((reference) => reference.approved) &&
-      lesson.learn?.starterFiles.some(
-        (file) => file.path.toLowerCase() === "sources.md",
-      )
-    )
-      issues.push(
-        `Lesson ${i + 1}: SOURCES.md is reserved for source acknowledgments; rename that starter file.`,
-      );
-    for (const field of ["title", "objective", "practice", "content"] as const)
-      if (!lesson[field] && (field !== "content" || !lesson.resources?.length))
-        issues.push(`Lesson ${i + 1}: add ${field}.`);
-  });
-  return {
-    valid: !issues.length,
-    issues,
-    technicalVerification: "not_run" as const,
-    scope:
-      "Structure and required content only; code examples have not been executed.",
-  };
-}
+export {validateCourse} from '../academy-quality.js';
 export class Expansion {
   readonly compiler: AcademyCompiler;
   constructor(readonly app: Application) {
     this.compiler = new AcademyCompiler(app);
   }
   state(): ExpansionState {
-    const state = (
-      this.app.store.get<ExpansionState>(key) || {
-        schemaVersion: 1,
-        courses: [],
-        releases: [],
-        enrollments: [],
-        creatives: [],
-        campaigns: [],
-      }
-    );
-    return {...state,courses:state.courses.map(c=>loadCourse(this.app.store,c)),releases:state.releases.map(c=>loadCourse(this.app.store,c))};
+    const state = this.app.store.get<ExpansionState>(key) || {
+      schemaVersion: 1,
+      courses: [],
+      releases: [],
+      enrollments: [],
+      creatives: [],
+      campaigns: [],
+    };
+    return {
+      ...state,
+      courses: state.courses.map((c) => loadCourse(this.app.store, c)),
+      releases: state.releases.map((c) => loadCourse(this.app.store, c)),
+    };
   }
   private change<T>(fn: (state: ExpansionState) => T): T {
     let result!: T;
     this.app.store.transaction(() => {
       const state = this.state();
       result = fn(state);
-      this.app.store.put(key, {...state,courses:state.courses.map(c=>storeCourse(this.app.store,c)),releases:state.releases.map(c=>storeCourse(this.app.store,c))});
+      this.app.store.put(key, {
+        ...state,
+        courses: state.courses.map((c) => storeCourse(this.app.store, c)),
+        releases: state.releases.map((c) => storeCourse(this.app.store, c)),
+      });
     });
     return result;
   }
@@ -132,6 +100,14 @@ export class Expansion {
         revision: expectedRevision + 1,
         updatedAt: stamp(),
       };
+      if (old) {
+        const history =
+          this.app.store.get<AcademyDraft[]>(`academy:history:${old.id}`) || [];
+        this.app.store.put(
+          `academy:history:${old.id}`,
+          [...history, storeCourse(this.app.store, old)].slice(-20),
+        );
+      }
       state.courses = [...state.courses.filter((c) => c.id !== id), next];
       if (
         old &&
@@ -147,6 +123,47 @@ export class Expansion {
         }
       }
       return next;
+    });
+  }
+  history(id: string) {
+    if (!this.state().courses.some((course) => course.id === id))
+      throw new UserError("Course draft not found.", 404);
+    return (
+      this.app.store.get<(AcademyDraft & { revision: number })[]>(
+        `academy:history:${id}`,
+      ) || []
+    ).map((course) => loadCourse(this.app.store, course));
+  }
+  restoreRevision(id: string, expectedRevision: number, revision: number) {
+    return this.app.store.transaction(() => {
+      const previous = this.history(id).find(
+        (course) => course.revision === revision,
+      );
+      if (!previous)
+        throw new UserError("That draft revision is unavailable.", 404);
+      const content = courseDraft.parse(courseContent(previous));
+      content.lessons.forEach((lesson) =>
+        lesson.references?.forEach((reference) => (reference.approved = false)),
+      );
+      const restored = this.saveCourse({
+          ...content,
+          id,
+          expectedRevision,
+          rightsConfirmed: false,
+        }),
+        backup = this.app.store.get<{ keys: unknown; solutions: unknown }>(
+          `academy:history-private:${id}:${revision}`,
+        );
+      for (const [prefix, field] of [
+        ["academy:teacher", "keys"],
+        ["academy:solutions", "solutions"],
+      ] as const) {
+        const value =
+          backup?.[field] || this.app.store.get(`${prefix}:${id}:${revision}`);
+        if (value)
+          this.app.store.put(`${prefix}:${id}:${restored.revision}`, value);
+      }
+      return restored;
     });
   }
   private checkRevision(
@@ -214,6 +231,9 @@ export class Expansion {
         "Complete the guided instructor review before publishing. This local release is a preview, not a reviewed publication.",
         409,
       );
+    const sourceIssues = new CourseResearch(this.app).issues(release);
+    if (sourceIssues.length)
+      throw new UserError(sourceIssues.map((issue) => issue.detail).join(" "));
     const media = new Map(
       release.lessons
         .flatMap((lesson) => lesson.resources || [])
@@ -298,6 +318,7 @@ export class Expansion {
       .object({
         contractVersion: z.literal(1),
         id: z.string().uuid(),
+        lineageId:z.string().uuid().optional(),
         title: z.string(),
         revision: z.number().int().positive(),
         lessonIndex: z
@@ -315,7 +336,7 @@ export class Expansion {
     const release: CourseRelease = {
       ...payload.course,
       id: payload.id,
-      courseId: payload.id,
+      courseId: payload.lineageId || payload.id,
       revision: payload.revision,
       publishedAt: stamp(),
       hash: hash(payload.course),
@@ -434,7 +455,7 @@ export class Expansion {
         library.document(
           courseId,
           l.title,
-          `${l.content}\n\nObjective: ${l.objective}\n\nPractice: ${l.practice}`,
+          `${l.content}\n\n${blocksText(l.blocks || [])}\n\nObjective: ${l.objective}\n\nPractice: ${l.practice}`,
           "academy",
           `lesson-${i}`,
           `${courseId}:${i}`,
@@ -585,6 +606,26 @@ export function expansionRoutes(
     );
   });
   router.get("/state", (_req, res) => res.json(expansion.state()));
+  router.get("/courses/:id/history", (req, res) =>
+    res.json(expansion.history(z.string().uuid().parse(req.params.id))),
+  );
+  router.post("/courses/:id/restore", (req, res) => {
+    const input = z
+      .object({
+        expectedRevision: z.number().int(),
+        revision: z.number().int(),
+        approve: z.literal(true),
+      })
+      .strict()
+      .parse(req.body);
+    res.json(
+      expansion.restoreRevision(
+        req.params.id,
+        input.expectedRevision,
+        input.revision,
+      ),
+    );
+  });
   const handoffs = new AgentHandoffs(app);
   router.get("/handoffs", (_req, res) => res.json(handoffs.list()));
   router.post("/handoffs/offer", (req, res) => {

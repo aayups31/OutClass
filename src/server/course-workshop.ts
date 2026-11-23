@@ -7,9 +7,13 @@ import {
   courseLessonAnswer,
   courseCritique,
   planningInstructions,
-  lessonWritingInstructions,
+  lessonWritingInstructions as baseLessonWritingInstructions,
+  courseWritingConstraints,
+  courseEditorialConstraints,
   courseCritiqueInstructions,
   lessonGenerationSchema,
+  critiqueGenerationSchema,
+  stableId as stableIdForLock,
   type CourseBrief,
   type CoursePlan,
   type CourseLessonAnswer,
@@ -27,6 +31,7 @@ import { COURSE_CHAR_LIMIT } from "../course-limits.js";
 import { CourseSandbox, type SandboxReport } from "./course-sandbox.js";
 const digest = (value: unknown) =>
   createHash("sha256").update(JSON.stringify(value)).digest("hex");
+const lessonWritingInstructions = `${baseLessonWritingInstructions}\n${courseWritingConstraints}\n${courseEditorialConstraints}`;
 export type CourseJob = {
   id: string;
   revision: number;
@@ -34,11 +39,17 @@ export type CourseJob = {
   plan?: CoursePlan;
   proposedPlan?: CoursePlan;
   feedback?: string;
+  sectionLocks?:Record<string,string[]>;
   planAccepted: boolean;
   lessons: Record<string, CourseLessonAnswer>;
   pendingLessons?: Record<string, CourseLessonAnswer>;
+  pendingEvidence?: Record<string, ReturnType<CourseResearch["search"]>>;
   evidence: Record<string, ReturnType<CourseResearch["search"]>>;
   critique?: z.infer<typeof courseCritique>;
+  critiqueDecisions?: Record<
+    string,
+    { reason: string; at: string; critiqueHash: string }
+  >;
   critiques?: Record<string, z.infer<typeof courseCritique>>;
   phase: "draft" | "running" | "interrupted" | "ready" | "failed" | "applied";
   calls: number;
@@ -155,14 +166,168 @@ export class CourseWorkshop {
     return job;
   }
   configure(id: string, revision: number, raw: unknown) {
-    const input = z.object({ feedback: z.string().max(4000), maxCalls: z.number().int().min(5).max(100), approveProvider: z.literal(true) }).strict().parse(raw);
+    const input = z
+      .object({
+        feedback: z.string().max(4000),
+        maxCalls: z.number().int().min(5).max(100),
+        approveProvider: z.literal(true),
+      })
+      .strict()
+      .parse(raw);
     const job = this.editable(id, revision);
-    if (input.maxCalls < job.calls) throw new UserError("The budget cannot be lower than calls already made.");
+    if (input.maxCalls < job.calls)
+      throw new UserError(
+        "The budget cannot be lower than calls already made.",
+      );
     assertClean(input.feedback, "instructor feedback");
     job.feedback = input.feedback;
     job.maxCalls = input.maxCalls;
-    this.save(job, "Instructor guidance and explicit provider-call budget updated.");
+    this.save(
+      job,
+      "Instructor guidance and explicit provider-call budget updated.",
+    );
     return job;
+  }
+  reviewCritique(id: string, revision: number, raw: unknown) {
+    const input = z
+        .object({
+          findingHash: z.string().length(64),
+          critiqueHash: z.string().length(64),
+          reason: z.string().trim().min(40).max(2000),
+        })
+        .strict()
+        .parse(raw),
+      job = this.editable(id, revision);
+    if (
+      !job.critique ||
+      digest(job.critique) !== input.critiqueHash ||
+      !job.critique.findings.some(
+        (finding) => digest(finding) === input.findingHash,
+      )
+    )
+      throw new UserError(
+        "This critique changed. Review the current finding.",
+        409,
+      );
+    assertClean(input.reason, "editorial decision");
+    job.critiqueDecisions = {
+      ...job.critiqueDecisions,
+      [input.findingHash]: {
+        reason: input.reason,
+        at: new Date().toISOString(),
+        critiqueHash: input.critiqueHash,
+      },
+    };
+    this.save(
+      job,
+      "Recorded an instructor disposition with evidence. The model finding remains visible.",
+    );
+    return job;
+  }
+  lockSections(id:string,revision:number,raw:unknown){const input=z.object({lessonId:stableIdForLock,titles:z.array(z.string().max(160)).max(8)}).strict().parse(raw),job=this.editable(id,revision),lesson=job.lessons[input.lessonId];if(!lesson||input.titles.some(title=>!lesson.sections.some(section=>section.title===title)))throw new UserError("Choose existing lesson sections to protect.");job.sectionLocks={...job.sectionLocks,[input.lessonId]:[...new Set(input.titles)]};this.save(job,"Updated protected instructor wording for the next regeneration.");return job;}
+  backup(id: string) {
+    return {
+      format: "outclass-course-workshop",
+      version: 1,
+      job: this.get(id),
+    };
+  }
+  restore(raw: unknown, maxCalls: number) {
+    return this.app.store.transaction(() => this.restoreContent(raw, maxCalls));
+  }
+  private restoreContent(raw: unknown, maxCalls: number) {
+    const source = z
+      .object({
+        id: z.string().max(100),
+        title: z.string().max(300),
+        text: z.string().max(6000),
+        documentId: z.string().uuid(),
+        hash: z.string().regex(/^[a-f0-9]{64}$/),
+      })
+      .strict();
+    const input = z
+      .object({
+        format: z.literal("outclass-course-workshop"),
+        version: z.literal(1),
+        job: z.object({
+          brief: courseBrief,
+          plan: coursePlan.optional(),
+          proposedPlan: coursePlan.optional(),
+          lessons: z.record(z.string(), courseLessonAnswer),
+          evidence: z.record(z.string(), z.array(source).max(6)),
+          feedback: z.string().max(4000).optional(),
+          history: z
+            .array(
+              z.object({
+                lessonId: z.string().max(60),
+                revision: z.number().int(),
+                lesson: courseLessonAnswer,
+              }),
+            )
+            .max(40),
+        }),
+      })
+      .parse(raw);
+    const saved = this.create({
+      brief: input.job.brief,
+      maxCalls,
+      approveProvider: true,
+    });
+    Object.assign(saved, {
+      plan: input.job.plan,
+      proposedPlan: input.job.proposedPlan,
+      lessons: input.job.lessons,
+      evidence: input.job.evidence,
+      feedback: input.job.feedback,
+      history: input.job.history,
+    });
+    if (saved.plan) {
+      const ids = new Set(saved.plan.lessons.map((lesson) => lesson.id));
+      if (Object.keys(saved.lessons).some((id) => !ids.has(id)))
+        throw new UserError(
+          "The workshop contains lessons outside its course plan.",
+        );
+      for (const [index, lesson] of saved.plan.lessons.entries())
+        if (saved.lessons[lesson.id]) {
+          const findings = validateWrittenLesson(
+            saved.plan,
+            index,
+            saved.lessons[lesson.id],
+            (saved.evidence[lesson.id] || []).map((s) => s.id),
+            saved.evidence[lesson.id] || [],
+          );
+          if (findings.length) {
+            saved.pendingLessons = {
+              ...saved.pendingLessons,
+              [lesson.id]: saved.lessons[lesson.id],
+            };
+            saved.pendingEvidence = {
+              ...saved.pendingEvidence,
+              [lesson.id]: saved.evidence[lesson.id] || [],
+            };
+            delete saved.lessons[lesson.id];
+          }
+        }
+    } else if (Object.keys(saved.lessons).length)
+      throw new UserError("A workshop with lessons requires a course plan.");
+    this.save(
+      saved,
+      "Restored as a separate workshop. Reaccept the plan, recheck research permissions and rerun critique and technical checks.",
+    );
+    return saved;
+  }
+  remove(id: string, revision: number) {
+    const job = this.get(id);
+    if (this.active.has(id) || job.revision !== revision)
+      throw new UserError(
+        "Wait for this workshop stage or reload its revision.",
+        409,
+      );
+    this.app.store.put(
+      "academy:course-jobs:v1",
+      this.list().filter((job) => job.id !== id),
+    );
+    return { removed: true };
   }
   editLesson(id: string, revision: number, raw: unknown) {
     const job = this.editable(id, revision),
@@ -176,8 +341,14 @@ export class CourseWorkshop {
       job.plan,
       index,
       lesson,
-      (job.evidence[lesson.lessonId] || []).map((source) => source.id),
-      job.evidence[lesson.lessonId] || [],
+      (
+        job.pendingEvidence?.[lesson.lessonId] ||
+        job.evidence[lesson.lessonId] ||
+        []
+      ).map((source) => source.id),
+      job.pendingEvidence?.[lesson.lessonId] ||
+        job.evidence[lesson.lessonId] ||
+        [],
     );
     if (findings.length)
       throw new UserError(findings.map((f) => f.detail).join(" "));
@@ -189,7 +360,13 @@ export class CourseWorkshop {
       });
     job.history = job.history.slice(-40);
     job.lessons[lesson.lessonId] = lesson;
-    if(job.pendingLessons)delete job.pendingLessons[lesson.lessonId];
+    const protectedTitles=new Set(job.sectionLocks?.[lesson.lessonId]||[]);
+    const previous=job.history.filter(row=>row.lessonId===lesson.lessonId).at(-1)?.lesson;
+    if(previous)for(const section of lesson.sections)if(previous.sections.find(old=>old.title===section.title)?.body!==section.body)protectedTitles.add(section.title);
+    job.sectionLocks={...job.sectionLocks,[lesson.lessonId]:[...protectedTitles].filter(title=>lesson.sections.some(section=>section.title===title))};
+    if (job.pendingEvidence?.[lesson.lessonId])
+      job.evidence[lesson.lessonId] = job.pendingEvidence[lesson.lessonId];
+    if (job.pendingLessons) delete job.pendingLessons[lesson.lessonId];
     if (job.verification) delete job.verification[lesson.lessonId];
     delete job.critique;
     job.critiques = {};
@@ -255,7 +432,11 @@ export class CourseWorkshop {
           schema: coursePlan,
           name: "outclass_course_plan",
           instructions: `${planningInstructions}\nUse a controlled skill vocabulary. Every uses entry MUST exactly equal a string from brief.startingSkills or an EARLIER lesson's teaches array (case-insensitive). No synonyms, umbrella phrases such as 'all previous skills', or same-lesson teaches entries in uses. If a prerequisite is not available, introduce it first or remove the demand. Teach setup, tests and documentation explicitly if used later.`,
-          context: JSON.stringify({ brief: job.brief, sources, instructorFeedback: job.feedback || "" }),
+          context: JSON.stringify({
+            brief: job.brief,
+            sources,
+            instructorFeedback: job.feedback || "",
+          }),
         });
         job.proposedPlan = plan;
         const findings = validatePlan(job.brief, plan);
@@ -272,9 +453,24 @@ export class CourseWorkshop {
           id: lesson.id,
           title: lesson.title,
           teaches: lesson.teaches,
-          milestone: lesson.milestone,
-          summary: job.lessons[lesson.id]?.summary || "not written",
-          privateImplementation: job.lessons[lesson.id] ? { path: job.lessons[lesson.id].solutionPath, content: job.lessons[lesson.id].instructorSolution } : null,
+          summary: (job.lessons[lesson.id]?.summary || "not written").slice(
+            0,
+            400,
+          ),
+          summaryComplete: (job.lessons[lesson.id]?.summary.length || 0) <= 400,
+          privateImplementation:
+            job.lessons[lesson.id] &&
+            job.plan!.lessons.indexOf(lesson) === index - 1
+              ? {
+                  path: job.lessons[lesson.id].solutionPath,
+                  content: job.lessons[lesson.id].instructorSolution.slice(
+                    0,
+                    16000,
+                  ),
+                  complete:
+                    job.lessons[lesson.id].instructorSolution.length <= 16000,
+                }
+              : null,
         }));
         const context = JSON.stringify({
           brief: job.brief,
@@ -283,9 +479,12 @@ export class CourseWorkshop {
           index,
           previousLessons: prior,
           sources,
-          previousDraft: job.pendingLessons?.[selected.id] || (retryLessonId ? job.lessons[selected.id] : null),
+          previousDraft:
+            job.pendingLessons?.[selected.id] ||
+            (retryLessonId ? job.lessons[selected.id] : null),
           validationFeedback,
           instructorFeedback: job.feedback || "",
+          previousTechnicalChecks: job.verification?.[selected.id] || null,
         });
         if (context.length > 85000)
           throw new UserError(
@@ -295,10 +494,16 @@ export class CourseWorkshop {
           task: "course_lesson",
           schema: lessonGenerationSchema(context),
           name: "outclass_course_lesson",
-          instructions: `${lessonWritingInstructions}\nRequired literal format: independentTask contains separate lines 'Example input: concrete input' and 'Expected result: concrete result', without Markdown around the labels. starterFiles MUST include README.md, an incomplete source file matching solutionPath EXACTLY, and discoverable behavioral tests (at least 3 files). Include the target source file even when revising an earlier project file. Every assessments[].id begins with '${selected.id}-'. Prerequisite indices are ZERO-based and strictly less than ${index}. Only these source IDs are legal: ${JSON.stringify(sources.map(s=>s.id))}; prior lessons, the brief and the plan are original continuity context, NOT research sources. If the list is empty, sourceIds and grounding MUST BOTH be empty arrays. The README must list the exact root-level test discovery command. Return the ENTIRE corrected lesson. Fix these rejected-draft issues: ${JSON.stringify(validationFeedback)}.`,
+          instructions: `${lessonWritingInstructions}\nRequired literal format: independentTask contains separate lines 'Example input: concrete input' and 'Expected result: concrete result', without Markdown around the labels. starterFiles MUST include README.md, an incomplete source file matching solutionPath EXACTLY, and discoverable behavioral tests (at least 3 files). Include the target source file even when revising an earlier project file. Every assessments[].id begins with '${selected.id}-'. Prerequisite indices are ZERO-based and strictly less than ${index}. Only these source IDs are legal: ${JSON.stringify(sources.map((s) => s.id))}; prior lessons, the brief and the plan are original continuity context, NOT research sources. If the list is empty, sourceIds and grounding MUST BOTH be empty arrays. The README must list the exact root-level test discovery command. Return the ENTIRE corrected lesson. Fix these rejected-draft issues: ${JSON.stringify(validationFeedback)}.`,
           context,
         });
-        job.pendingLessons = {...job.pendingLessons,[selected.id]:answer};
+        job.pendingLessons = { ...job.pendingLessons, [selected.id]: answer };
+        for(const title of job.sectionLocks?.[selected.id]||[]){const original=job.lessons[selected.id]?.sections.find(section=>section.title===title);if(!original)continue;const position=answer.sections.findIndex(section=>section.title===title);if(position>=0)answer.sections[position]={...original};else answer.sections.push({...original});}
+        courseLessonAnswer.parse(answer);
+        job.pendingEvidence = {
+          ...job.pendingEvidence,
+          [selected.id]: sources,
+        };
         const findings = validateWrittenLesson(
           job.plan,
           index,
@@ -315,7 +520,9 @@ export class CourseWorkshop {
             lesson: job.lessons[selected.id],
           });
         job.lessons[selected.id] = answer;
+        job.history = job.history.slice(-40);
         delete job.pendingLessons[selected.id];
+        delete job.pendingEvidence[selected.id];
         if (job.verification) delete job.verification[selected.id];
         job.evidence[selected.id] = sources;
         delete job.critique;
@@ -345,9 +552,9 @@ export class CourseWorkshop {
           );
         const critique = await this.app.ai.structured({
           task: "course_critique",
-          schema: courseCritique,
+          schema: critiqueGenerationSchema(context),
           name: "outclass_course_critique",
-          instructions: courseCritiqueInstructions,
+          instructions: `${courseCritiqueInstructions}\nThe supplied instructorSolution, answerKeys and faultyImplementation are PRIVATE instructor artifacts; the tested delivery path strips them. Do not call their mere presence in this critique request solution leakage. Check for copied private answers INSIDE learner starterFiles, sections or prompts. CoursePlan.prerequisiteIds intentionally uses stable lesson-ID strings. Assignment.prerequisiteLessons intentionally uses ZERO-based numeric indices. These are different contracts and their conversion is tested; do not flag that distinction. Starter packages must be self-contained; prior lesson files are not automatically present in the assignment folder.`,
           context,
         });
         if (
@@ -407,6 +614,7 @@ export class CourseWorkshop {
       );
     this.active.add(id);
     job.phase = "running";
+    delete job.error;
     this.save(
       job,
       "Isolated technical verification started; no provider call is used.",
@@ -415,6 +623,7 @@ export class CourseWorkshop {
     try {
       const report = await new CourseSandbox().verify({
         language: job.brief.language,
+        runtime: job.brief.runtime,
         files: lesson.assignment.starterFiles,
         solution: {
           path: lesson.solutionPath,
@@ -458,9 +667,28 @@ export class CourseWorkshop {
       throw new UserError(
         "Review the plan, all lessons and independent critique before delivery.",
       );
-    if (job.critique.findings.some((f) => f.severity === "blocker"))
+    if (
+      job.critique.findings.some(
+        (f) =>
+          f.severity === "blocker" &&
+          job.critiqueDecisions?.[digest(f)]?.critiqueHash !==
+            digest(job.critique),
+      )
+    )
       throw new UserError(
         "Resolve the critic's blockers and run critique again.",
+      );
+    if (
+      job.brief.language !== "other" &&
+      job.plan.lessons.some(
+        (lesson) =>
+          !job.verification?.[lesson.id]?.verified ||
+          job.verification[lesson.id].lessonHash !==
+            digest(job.lessons[lesson.id]),
+      )
+    )
+      throw new UserError(
+        "Verify each current starter, reference implementation and deliberate mistake in isolation before delivering this coding course.",
       );
     const documentIds = new Map(
       this.research
@@ -505,6 +733,26 @@ export class CourseWorkshop {
         },
         assessments: written.assessments,
         rubric: written.rubric,
+        researchEvidence: [
+          ...new Set(
+            (job.evidence[planned.id] || [])
+              .filter((source) => written.sourceIds.includes(source.id))
+              .map((source) => source.documentId),
+          ),
+        ].map((documentId) => ({
+          documentId,
+          hash: documentIds.get(documentId)!.hash,
+          expiresOn: documentIds.get(documentId)!.metadata.expiresOn,
+        })),
+        ...(job.brief.language !== "other"
+          ? {
+              codeCheck: {
+                language: job.brief.language,
+                runtime: job.brief.runtime,
+                sourcePath: written.solutionPath,
+              },
+            }
+          : {}),
         ...(job.verification?.[planned.id]?.lessonHash === digest(written)
           ? {
               technicalVerification: (({ hash, verified, image, at }) => ({
@@ -558,6 +806,10 @@ export class CourseWorkshop {
         `academy:teacher:${saved.id}:${saved.revision}`,
         Object.values(job.lessons).flatMap((lesson) => lesson.answerKeys),
       );
+      this.app.store.put(`academy:editorial:${saved.id}:${saved.revision}`, {
+        critique: job.critique,
+        decisions: job.critiqueDecisions || {},
+      });
       this.app.store.put(
         `academy:solutions:${saved.id}:${saved.revision}`,
         Object.fromEntries(
@@ -578,6 +830,7 @@ export class CourseWorkshop {
   }
   routes() {
     const router = Router();
+    router.get("/runtime",(_req,res)=>res.json({backend:process.env.OUTCLASS_SANDBOX_BACKEND==="vercel"?"Vercel Sandbox":"local Docker"}));
     router.get("/", (_req, res) =>
       res.json(
         this.list().map(
@@ -594,6 +847,33 @@ export class CourseWorkshop {
       ),
     );
     router.post("/", (req, res) => res.json(this.create(req.body)));
+    router.post("/restore", (req, res) => {
+      const input = z
+        .object({
+          backup: z.unknown(),
+          maxCalls: z.number().int().min(5).max(100),
+          approveProvider: z.literal(true),
+        })
+        .strict()
+        .parse(req.body);
+      res.json(
+        this.app.store.transaction(() =>
+          this.restore(input.backup, input.maxCalls),
+        ),
+      );
+    });
+    router.get("/:id/backup", (req, res) =>
+      res.json(this.backup(req.params.id)),
+    );
+    router.post("/:id/remove", (req, res) =>
+      res.json(
+        this.remove(
+          req.params.id,
+          z.object({ revision: z.number().int() }).strict().parse(req.body)
+            .revision,
+        ),
+      ),
+    );
     router.get("/:id", (req, res) =>
       res.json(this.get(z.string().uuid().parse(req.params.id))),
     );
@@ -617,8 +897,28 @@ export class CourseWorkshop {
       res.json(this.acceptPlan(req.params.id, input.revision, input.plan));
     });
     router.post("/:id/configure", (req, res) => {
-      const {revision, ...input} = z.object({ revision:z.number().int(), feedback:z.string().max(4000), maxCalls:z.number().int(), approveProvider:z.literal(true) }).strict().parse(req.body);
+      const { revision, ...input } = z
+        .object({
+          revision: z.number().int(),
+          feedback: z.string().max(4000),
+          maxCalls: z.number().int(),
+          approveProvider: z.literal(true),
+        })
+        .strict()
+        .parse(req.body);
       res.json(this.configure(req.params.id, revision, input));
+    });
+    router.post("/:id/critique-review", (req, res) => {
+      const { revision, ...input } = z
+        .object({
+          revision: z.number().int(),
+          findingHash: z.string(),
+          critiqueHash: z.string(),
+          reason: z.string(),
+        })
+        .strict()
+        .parse(req.body);
+      res.json(this.reviewCritique(req.params.id, revision, input));
     });
     router.post("/:id/lesson", (req, res) => {
       const input = z
@@ -627,6 +927,7 @@ export class CourseWorkshop {
         .parse(req.body);
       res.json(this.editLesson(req.params.id, input.revision, input.lesson));
     });
+    router.post("/:id/section-locks",(req,res)=>{const {revision,...input}=z.object({revision:z.number().int(),lessonId:stableIdForLock,titles:z.array(z.string().max(160)).max(8)}).strict().parse(req.body);res.json(this.lockSections(req.params.id,revision,input));});
     router.post("/:id/cancel", (req, res) =>
       res.json(this.cancel(req.params.id)),
     );

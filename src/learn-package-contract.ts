@@ -12,7 +12,9 @@ export const starterPath = z
         .split("/")
         .every(
           (part) =>
-            /^[a-zA-Z0-9][a-zA-Z0-9_.-]*$/.test(part) &&
+            /^(?:[a-zA-Z0-9][a-zA-Z0-9_.-]*|__(?:init|main)__\.py)$/.test(
+              part,
+            ) &&
             !part.endsWith(".") &&
             !/^(node_modules|dist|build|coverage|venv|__pycache__)$/i.test(
               part,

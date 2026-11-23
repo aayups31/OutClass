@@ -1,11 +1,12 @@
 import { z } from "zod";
-import { learnPackage } from "./learn-package-contract.js";
+import { learnPackage, starterPath } from "./learn-package-contract.js";
 import { learningProject } from "./academy-design-contract.js";
 import { academyResource } from "./academy-resource-contract.js";
 import { academyReference } from "./academy-reference-contract.js";
 import { courseDesign, assessmentItem } from "./course-workshop-contract.js";
 import { COURSE_LESSON_LIMIT, COURSE_SOURCE_LIMIT } from "./course-limits.js";
 import type { CompiledProject } from "./server/academy-compiler.js";
+import { lessonBlocks } from "./lesson-blocks.js";
 
 const text = (max = 4000) => z.string().trim().max(max);
 export const academyLesson = z
@@ -14,6 +15,27 @@ export const academyLesson = z
     objective: text(1000),
     practice: text(2000),
     content: text(COURSE_SOURCE_LIMIT),
+    blocks: lessonBlocks.optional(),
+    researchEvidence: z
+      .array(
+        z
+          .object({
+            documentId: z.string().uuid(),
+            hash: z.string().regex(/^[a-f0-9]{64}$/),
+            expiresOn: z.string().max(10),
+          })
+          .strict(),
+      )
+      .max(12)
+      .optional(),
+    codeCheck: z
+      .object({
+        language: z.enum(["python", "javascript"]),
+        runtime: z.string().max(100),
+        sourcePath: starterPath,
+      })
+      .strict()
+      .optional(),
     chapter: text(100).optional(),
     resources: z.array(academyResource).max(12).optional(),
     references: z

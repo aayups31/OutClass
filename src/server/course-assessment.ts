@@ -26,10 +26,14 @@ export class CourseAssessment {
     const index = Number(/^lesson-(\d+)$/.exec(lessonId)?.[1]);
     if (!binding || !Number.isInteger(index) || !binding.release.lessons[index])
       throw new UserError("Open an available Academy lesson first.", 404);
-    return { release: binding.release, lesson: binding.release.lessons[index] };
+    return {
+      release: binding.release,
+      lesson: binding.release.lessons[index],
+      index,
+    };
   }
   view(courseId: string, lessonId: string) {
-    const { release, lesson } = this.context(courseId, lessonId),
+    const { release, lesson, index } = this.context(courseId, lessonId),
       attempts =
         this.app.store.get<Attempt[]>(`academy:attempts:${courseId}`) || [];
     const keys =
@@ -40,6 +44,25 @@ export class CourseAssessment {
     return {
       releaseId: release.id,
       releaseHash: release.hash,
+      reviewQueue: release.lessons
+        .slice(0, index)
+        .flatMap((lesson, lessonIndex) => {
+          const due = (lesson.assessments || []).filter((item) => {
+            const last = attempts
+              .filter((attempt) => attempt.itemId === item.id)
+              .at(-1);
+            return !!last && last.dueAt <= this.now().toISOString();
+          });
+          return due.length
+            ? [
+                {
+                  lessonId: `lesson-${lessonIndex}`,
+                  title: lesson.title,
+                  due: due.length,
+                },
+              ]
+            : [];
+        }),
       items: (lesson.assessments || []).map((item) => {
         const history = attempts.filter(
           (attempt) => attempt.itemId === item.id,
@@ -52,6 +75,23 @@ export class CourseAssessment {
             ? { correct: last.correct, at: last.at, dueAt: last.dueAt }
             : null,
           due: !last || last.dueAt <= this.now().toISOString(),
+          remediation:
+            last && !last.correct
+              ? item.remediationLessonIds.flatMap((id) => {
+                  const index =
+                    release.design?.plan.lessons.findIndex(
+                      (lesson) => lesson.id === id,
+                    ) ?? -1;
+                  return index >= 0
+                    ? [
+                        {
+                          lessonId: `lesson-${index}`,
+                          title: release.lessons[index].title,
+                        },
+                      ]
+                    : [];
+                })
+              : [],
           automaticCheckAvailable:
             keys.some((key) => key.itemId === item.id) ||
             !!this.app.store.get(`academy:remote:${release.id}`),
@@ -151,6 +191,10 @@ export class CourseAssessment {
         throw new UserError(
           "This answer was already submitted. Reload the assessment.",
           409,
+        );
+      if (prior.length >= 100)
+        throw new UserError(
+          "This item has reached its 100-attempt limit. Continue with the project's independent evidence.",
         );
       const correct = input.choice === answer.correctChoice,
         at = this.now(),

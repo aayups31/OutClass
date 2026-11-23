@@ -341,7 +341,9 @@ export function createGateway(deps: GatewayDependencies) {
           });
           return;
         }
-        const answer = answerSchema(input.task,input.context).parse(await deps.answer(input));
+        const answer = answerSchema(input.task, input.context).parse(
+          await deps.answer(input),
+        );
         res.json({ answer, usage: await deps.allowance.usage(user) });
       } finally {
         active.delete(user);
@@ -464,28 +466,34 @@ export function productionDependencies(
       };
     },
     answer: async ({ task, context, history }) => {
-      const schema = answerSchema(task,context);
-      const response = await client.responses.parse({
-        model: config.model,
-        store: false,
-        max_output_tokens:
-          task === "course_lesson"
-            ? 10000
-            : task === "course_plan"
-              ? 7000
-              : task === "course_critique"
-                ? 5000
-                : task === "project_forge"
+      const schema = answerSchema(task, context);
+      const response = await client.responses.parse(
+        {
+          model: config.model,
+          ...(/^gpt-5/.test(config.model) && task.startsWith("course_")
+            ? { reasoning: { effort: "low" as const } }
+            : {}),
+          store: false,
+          max_output_tokens:
+            task === "course_lesson"
+              ? 18000
+              : task === "course_plan"
+                ? 7000
+                : task === "course_critique"
                   ? 5000
-                  : task === "work"
-                    ? 3500
-                    : task === "checkpoint"
-                      ? 250
-                      : 1800,
-        instructions: answerInstructions(task),
-        input: [...history, { role: "user", content: context }],
-        text: { format: zodTextFormat(schema, "outclass_answer") },
-      },{timeout:task.startsWith("course_")?180000:30000});
+                  : task === "project_forge"
+                    ? 5000
+                    : task === "work"
+                      ? 3500
+                      : task === "checkpoint"
+                        ? 250
+                        : 1800,
+          instructions: answerInstructions(task),
+          input: [...history, { role: "user", content: context }],
+          text: { format: zodTextFormat(schema, "outclass_answer") },
+        },
+        { timeout: task.startsWith("course_") ? 180000 : 30000 },
+      );
       return response.output_parsed;
     },
     ...(billing

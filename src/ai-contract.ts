@@ -5,8 +5,11 @@ import {
   courseCritique,
   planningInstructions,
   lessonWritingInstructions,
+  courseWritingConstraints,
+  courseEditorialConstraints,
   courseCritiqueInstructions,
   lessonGenerationSchema,
+  critiqueGenerationSchema,
 } from "./course-workshop-contract.js";
 import {
   agentWorkAnswer,
@@ -86,10 +89,15 @@ export type AIUsage = {
   period: string;
   plan: "free" | "paid";
 };
-export function answerSchema(task: z.infer<typeof hostedRequest>["task"], context?:string) {
+export function answerSchema(
+  task: z.infer<typeof hostedRequest>["task"],
+  context?: string,
+) {
   if (task === "course_plan") return coursePlan;
-  if (task === "course_lesson") return context ? lessonGenerationSchema(context) : courseLessonAnswer;
-  if (task === "course_critique") return courseCritique;
+  if (task === "course_lesson")
+    return context ? lessonGenerationSchema(context) : courseLessonAnswer;
+  if (task === "course_critique")
+    return context ? critiqueGenerationSchema(context) : courseCritique;
   if (task === "work") return agentWorkAnswer;
   if (task === "project_forge") return projectForgeAnswer;
   if (task === "promotion") return promotionAnswer;
@@ -105,7 +113,8 @@ export function answerInstructions(
   task: z.infer<typeof hostedRequest>["task"],
 ) {
   if (task === "course_plan") return planningInstructions;
-  if (task === "course_lesson") return lessonWritingInstructions;
+  if (task === "course_lesson")
+    return `${lessonWritingInstructions}\n${courseWritingConstraints}\n${courseEditorialConstraints}`;
   if (task === "course_critique") return courseCritiqueInstructions;
   if (task === "work") return agentWorkInstructions;
   if (task === "project_forge") return projectForgeInstructions;

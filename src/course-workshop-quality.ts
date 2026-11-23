@@ -127,6 +127,17 @@ export function validateWrittenLesson(
     add("prerequisite", "Assignment prerequisites must be earlier lessons.");
   if (answer.assignment.hints.length < 2)
     add("hints", "Supply a progressive hint ladder.");
+  for(const file of answer.assignment.starterFiles.filter(file=>/(^|\/)test[^/]*\.py$/.test(file.path))){const directories=file.path.split("/").slice(0,-1);for(let depth=1;depth<=directories.length;depth++){const initializer=directories.slice(0,depth).join("/")+"/__init__.py";if(!answer.assignment.starterFiles.some(file=>file.path===initializer))add("test-package",`Add ${initializer} so the documented standard unittest discovery command finds the nested tests.`);}}
+  if(answer.assignment.acceptanceCriteria.some(text=>/instructor (solution|implementation)|faulty implementation/i.test(text)))add("private-criterion","Learner acceptance criteria must describe their own observable work, not private instructor QA artifacts.");
+  if (
+    !answer.assignment.starterFiles.some((file) =>
+      /(^|\/)test[^/]*\.py$|\.test\.[cm]?js$/.test(file.path),
+    )
+  )
+    add(
+      "tests",
+      "Include executable behavioral tests, not just a test description.",
+    );
   if (
     !answer.assignment.starterFiles.some((file) =>
       /readme\.md$/i.test(file.path),
@@ -210,6 +221,11 @@ export function validateWrittenLesson(
     add(
       "solution-leak",
       "The learner starter contains the instructor solution.",
+    );
+  if (answer.faultyImplementation.trim() === answer.instructorSolution.trim())
+    add(
+      "mutation-identical",
+      "The deliberately faulty implementation is identical to the private reference.",
     );
   return findings;
 }

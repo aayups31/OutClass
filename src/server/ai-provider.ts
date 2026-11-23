@@ -118,7 +118,15 @@ export class AIProvider {
             : {}),
         },
         body: body === undefined ? undefined : JSON.stringify(body),
-        signal: AbortSignal.timeout(route==="answer" && typeof body==="object" && body && "task" in body && String(body.task).startsWith("course_")?190000:35000),
+        signal: AbortSignal.timeout(
+          route === "answer" &&
+            typeof body === "object" &&
+            body &&
+            "task" in body &&
+            String(body.task).startsWith("course_")
+            ? 190000
+            : 35000,
+        ),
       });
       const result = await response.json();
       if (authenticated && revision !== this.authRevision)
@@ -308,7 +316,7 @@ export class AIProvider {
     const c = this.config();
     const outputTokens =
       task === "course_lesson"
-        ? 10000
+        ? 18000
         : task === "course_plan"
           ? 7000
           : task === "course_critique"
@@ -358,11 +366,15 @@ export class AIProvider {
           timeout: task.startsWith("course_") ? 180000 : 25000,
           maxRetries: 0,
         });
+        const model =
+          process.env.OPENAI_CHAT_MODEL ||
+          process.env.OPENAI_MODEL ||
+          "gpt-4o-mini";
         const response = await client.responses.parse({
-          model:
-            process.env.OPENAI_CHAT_MODEL ||
-            process.env.OPENAI_MODEL ||
-            "gpt-4o-mini",
+          model,
+          ...(/^gpt-5/.test(model) && task.startsWith("course_")
+            ? { reasoning: { effort: "low" as const } }
+            : {}),
           store: false,
           max_output_tokens: outputTokens,
           instructions,
@@ -376,7 +388,20 @@ export class AIProvider {
       return parsed;
     } catch (error) {
       if (error instanceof UserError) throw error;
+      if (error instanceof z.ZodError)
+        throw new UserError(
+          `The AI response failed its contract at ${error.issues
+            .slice(0, 5)
+            .map((issue) => issue.path.join(".") || "response")
+            .join(", ")}. Retry this stage; accepted work was retained.`,
+          503,
+        );
       const status = (error as { status?: number })?.status;
+      if (status === 400)
+        throw new UserError(
+          `The AI provider rejected this task's model or structured-output request. Check the selected model and retry the stage.`,
+          503,
+        );
       if (status === 401 || status === 403)
         throw new UserError(
           "The selected AI connection needs attention. Check your account or personal key in Settings.",

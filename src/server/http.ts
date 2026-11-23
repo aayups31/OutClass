@@ -33,6 +33,7 @@ import type { AgentWorkService } from "./agent-work.js";
 import { MediaTranscripts } from "./media-transcripts.js";
 import { AcademyStudio } from "./academy-studio.js";
 import { AcademyResources } from "./academy-resources.js";
+import { CourseSubmissions } from "./course-submissions.js";
 import { CourseWorkshop } from "./course-workshop.js";
 import { CourseAssessment } from "./course-assessment.js";
 import { CourseArchive } from "./course-archive.js";
@@ -355,11 +356,9 @@ export function createApp(
     "/api/academy-archive",
     (req, res, next) =>
       edition === "learn"
-        ? res
-            .status(403)
-            .json({
-              error: "Use Educator to restore instructor course packages.",
-            })
+        ? res.status(403).json({
+            error: "Use Educator to restore instructor course packages.",
+          })
         : next(),
     new CourseArchive(application).routes(),
   );
@@ -383,6 +382,10 @@ export function createApp(
     courseWorkshop.research.routes(),
   );
   app.use("/api/academy-resources", new AcademyResources(application).routes());
+  app.use(
+    "/api/course-submissions",
+    new CourseSubmissions(application).routes(),
+  );
   app.get("/api/learn-resources", (req, res) =>
     res.json(
       delivery.resources(

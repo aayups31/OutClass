@@ -12,6 +12,7 @@ const file = z
 export const sandboxRequest = z
   .object({
     language: z.enum(["python", "javascript"]),
+    runtime: z.string().max(100).optional(),
     files: z.array(file).min(2).max(20),
     solution: file,
     mutation: file,
@@ -21,6 +22,7 @@ export type SandboxReport = {
   hash: string;
   verified: boolean;
   image: string;
+  runtime?: string;
   at: string;
   checks: {
     candidate: string;
@@ -30,9 +32,46 @@ export type SandboxReport = {
   }[];
 };
 type Runner = typeof productionProcess;
+export function sandboxTestArgs(
+  language: "python" | "javascript",
+  files: { path: string }[],
+) {
+  const tests = files
+    .map((file) => file.path)
+    .filter((path) =>
+      language === "python"
+        ? /(^|\/)test[^/]*\.py$/.test(path)
+        : /\.test\.[cm]?js$/.test(path),
+    );
+  if (!tests.length)
+    throw new UserError(
+      "Include discoverable behavioral test files for this runtime.",
+    );
+  return language === "python"
+    ? ["-B", "-m", "unittest", "-v"]
+    : ["--test", ...tests];
+}
 export class CourseSandbox {
   constructor(private execute: Runner = productionProcess) {}
   async verify(raw: unknown): Promise<SandboxReport> {
+    return this.run(raw, false);
+  }
+  async check(raw: unknown): Promise<SandboxReport> {
+    const input = z
+        .object({
+          language: z.enum(["python", "javascript"]),
+          runtime: z.string().max(100).optional(),
+          files: z.array(file).min(2).max(20),
+          sourcePath: starterPath,
+        })
+        .strict()
+        .parse(raw),
+      source = input.files.find((file) => file.path === input.sourcePath);
+    if (!source) throw new UserError("The submitted source file is missing.");
+    const { sourcePath: _, ...request } = input;
+    return this.run({ ...request, solution: source, mutation: source }, true);
+  }
+  private async run(raw: unknown, submission: boolean): Promise<SandboxReport> {
     const input = sandboxRequest.parse(raw);
     if (
       input.files.reduce((sum, file) => sum + file.content.length, 0) > 200000
@@ -55,17 +94,41 @@ export class CourseSandbox {
       throw new UserError(
         "Solution and mutation must replace the same existing learner source file.",
       );
-    if (
-      !input.files.some((file) =>
-        input.language === "python"
-          ? /^test[^/]*\.py$/.test(file.path)
-          : /\.test\.[cm]?js$/.test(file.path),
-      )
-    )
-      throw new UserError(
-        "Include discoverable root-level tests for this runtime.",
-      );
+    const testArgs = sandboxTestArgs(input.language, input.files);
     assertClean(JSON.stringify(input), "course verification files");
+    const candidates: readonly (readonly [
+      string,
+      { path: string; content: string } | null,
+    ])[] = submission
+      ? [["submission", null]]
+      : [
+          ["starter", null],
+          ["reference", input.solution],
+          ["mutation", input.mutation],
+        ];
+    if (process.env.OUTCLASS_SANDBOX_BACKEND === "vercel") {
+      const { remoteCourseChecks } = await import("./course-remote-sandbox.js");
+      const report = await remoteCourseChecks(
+        input.language,
+        input.files,
+        candidates,
+        input.runtime,
+      );
+      return {
+        ...report,
+        hash: createHash("sha256").update(JSON.stringify(input)).digest("hex"),
+        at: new Date().toISOString(),
+        verified:
+          report.checks.every((check) => check.tests > 0) &&
+          (submission
+            ? report.checks[0]?.code === 0
+            : report.checks.find((check) => check.candidate === "reference")
+                ?.code === 0 &&
+              report.checks
+                .filter((check) => check.candidate !== "reference")
+                .every((check) => check.code !== 0)),
+      };
+    }
     const image =
       process.env[
         input.language === "python"
@@ -80,11 +143,7 @@ export class CourseSandbox {
     const dir = await mkdtemp(path.join(tmpdir(), "outclass-sandbox-"));
     const checks: SandboxReport["checks"] = [];
     try {
-      for (const [candidate, replacement] of [
-        ["starter", null],
-        ["reference", input.solution],
-        ["mutation", input.mutation],
-      ] as const) {
+      for (const [candidate, replacement] of candidates) {
         for (const entry of input.files) {
           const current =
             replacement && entry.path === replacement.path
@@ -116,8 +175,8 @@ export class CourseSandbox {
           "--workdir=/workspace",
           image,
           ...(input.language === "python"
-            ? ["python", "-B", "-m", "unittest", "-v"]
-            : ["node", "--test"]),
+            ? ["python", ...testArgs]
+            : ["node", ...testArgs]),
         ];
         try {
           const result = await this.execute("docker", args, dir, 15000);
@@ -141,10 +200,13 @@ export class CourseSandbox {
         hash: createHash("sha256").update(JSON.stringify(input)).digest("hex"),
         verified:
           checks.every((check) => check.tests > 0) &&
-          checks.find((check) => check.candidate === "reference")?.code === 0 &&
-          checks
-            .filter((check) => check.candidate !== "reference")
-            .every((check) => check.code !== 0),
+          (submission
+            ? checks[0]?.code === 0
+            : checks.find((check) => check.candidate === "reference")?.code ===
+                0 &&
+              checks
+                .filter((check) => check.candidate !== "reference")
+                .every((check) => check.code !== 0)),
         image,
         at: new Date().toISOString(),
         checks,
