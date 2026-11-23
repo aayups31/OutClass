@@ -52,3 +52,25 @@ inputs are cleared after requests and are never stored in browser storage.
 Supabase's Reset password email template must include `{{ .Token }}` for this
 numeric recovery flow. Automated tests use an injected provider; no live account's
 password was changed during verification. Resend test-sender restrictions still apply.
+
+## Deploying the email configuration
+
+The hosted project was still sending Supabase's default recovery link to localhost.
+The repository now declares code-based recovery and confirmation templates plus
+the production site URL in `supabase/config.toml`.
+
+Use Supabase CLI v3 (partial config push leaves undeclared settings unchanged):
+
+```sh
+npx supabase@3.3.0 login
+npx supabase@3.3.0 config validate
+npx supabase@3.3.0 config diff --remote=wdfitadfokxvulfbkcvd
+npx supabase@3.3.0 config push --remote=wdfitadfokxvulfbkcvd --yes
+npx supabase@3.3.0 config diff --remote=wdfitadfokxvulfbkcvd
+```
+
+Review the first diff: only the production site URL and the two email template
+subjects/bodies should change. After applying, request a fresh recovery email and
+check that it contains a numeric code and no verification link. Old emails retain
+their old links. The live push requires an authenticated CLI or a scoped management
+token; the connected database tools cannot update Auth configuration.

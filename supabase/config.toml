@@ -1,0 +1,13 @@
+project_id = "outclass"
+
+# Only declared properties are pushed by Supabase CLI v3.
+[auth]
+site_url = "https://git-learn-black.vercel.app"
+
+[auth.email.template.recovery]
+subject = "Your OutClass password reset code"
+content_path = "./supabase/templates/recovery.html"
+
+[auth.email.template.confirmation]
+subject = "Verify your OutClass email"
+content_path = "./supabase/templates/confirmation.html"
