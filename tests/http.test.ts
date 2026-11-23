@@ -2,7 +2,7 @@ import { afterEach, beforeEach, expect, it } from "vitest";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import type { Server } from "node:http";
+import { createServer, type Server } from "node:http";
 import { request as rawRequest } from "node:http";
 import { Store } from "../src/server/store";
 import { Application } from "../src/server/application";
@@ -18,10 +18,20 @@ beforeEach(async () => {
   store = new Store(directory);
   localToken = store.get<string>("localToken")!;
   const app = new Application(store);
-  const port = 49153 + Math.floor(Math.random() * 1000);
   focused = 0;
-  server = createApp(app, port, () => focused++).listen(port, "127.0.0.1");
-  await new Promise<void>((resolve) => server.once("listening", resolve));
+  server = createServer();
+  await new Promise<void>((resolve, reject) => {
+    server.once("error", reject);
+    server.listen(0, "127.0.0.1", () => {
+      server.off("error", reject);
+      resolve();
+    });
+  });
+  const port = (server.address() as import("node:net").AddressInfo).port;
+  server.on(
+    "request",
+    createApp(app, port, () => focused++),
+  );
   base = `http://127.0.0.1:${port}`;
 }, 30000);
 afterEach(async () => {
