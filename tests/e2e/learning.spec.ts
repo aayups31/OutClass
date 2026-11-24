@@ -45,6 +45,22 @@ test.afterAll(async () => {
   store.close();
   await rm(directory, { recursive: true, force: true });
 });
+test("finds a saved lesson across courses and opens a suggested practical from Up next", async ({ page }) => {
+  await page.goto(base + "/?view=overview");
+  const next = page.getByRole("region", { name: "Up next" });
+  await expect(next.getByRole("button", { name: /Practical.*min/ })).toBeVisible();
+  await next.getByRole("button", { name: /Practical.*min/ }).click();
+  await page.getByRole("button", { name: "Learning library", exact: true }).click();
+  await page.getByRole("textbox", { name: "Search learning library" }).fill("Input validation");
+  await page.getByRole("button", { name: "Search", exact: true }).click();
+  await expect(page.getByRole("button", { name: /Lesson.*JavaScript projects.*Input validation/ })).toBeVisible();
+  await expect(page.getByRole("button", { name: /Lesson.*Python foundations.*Input validation/ })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Ask OffCourse" })).toBeDisabled();
+  await page.getByLabel("JavaScript projects", { exact: true }).check();
+  await page.getByRole("textbox", { name: "Question for OffCourse" }).fill("How does this lesson validate input?");
+  await page.getByRole("button", { name: "Ask OffCourse" }).click();
+  await expect(page.getByText("No matching passages in those courses.", { exact: false })).toBeVisible();
+});
 test("course project → actual error → hint → fix → reviewed checkpoints → restart and continue, with a second course isolated", async ({
   page,
 }) => {
