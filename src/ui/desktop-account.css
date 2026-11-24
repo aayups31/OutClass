@@ -1,0 +1,60 @@
+.desktop-account {
+  width: min(100%, 27rem);
+  margin-block: 0.8rem 1.5rem;
+}
+.desktop-account h3 {
+  margin: 0 0 0.75rem;
+  font-size: 1.45rem;
+  letter-spacing: -0.05em;
+}
+.desktop-account-choice {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-block: 0.8rem 1rem;
+}
+.desktop-account-choice button[aria-pressed="true"] {
+  border-radius: 0;
+  border-bottom: 1px solid currentColor;
+  font-weight: 650;
+}
+.desktop-account form {
+  display: grid;
+  gap: 0.75rem;
+}
+.desktop-account form > label {
+  display: grid;
+  gap: 0.25rem;
+  margin: 0;
+}
+.desktop-account form > label > input:not([type="checkbox"]) {
+  background: transparent;
+  border-radius: 0;
+  border-width: 0 0 1px;
+  margin: 0;
+}
+.desktop-account form > .desktop-account-sync {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 400;
+}
+.desktop-account-sync input {
+  width: auto;
+  min-width: auto;
+  margin: 0;
+}
+.desktop-account p {
+  margin: 0;
+}
+.desktop-account form > button {
+  justify-self: start;
+}
+.account-field-error {
+  border-left: 2px solid currentColor;
+  padding-left: 0.65rem;
+  color: #a03953;
+}
+[data-theme="dark"] .account-field-error {
+  color: #ffacbe;
+}

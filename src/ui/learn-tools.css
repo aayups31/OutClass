@@ -1,0 +1,142 @@
+.learn-tools {
+  --learn-line: color-mix(in srgb, currentColor 16%, transparent);
+}
+.library-view {
+  padding-block: clamp(1rem, 4vw, 3rem);
+}
+.library-view h1 {
+  font-size: clamp(2.25rem, 5vw, 4rem);
+  letter-spacing: -0.055em;
+  margin-bottom: 0.5rem;
+}
+.library-search {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  border-bottom: 1px solid var(--learn-line);
+  margin-block: 1.75rem;
+}
+.library-search > input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: 0;
+}
+.library-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: clamp(1rem, 5vw, 4rem);
+}
+.learn-tool-row {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  width: 100%;
+  text-align: left;
+  color: inherit;
+  padding: 0.9rem 0;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--learn-line);
+}
+.learn-tool-row:hover {
+  background: color-mix(in srgb, currentColor 5%, transparent);
+}
+.learn-tool-row > span {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 0.22rem;
+  overflow-wrap: anywhere;
+}
+.learn-tool-row small {
+  opacity: 0.76;
+}
+.learn-tool-row svg {
+  flex-shrink: 0;
+}
+.library-hit {
+  align-items: start;
+}
+.library-hit span span {
+  white-space: pre-line;
+  font-size: 0.9rem;
+  opacity: 0.82;
+}
+.library-ask {
+  min-width: 0;
+}
+.library-ask h2,
+.learn-next h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+.library-ask fieldset {
+  margin: 0.75rem 0;
+  padding: 0.65rem 0;
+  border: 0;
+  border-bottom: 1px solid var(--learn-line);
+  max-height: 13rem;
+  overflow-y: auto;
+}
+.library-ask fieldset label {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+.library-ask textarea {
+  width: 100%;
+  margin-bottom: 0.75rem;
+}
+.library-answer details {
+  padding: 0.6rem 0;
+  border-top: 1px solid var(--learn-line);
+  overflow-wrap: anywhere;
+}
+.learn-next {
+  margin-block: 1.5rem;
+}
+.learn-next .continue-learning {
+  margin: 0;
+}
+.learn-next .continue-learning > .section-heading {
+  display: none;
+}
+.lesson-practice {
+  padding-block: 0.8rem;
+  margin-block: 0.45rem;
+  border-block: 1px solid color-mix(in srgb, currentColor 15%, transparent);
+}
+.lesson-practice > summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+.lesson-practice > summary svg {
+  display: inline-block;
+  vertical-align: middle;
+  margin-inline: 0.2rem 0.3rem;
+}
+.lesson-practice > div {
+  display: grid;
+  gap: 0.75rem;
+  padding-block: 0.75rem;
+}
+.lesson-practice label {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: space-between;
+}
+.practice-draft pre {
+  overflow: auto;
+}
+.practice-draft code {
+  overflow-wrap: anywhere;
+}
+@media (max-width: 740px) {
+  .library-columns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

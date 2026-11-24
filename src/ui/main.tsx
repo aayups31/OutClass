@@ -39,7 +39,8 @@ import { Divider, useWorkspaceLayout } from "./workspace-layout";
 import { ArchitectNotebook, LaunchIdeaPrompt } from "./notebook";
 import { AIAccessSettings } from "./ai-access";
 import { EditorsAndExtensions } from "./editors";
-import { LearningHub, LiveWorkHub, PracticePrompt } from "./practical";
+import { LearningHub, LiveWorkHub } from "./practical";
+import { LearnLibrary, LearnNext } from "./learn-tools";
 import "./workspace-clean.css";
 import "./workspace-frame.css";
 import "./desktop-surface.css";
@@ -78,6 +79,7 @@ async function request<T>(route: string, body?: unknown): Promise<T> {
 type Page =
   | "overview"
   | "courses"
+  | "library"
   | "history"
   | "setup"
   | "studio"
@@ -126,6 +128,7 @@ function App() {
     return [
       "overview",
       "courses",
+      "library",
       "history",
       "setup",
       "studio",
@@ -153,6 +156,7 @@ function App() {
   const [selectedCourse, setSelectedCourse] = useState<string>();
   const [draftDirty, setDraftDirty] = useState(false);
   const [practiceTab, setPracticeTab] = useState("practice");
+  const [practiceTarget, setPracticeTarget] = useState<{ courseId?: string; id?: string }>();
   function navigate(next: Page, courseId?: string) {
     if (edition === "learn" && authoringPages.includes(next)) return;
     if (
@@ -169,6 +173,7 @@ function App() {
     )
       return;
     if (courseId) setSelectedCourse(courseId);
+    if (next !== "practice") setPracticeTarget(undefined);
     if (
       ["academy", "creator", "gtm"].includes(next) ||
       ["academy", "creator", "gtm"].includes(page)
@@ -382,6 +387,7 @@ function App() {
                 { id: "overview", label: "Overview", icon: LayoutGrid },
                 { id: "studio", label: "Code & learn", icon: Code2 },
                 { id: "courses", label: "My courses", icon: BookOpen },
+                { id: "library", label: "Learning library", icon: BookOpen },
               ] as const)
           ).map((item) => (
             <button
@@ -531,7 +537,9 @@ function App() {
                 ? "Overview"
                 : page === "courses"
                   ? "My courses"
-                  : page === "history"
+                  : page === "library"
+                    ? "Learning library"
+                    : page === "history"
                     ? "Checkpoints"
                     : page === "studio"
                       ? "Code & learn"
@@ -893,19 +901,21 @@ function App() {
                     </section>
                   ) : null}
                   {configured && (
-                    <ContinueLearning
-                      state={state}
-                      busy={!!busy}
-                      onChooseFolder={setRecovering}
-                      onContinue={(courseId) => void continueLearning(courseId)}
-                    />
-                  )}
-                  {configured && (
-                    <PracticePrompt
+                    <LearnNext
                       api={request}
-                      changed={state.checkpoints.length}
-                      onOpen={() => navigate("practice")}
-                      onLive={() => navigate("live")}
+                      revision={`${state.session?.id}:${state.checkpoints[0]?.id}:${state.courses.length}`}
+                      resume={!state.session && <ContinueLearning
+                        state={state}
+                        busy={!!busy}
+                        limit={1}
+                        onChooseFolder={setRecovering}
+                        onContinue={(courseId) => void continueLearning(courseId)}
+                      />}
+                      openPractice={(tab, courseId, id) => {
+                        setPracticeTab(tab);
+                        setPracticeTarget({ courseId, id });
+                        navigate("practice");
+                      }}
                     />
                   )}
                   {!!state.courses.length && configured && (
@@ -965,12 +975,26 @@ function App() {
                   />
                 </Suspense>
               )}
+              {configured && page === "library" && (
+                <LearnLibrary api={request} courses={state.courses} open={(hit) => {
+                  if (hit.url && /^https?:\/\//i.test(hit.url)) {
+                    if (window.gitLearnDesktop) void window.gitLearnDesktop.openExternal(hit.url).catch((reason) => setError(reason.message));
+                    else window.open(hit.url, "_blank", "noopener,noreferrer");
+                    return;
+                  }
+                  const course = state.courses.find((item) => item.id === hit.courseId);
+                  const lesson = course?.lessons.find((item) => item.id === hit.lessonId && !item.archived);
+                  navigate("studio", hit.courseId);
+                  if (!state.session && course && lesson) setStarting({ ...course, currentLessonId: lesson.id });
+                }} />
+              )}
               {page === "practice" && (
                 <LearningHub
                   state={state}
                   api={request}
                   onRefresh={refresh}
                   initialTab={practiceTab}
+                  target={practiceTarget}
                   onCode={(id) => {
                     void refresh().then((next) => {
                       setNote(next.session?.note || "");
@@ -983,7 +1007,7 @@ function App() {
                 <LearnProfile
                   account={state.account}
                   api={request}
-                  onSettings={() => navigate("setup")}
+                  onRefresh={refresh}
                   onPractice={() => {
                     setPracticeTab("practice");
                     navigate("practice");

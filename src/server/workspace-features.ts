@@ -2,12 +2,26 @@ import type { Express } from "express";
 import { z } from "zod";
 import type { Application } from "./application.js";
 import { IdeaNotebook, projectIdeaSchema } from "./notebook.js";
+import { accountConfirmation, accountEmail, accountRegistration, accountSignIn } from "../account-contract.js";
 export function workspaceFeatures(
   web: Express,
   app: Application,
   notebook: IdeaNotebook,
 ) {
   web.get("/api/ai-access", (_req, res) => res.json(app.ai.status()));
+  web.post("/api/account-password", async (req, res) => {
+    res.json(await app.ai.signIn("password", accountSignIn.parse(req.body)));
+  });
+  web.post("/api/account-register", async (req, res) => {
+    const { email, password } = accountRegistration.parse(req.body);
+    res.json(await app.ai.register(email, password));
+  });
+  web.post("/api/account-confirm", async (req, res) => {
+    res.json(await app.ai.signIn("confirm-registration", accountConfirmation.parse(req.body)));
+  });
+  web.post("/api/account-resend", async (req, res) => {
+    res.json(await app.ai.resendRegistration(accountEmail.parse(req.body.email)));
+  });
   web.post("/api/ai-check", async (_req, res) =>
     res.json(await app.ai.checkConnection()),
   );

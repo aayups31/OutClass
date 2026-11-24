@@ -455,9 +455,13 @@ export class Practice {
     return task;
   }
   exercise(id: string) {
-    const spec = exercises.find((item) => item.id === id);
+    const spec = exercises.find((item) => item.id === id) ||
+      this.app.store.get<{ courseId: string; spec: Exercise }>(`practice:draft:${id}`)?.spec;
     if (!spec) throw new UserError("Choose an available practical task.");
     return spec;
+  }
+  saveLessonExercise(courseId: string, lessonId: string, spec: Exercise) {
+    this.app.store.put(`practice:draft:${spec.id}`, { courseId, lessonId, spec });
   }
   private verifiedPracticals(tasks: PracticeTask[]) {
     const verified = new Map<Exercise["language"], Set<string>>();
@@ -608,7 +612,9 @@ export class Practice {
     });
     return {
       verifiedPracticals,
-      exercises: exercises.map(
+      exercises: [...exercises, ...new Set(tasks.map((task) => task.exerciseId).filter((id) => id.startsWith("lesson-")))].map(
+        (entry) => typeof entry === "string" ? this.exercise(entry) : entry,
+      ).map(
         ({ starter, hints, nativeChecks, ...spec }) => spec,
       ),
       tasks: courseId ? tasks.filter((t) => t.courseId === courseId) : tasks,
@@ -682,6 +688,10 @@ export class Practice {
       state = this.app.configured();
     const course = state.courses.find((c) => c.id === courseId);
     if (!course) throw new UserError("Choose a course first.");
+    const draft = this.app.store.get<{ courseId: string; lessonId: string }>(`practice:draft:${exerciseId}`);
+    if (draft && (draft.courseId !== courseId || (!reviewOf &&
+        (state.session?.courseId !== courseId || state.session.lessonId !== draft.lessonId))))
+      throw new UserError("Open the lesson this practical was drafted for, then try again.", 409);
     if (
       !reviewOf &&
       !transferOf &&

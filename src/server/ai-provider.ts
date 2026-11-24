@@ -4,6 +4,7 @@ import { zodTextFormat } from "openai/helpers/zod";
 import type { Application } from "./application.js";
 import { assertClean, UserError } from "./safety.js";
 import type { AIUsage } from "../ai-contract.js";
+import { sharedProgress, type progressUpload } from "../account-contract.js";
 export type AIConfig = {
   mode: "personal" | "included" | "local";
   service: string;
@@ -15,7 +16,9 @@ export type AccountSession = {
   refresh_token: string;
   expires_at: number;
   email: string;
+  user_id?: string;
 };
+const defaultAccountService = "https://git-learn-black.vercel.app";
 const defaults: AIConfig = {
   mode: "personal",
   service: process.env.OUTCLASS_AI_SERVICE || "",
@@ -94,10 +97,11 @@ export class AIProvider {
     this.app.store.put("ai:config", input);
     return this.status();
   }
-  private async request(route: string, body?: unknown, authenticated = false) {
+  private async request(route: string, body?: unknown, authenticated = false, account = false) {
     const c = this.config();
+    const service = c.service || (account ? defaultAccountService : "");
     const revision = this.authRevision;
-    if (!c.service)
+    if (!service)
       throw new UserError(
         "Included AI has not been connected to a hosted service yet. Use a personal key or local model meanwhile.",
       );
@@ -108,7 +112,7 @@ export class AIProvider {
         401,
       );
     try {
-      const response = await fetch(`${endpoint(c.service)}/v1/${route}`, {
+      const response = await fetch(`${endpoint(service)}/v1/${route}`, {
         method: body === undefined ? "GET" : "POST",
         redirect: "error",
         headers: {
@@ -163,6 +167,23 @@ export class AIProvider {
     await this.request("auth/email", { email });
     return { sent: true };
   }
+  register(email: string, password: string) {
+    return this.request("auth/register", { email, password }, false, true);
+  }
+  resendRegistration(email: string) {
+    return this.request("auth/resend-registration", { email }, false, true);
+  }
+  async signIn(route: "password" | "confirm-registration", credentials: unknown) {
+    const revision = ++this.authRevision;
+    const session = await this.request(`auth/${route}`, credentials, false, true);
+    await this.saveSession(session, revision);
+    const config = this.config();
+    this.app.store.put("ai:config", { ...config, mode: "included", service: config.service || defaultAccountService });
+    return this.status();
+  }
+  async learnProgress(entry?: z.infer<typeof progressUpload>) {
+    return sharedProgress.parse(await this.request("learn/progress", entry, true));
+  }
   async verify(email: string, code: string) {
     const revision = ++this.authRevision;
     const session = await this.request("auth/verify", { email, code });
@@ -186,6 +207,7 @@ export class AIProvider {
         refresh_token: z.string().min(1).max(12000),
         expires_at: z.number().int(),
         email: z.string().email(),
+        user_id: z.string().uuid().optional(),
       })
       .parse(input);
     if (revision !== this.authRevision)
@@ -292,6 +314,7 @@ export class AIProvider {
   }
   async structured<T extends z.ZodType>(options: {
     task:
+      | "lesson_practice"
       | "teacher"
       | "architect"
       | "checkpoint"
@@ -327,7 +350,7 @@ export class AIProvider {
                 ? 3500
                 : task === "checkpoint"
                   ? 250
-                  : 1800;
+                  : task === "lesson_practice" ? 3000 : 1800;
     if (!this.ready())
       throw new UserError("Choose an AI connection in Settings first.");
     try {

@@ -13,6 +13,7 @@ import { UserError } from "./safety.js";
 import { run } from "./git.js";
 import { githubStatus, signInGithub } from "./github.js";
 import { Workspace } from "./workspace.js";
+import { LearnTools } from "./learn-tools.js";
 import { CourseLibrary } from "./library.js";
 import { Practice } from "./practice.js";
 import { ProjectRuntime } from "./project-runtime.js";
@@ -20,6 +21,7 @@ import { LiveWork } from "./live-work.js";
 import { LearningPath, directionSchema } from "./learning-path.js";
 import { IdeaNotebook } from "./notebook.js";
 import { workspaceFeatures } from "./workspace-features.js";
+import { LearnProgress } from "./learn-progress.js";
 import { EditorIntegration } from "./editor-integration.js";
 import { expansionRoutes, Expansion } from "./expansion.js";
 import { CreatorProduction } from "./creator-production.js";
@@ -78,6 +80,9 @@ export function createApp(
   );
   publicationQueue.start();
   const practice = new Practice(application, workspace);
+  const learnProgress = new LearnProgress(application, practice);
+  const progressTimer = setInterval(() => void learnProgress.sync().catch(() => {}), 90000);
+  progressTimer.unref();
   const runtime = new ProjectRuntime(application, workspace);
   const live = new LiveWork(application, workspace, runtime, practice);
   const learning = new LearningPath(
@@ -89,6 +94,7 @@ export function createApp(
   );
   app.locals.stopPrograms = async () => {
     app.locals.closing = true;
+    clearInterval(progressTimer);
     creatorProduction.stop();
     agentWork?.stop();
     courseWorkshop.stop();
@@ -98,6 +104,7 @@ export function createApp(
     await workspace.stopAll();
   };
   const library = new CourseLibrary(application);
+  const learnTools = new LearnTools(application, library, practice);
   const notebook = new IdeaNotebook(application);
   const editorIntegration = new EditorIntegration(editorVsix);
   app.disable("x-powered-by");
@@ -346,6 +353,13 @@ export function createApp(
     res.json(await application.status()),
   );
   workspaceFeatures(app, application, notebook);
+  app.get("/api/account-progress", (_req, res) => res.json(learnProgress.status()));
+  app.post("/api/account-progress", async (req, res) => {
+    const { enabled } = z.object({ enabled: z.boolean().optional() }).parse(req.body);
+    if (enabled !== undefined) learnProgress.configure(enabled);
+    await learnProgress.sync(true);
+    res.json(learnProgress.status());
+  });
   app.use(
     "/api/expansion",
     expansionRoutes(application, creatorProduction, (work) => {
@@ -600,6 +614,24 @@ export function createApp(
   app.get("/api/learning-search", (req, res) =>
     res.json({ results: practice.search(text.parse(req.query.q)) }),
   );
+  app.get("/api/learn-library", async (req, res) =>
+    res.json(await learnTools.search(z.string().trim().min(2).max(200).parse(req.query.q))),
+  );
+  app.post("/api/learn-library-answer", async (req, res) => {
+    const input = z.object({
+      courseIds: z.array(text.min(1)).min(1).max(5),
+      question: z.string().trim().min(3).max(2000),
+    }).parse(req.body);
+    res.json(await learnTools.ask(input.courseIds, input.question));
+  });
+  app.post("/api/lesson-practice-draft", async (req, res) => {
+    const input = z.object({
+      courseId: text.min(1), lessonId: text.min(1),
+      language: z.enum(["javascript", "typescript", "python"]),
+    }).parse(req.body);
+    res.json(await learnTools.draft(input.courseId, input.lessonId, input.language));
+  });
+  app.get("/api/learn-next", (_req, res) => res.json(learnTools.next()));
   app.post("/api/practice-start", async (req, res) => {
     const input = z
       .object({

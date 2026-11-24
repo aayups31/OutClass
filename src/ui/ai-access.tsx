@@ -3,10 +3,10 @@ import {
   Sparkles,
   Check,
   Loader2,
-  Mail,
   ShieldCheck,
   CreditCard,
 } from "lucide-react";
+import { DesktopAccount } from "./desktop-account";
 import type { AIConfig } from "../server/ai-provider";
 import type { AIUsage } from "../ai-contract";
 type Api = <T>(route: string, body?: unknown) => Promise<T>;
@@ -28,23 +28,9 @@ export function AIAccessSettings({
   const [access, setAccess] = useState<Access>(),
     [savedAccess, setSavedAccess] = useState<Access>(),
     [usage, setUsage] = useState<AIUsage>(),
-    [email, setEmail] = useState(""),
-    [code, setCode] = useState(""),
-    [sent, setSent] = useState(false),
-    [pendingEmail, setPendingEmail] = useState(""),
     [usageNotice, setUsageNotice] = useState(""),
     [busy, setBusy] = useState(false),
-    [notice, setNotice] = useState(""),
-    [resendUntil, setResendUntil] = useState(0),
-    [resendIn, setResendIn] = useState(0);
-  useEffect(() => {
-    if (!resendUntil) return;
-    const update = () =>
-      setResendIn(Math.max(0, Math.ceil((resendUntil - Date.now()) / 1000)));
-    update();
-    const timer = window.setInterval(update, 1000);
-    return () => window.clearInterval(timer);
-  }, [resendUntil]);
+    [notice, setNotice] = useState("");
   const load = async () => {
     const a = await api<Access>("ai-access");
     setAccess(a);
@@ -130,9 +116,7 @@ export function AIAccessSettings({
             ? enabled
               ? "AI guides are on"
               : "Connected · guides are off"
-            : access.mode === "included" && !access.service
-              ? "Included AI is awaiting public setup"
-              : "Finish connecting your AI"}
+            : "Finish connecting your AI"}
       </div>
       <div className="ai-options" role="group" aria-label="AI connection type">
         {(
@@ -149,8 +133,6 @@ export function AIAccessSettings({
             aria-pressed={access.mode === mode}
             onClick={() => {
               setAccess({ ...access, mode });
-              setSent(false);
-              setCode("");
               setNotice("");
             }}
           >
@@ -161,10 +143,7 @@ export function AIAccessSettings({
       {access.mode === "included" ? (
         <>
           <p>Connect OffCourse and Architect with an OutClass account.</p>
-          <details
-            className="ai-service-details"
-            open={!access.service || undefined}
-          >
+          <details className="ai-service-details">
             <summary>Advanced service connection</summary>
             <label>
               Included AI service
@@ -174,17 +153,11 @@ export function AIAccessSettings({
                 onChange={(e) =>
                   setAccess({ ...access, service: e.target.value })
                 }
-                placeholder="https://your-outclass-ai-service.example"
-                disabled={busy || !!access.account || sent}
+                placeholder="Default OutClass service"
+                disabled={busy || !!access.account}
               />
             </label>
           </details>
-          {!access.service && (
-            <p className="hint">
-              Public included AI is awaiting account setup. Personal keys and
-              local models work now.
-            </p>
-          )}
           {access.account ? (
             <>
               <div className="ai-account-summary">
@@ -268,133 +241,11 @@ export function AIAccessSettings({
               </p>
             </>
           ) : (
-            <div className="ai-sign-in-flow">
-              <div className="ai-sign-in-heading">
-                <Mail size={19} />
-                <div>
-                  <h3>{sent ? "Check your inbox." : "Welcome to OutClass."}</h3>
-                  <p>
-                    {sent
-                      ? `Enter the code sent to ${pendingEmail}.`
-                      : "Sign in with an email code. No password to remember."}
-                  </p>
-                </div>
-              </div>
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  if (!sent && !busy && email && access.service)
-                    void act(async () => {
-                      await api("ai-config", access);
-                      const address = email.trim();
-                      await api("ai-sign-in", { email: address });
-                      setPendingEmail(address);
-                      setSent(true);
-                      setResendUntil(Date.now() + 60000);
-                      setNotice(
-                        `A sign-in code was requested for ${address}. Check your email, including spam.`,
-                      );
-                    });
-                }}
-              >
-                <label>
-                  Email
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    autoComplete="email"
-                    placeholder="you@example.com"
-                    disabled={busy || sent}
-                  />
-                </label>
-                <button
-                  className="button secondary"
-                  type="submit"
-                  disabled={busy || sent || !email || !access.service}
-                >
-                  {busy ? (
-                    <Loader2 size={13} className="spin" />
-                  ) : (
-                    <Mail size={13} />
-                  )}{" "}
-                  {sent ? "Code requested" : "Email a sign-in code"}
-                </button>
-              </form>
-              {sent && (
-                <>
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      if (!busy && /^\d{6,8}$/.test(code))
-                        void act(async () => {
-                          await api("ai-verify", { email: pendingEmail, code });
-                          await api("assistant-enable", { enabled: true });
-                          setCode("");
-                          setSent(false);
-                          setNotice(
-                            "Signed in. OffCourse and the Architect are ready in your workspace.",
-                          );
-                        });
-                    }}
-                  >
-                    <label>
-                      Email verification code
-                      <input
-                        value={code}
-                        inputMode="numeric"
-                        autoComplete="one-time-code"
-                        maxLength={8}
-                        className="ai-code-input"
-                        autoFocus
-                        placeholder="000000"
-                        disabled={busy}
-                        onChange={(e) =>
-                          setCode(e.target.value.replace(/\D/g, ""))
-                        }
-                      />
-                    </label>
-                    <button
-                      className="button primary"
-                      type="submit"
-                      disabled={busy || !/^\d{6,8}$/.test(code)}
-                    >
-                      Sign in & enable AI guides
-                    </button>
-                  </form>
-                  <button
-                    className="text-button"
-                    disabled={busy || resendIn > 0}
-                    onClick={() =>
-                      void act(async () => {
-                        await api("ai-sign-in", { email: pendingEmail });
-                        setResendUntil(Date.now() + 60000);
-                        setNotice(
-                          "A new code was requested. Use the latest email.",
-                        );
-                      })
-                    }
-                  >
-                    {resendIn > 0
-                      ? `Resend in ${resendIn}s`
-                      : "Resend sign-in code"}
-                  </button>
-                  <button
-                    className="text-button"
-                    disabled={busy}
-                    onClick={() => {
-                      setSent(false);
-                      setCode("");
-                    }}
-                  >
-                    Use a different email
-                  </button>
-                </>
-              )}
-              <p className="hint ai-sign-in-preview">
-                Included AI is currently limited to the connected test account.
-              </p>
-            </div>
+            <DesktopAccount
+              api={api}
+              configure={() => api("ai-config", access)}
+              onRefresh={async () => { await load(); await onRefresh(); }}
+            />
           )}
         </>
       ) : access.mode === "local" ? (

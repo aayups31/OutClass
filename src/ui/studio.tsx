@@ -58,6 +58,7 @@ import { ArchitectNotebook, type NotebookState } from "./notebook";
 import { SessionDirection } from "./session-direction";
 import type { PracticeTask } from "../server/practice";
 import { LearnAssignment } from "./learn-package";
+import { LessonPractice } from "./learn-tools";
 import { CourseViewer } from "./course-viewer";
 import { LearningSourceLink } from "./learning-source-link";
 
@@ -1969,6 +1970,13 @@ export function Studio({
                 </div>
               ) : (
                 <>
+                  <LessonPractice key={session.id} api={api} courseId={course.id} lessonId={session.lessonId}
+                    blocked={busy || running || projectRunning || assignmentDirty}
+                    onStart={async (exerciseId) => {
+                      for (const name of Object.keys(drafts)) await saveFile(name);
+                      const task = await api<PracticeTask>("practice-start", { courseId: course.id, exerciseId });
+                      await taskChanged(task.path);
+                    }} />
                   <SessionDirection
                     api={api}
                     courseId={course.id}

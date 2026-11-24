@@ -1,5 +1,6 @@
 import express from "express";
 import { signupResult } from "./signup-result.js";
+import { accountConfirmation, accountEmail, accountRegistration, accountSignIn, progressUpload } from "../../src/account-contract.js";
 import { z } from "zod";
 import { randomUUID } from "node:crypto";
 import OpenAI from "openai";
@@ -140,6 +141,7 @@ export type GatewayDependencies = {
   authenticate: (token: string) => Promise<string>;
   answer: (request: z.infer<typeof hostedRequest>) => Promise<unknown>;
   auth: (route: string, body: unknown) => Promise<unknown>;
+  learnProgress?: (user: string, entry?: z.infer<typeof progressUpload>) => Promise<unknown>;
   checkout?: (user: string) => Promise<string>;
   webhook?: (body: Buffer, signature: string) => Promise<void>;
 };
@@ -227,13 +229,26 @@ export function createGateway(deps: GatewayDependencies) {
   app.post("/v1/auth/:action", async (req, res) => {
     if (limited(`auth:${req.ip}`, 6)) {
       res.status(429).json({
-        error: "Wait a minute before requesting another sign-in code.",
+        error: "Wait a minute before trying again.",
       });
       return;
     }
     try {
       let route: string, body: unknown;
-      if (req.params.action === "email") {
+      if (req.params.action === "password") {
+        route = "token?grant_type=password";
+        body = accountSignIn.parse(req.body);
+      } else if (req.params.action === "register") {
+        route = "signup";
+        body = accountRegistration.parse(req.body);
+      } else if (req.params.action === "resend-registration") {
+        route = "resend";
+        body = { email: accountEmail.parse(req.body.email), type: "signup" };
+      } else if (req.params.action === "confirm-registration") {
+        const { email, code } = accountConfirmation.parse(req.body);
+        route = "verify";
+        body = { email, token: code, type: "signup" };
+      } else if (req.params.action === "email") {
         const { email } = z
           .object({ email: z.string().email().max(254) })
           .parse(req.body);
@@ -260,6 +275,20 @@ export function createGateway(deps: GatewayDependencies) {
       }
       res.json(await deps.auth(route, body));
     } catch (error) {
+      if (req.params.action === "password") {
+        res.status(400).json({ error: "Check your email and password. New accounts must verify their email first." });
+        return;
+      }
+      if (req.params.action === "register" || req.params.action === "resend-registration") {
+        const exists = (error as { code?: string })?.code === "account_exists";
+        const invalid = error instanceof z.ZodError;
+        res.status(exists ? 409 : invalid ? 400 : 503).json({
+          error: exists ? "An account with this email already exists. Sign in with your password."
+            : invalid ? "Enter a valid email and use at least 8 characters for your password."
+              : "The verification email could not be sent. Try again shortly.",
+        });
+        return;
+      }
       const deliveryFailed =
         req.params.action === "email" && !(error instanceof z.ZodError);
       res.status(deliveryFailed ? 503 : 400).json({
@@ -310,6 +339,26 @@ export function createGateway(deps: GatewayDependencies) {
     }
   });
   if (deps.academy) app.use("/v1/academy", deps.academy.privateRoutes());
+  app.route("/v1/learn/progress").get(async (_req, res) => {
+    try {
+      if (!deps.learnProgress) throw new Error();
+      res.json(await deps.learnProgress(res.locals.user));
+    } catch {
+      res.status(503).json({ error: "Progress sync is temporarily unavailable. Your progress is saved locally." });
+    }
+  }).post(async (req, res) => {
+    const entry = progressUpload.safeParse(req.body);
+    if (!entry.success || Buffer.byteLength(JSON.stringify(entry.data)) > 120000) {
+      res.status(400).json({ error: "Invalid progress record." });
+      return;
+    }
+    try {
+      if (!deps.learnProgress) throw new Error();
+      res.json(await deps.learnProgress(res.locals.user, entry.data));
+    } catch {
+      res.status(503).json({ error: "Progress sync is temporarily unavailable. Your progress is saved locally." });
+    }
+  });
   app.get("/v1/usage", async (_req, res, next) => {
     try {
       res.json(await deps.allowance.usage(res.locals.user));
@@ -516,6 +565,39 @@ export function productionDependencies(
       ...(billing ? { plan: () => billing.publicPlan() } : {}),
     },
     allowance,
+    learnProgress: async (user, entry) => {
+      const connection = await allowance.pool.connect();
+      try {
+        await connection.query("BEGIN");
+        await connection.query("SELECT set_config('outclass.user_id', $1, true)", [user]);
+        if (entry) {
+          // Serialize writes and pruning for this account across devices.
+          await connection.query("SELECT pg_advisory_xact_lock(hashtextextended($1::text, 17))", [user]);
+          await connection.query(
+            `INSERT INTO outclass_service.learn_progress(user_id, device_id, snapshot)
+             VALUES ($1, $2, $3)
+             ON CONFLICT (user_id, device_id) DO UPDATE SET snapshot = EXCLUDED.snapshot, updated_at = now()`,
+            [user, entry.deviceId, JSON.stringify(entry.snapshot)],
+          );
+          await connection.query(
+            `DELETE FROM outclass_service.learn_progress WHERE user_id = $1 AND device_id IN
+             (SELECT device_id FROM outclass_service.learn_progress WHERE user_id = $1 ORDER BY updated_at DESC, device_id OFFSET 12)`,
+            [user],
+          );
+        }
+        const result = await connection.query(
+          "SELECT snapshot FROM outclass_service.learn_progress WHERE user_id = $1 ORDER BY updated_at DESC, device_id LIMIT 12",
+          [user],
+        );
+        await connection.query("COMMIT");
+        return { devices: result.rows.map(({ snapshot }) => snapshot) };
+      } catch (error) {
+        await connection.query("ROLLBACK");
+        throw error;
+      } finally {
+        connection.release();
+      }
+    },
     authenticate: async (token) =>
       (await authFetch("user", undefined, token)).id,
     auth: async (route, body) => {
@@ -533,6 +615,7 @@ export function productionDependencies(
         refresh_token: result.refresh_token,
         expires_at: Math.floor(Date.now() / 1000) + result.expires_in,
         email: result.user.email,
+        user_id: result.user.id,
       };
     },
     answer: async ({ task, context, history }) => {
@@ -557,7 +640,7 @@ export function productionDependencies(
                       ? 3500
                       : task === "checkpoint"
                         ? 250
-                        : 1800,
+                        : task === "lesson_practice" ? 3000 : 1800,
           instructions: answerInstructions(task),
           input: [...history, { role: "user", content: context }],
           text: { format: zodTextFormat(schema, "outclass_answer") },

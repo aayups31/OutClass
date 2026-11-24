@@ -184,16 +184,18 @@ export function LearningHub({
   onCode,
   onRefresh,
   initialTab = "practice",
+  target,
 }: {
   state: Status;
   api: Api;
   onCode: (id: string) => void;
   onRefresh: () => Promise<unknown>;
   initialTab?: string;
+  target?: { courseId?: string; id?: string };
 }) {
   const [data, setData] = useState<Dashboard>(),
     [courseId, setCourseId] = useState(
-      state.session?.courseId || state.courses[0]?.id || "",
+      target?.courseId || state.session?.courseId || state.courses[0]?.id || "",
     ),
     [tab, setTab] = useState(initialTab),
     [selected, setSelected] = useState<PracticeTask>(),
@@ -210,6 +212,10 @@ export function LearningHub({
   useEffect(() => {
     setReflection(selected?.reflection || "");
   }, [selected?.id]);
+  useEffect(() => {
+    const task = data?.tasks.find((item) => item.id === target?.id);
+    if (task && initialTab !== "reviews") setSelected(task);
+  }, [data, initialTab, target?.id]);
   const spec = data?.exercises.find((e) => e.id === selected?.exerciseId);
   const start = (id: string, reviewOf?: string, transferOf?: string) =>
     action.run(async () => {
@@ -253,6 +259,7 @@ export function LearningHub({
       )
       .sort(
         (a, b) =>
+          Number(b.id === target?.id) - Number(a.id === target?.id) ||
           Number(b.language === selectedLanguage) -
             Number(a.language === selectedLanguage) ||
           Number(completed.has(a.id)) - Number(completed.has(b.id)) ||
@@ -450,6 +457,7 @@ export function LearningHub({
           {data?.reviewEnabled &&
             data.reviews
               .filter((r) => r.courseId === courseId)
+              .sort((a, b) => Number(b.taskId === target?.id) - Number(a.taskId === target?.id) || a.dueAt.localeCompare(b.dueAt))
               .map((review) => {
                 const task = data.tasks.find((t) => t.id === review.taskId)!;
                 return (

@@ -13,6 +13,7 @@ import type { Status } from "../shared";
 import "./onboarding.css";
 import { AppearanceButton, BrandMark, type Theme } from "./appearance";
 import { AIAccessSettings } from "./ai-access";
+import { DesktopAccount } from "./desktop-account";
 
 type Request = <T>(route: string, body?: unknown) => Promise<T>;
 export function Onboarding({
@@ -225,10 +226,13 @@ export function Onboarding({
             <>
               <Sparkles className="onboarding-symbol" size={30} />
 
-              <h2>A little help when you need it.</h2>
-              <p>
-                Connect AI now or skip this step. You can change it in Settings.
-              </p>
+              <h2>Make it your workspace.</h2>
+              <p>{educator ? "Connect your account and Included AI." : "Connect Included AI and keep your progress with your account."}</p>
+              {state.account?.email ? (
+                <div className="onboarding-ready"><Check size={17} /> Signed in as {state.account.email}</div>
+              ) : <DesktopAccount api={request} onRefresh={onRefresh} offerSync={!educator} />}
+              <details className="onboarding-ai-options">
+                <summary>Use a personal key</summary>
               {state.hasApiKey || environment?.hasSavedKey ? (
                 <div className="onboarding-ready">
                   <Check size={17} /> Your local companion already has an API
@@ -253,6 +257,7 @@ export function Onboarding({
                   </p>
                 </>
               )}
+              </details>
               <div className="onboarding-actions">
                 <button
                   className="button primary"
@@ -262,6 +267,8 @@ export function Onboarding({
                       if (key.trim()) {
                         await window.gitLearnDesktop!.setApiKey(key.trim());
                         setKey("");
+                        const current = await request<import("../server/ai-provider").AIConfig>("ai-access");
+                        await request("ai-config", { ...current, mode: "personal" });
                       }
                       const connection = await request<{ ready: boolean }>(
                         "ai-access",
@@ -278,17 +285,13 @@ export function Onboarding({
                   {busy
                     ? "Saving…"
                     : key.trim() || (state.hasAI ?? state.hasApiKey)
-                      ? "Continue with AI help"
-                      : "Continue without AI"}
+                      ? "Continue"
+                      : "Continue without an account"}
                   <ArrowRight size={16} />
                 </button>
               </div>
-              <p className="hint">
-                You can add or remove your key later in Workspace settings.
-                Commit-message AI has its own separate switch.
-              </p>
               <details className="onboarding-ai-options">
-                <summary>Use a local model or connect included AI</summary>
+                <summary>Advanced AI settings</summary>
                 <AIAccessSettings
                   api={request}
                   enabled={!!state.settings.assistantEnabled}

@@ -7,11 +7,13 @@ export function ContinueLearning({
   busy,
   onContinue,
   onChooseFolder,
+  limit = 3,
 }: {
   state: Status;
   busy: boolean;
   onContinue: (courseId: string) => void;
   onChooseFolder: (course: Course) => void;
+  limit?: number;
 }) {
   if (!state.continueItems?.length) return null;
   return (
@@ -20,7 +22,7 @@ export function ContinueLearning({
         <h2>Continue building</h2>
         <span className="quiet-note">Your place is saved on this device</span>
       </div>
-      {state.continueItems.slice(0, 3).map((anchor) => {
+      {state.continueItems.slice(0, limit).map((anchor) => {
         const course = state.courses.find(
           (item) => item.id === anchor.courseId,
         )!;
