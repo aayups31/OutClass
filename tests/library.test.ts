@@ -200,7 +200,8 @@ it("does not pretend course titles are lecture content", async () => {
     "course",
   );
   expect(answer.mode).toBe("missing-context");
-  expect(answer.text).toContain("won’t infer lecture content");
+  expect(answer.text).toContain("Save the lesson");
+  expect(answer.sources || []).toHaveLength(0);
   expect(parse).not.toHaveBeenCalled();
 });
 it("returns validated citations and stores course conversation locally", async () => {
