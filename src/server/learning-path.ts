@@ -368,7 +368,10 @@ export class LearningPath {
       .dashboard(id)
       .exercises.filter(
         (e) =>
-          !e.transferFrom && e.language === language && e.kind === "practice",
+          !e.transferFrom &&
+          !e.retired &&
+          e.language === language &&
+          e.kind === "practice",
       );
     const recommended = candidates.find(
       (e) =>

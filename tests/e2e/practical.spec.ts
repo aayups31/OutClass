@@ -63,7 +63,7 @@ test("a during-course suggestion becomes learner-written work, real checks, hint
   );
   await page.getByRole("button", { name: "Explore task", exact: true }).click();
   await expect(
-    page.getByRole("heading", { name: "Build before the course ends." }),
+    page.getByRole("heading", { name: "Learn by doing." }),
   ).toBeVisible();
   await page
     .locator(".learning-row")

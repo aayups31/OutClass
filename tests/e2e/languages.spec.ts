@@ -97,6 +97,13 @@ test("language-aware studio creates React/Next/Python/native projects and runs T
       await page
         .getByRole("button", { name: "Show files", exact: true })
         .click();
+      for (const directory of ["apps", folder]) {
+        const treeFolder = page.locator(
+          `.file-explorer button[title="${directory}"]`,
+        );
+        if ((await treeFolder.getAttribute("aria-expanded")) === "false")
+          await treeFolder.click();
+      }
       await page
         .locator(`.file-explorer button[title="${folder}/main.cpp"]`)
         .click();
@@ -127,7 +134,7 @@ test("language-aware studio creates React/Next/Python/native projects and runs T
     .click();
   await page.getByLabel("Practice language").selectOption("cpp");
   await expect(page.locator(".learning-list")).toContainText(
-    "Build a native price calculator",
+    "Locate the first eligible shelf",
   );
   expect(errors).toEqual([]);
 });

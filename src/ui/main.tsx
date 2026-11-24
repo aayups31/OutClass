@@ -25,6 +25,7 @@ import {
   Settings2,
   ShieldCheck,
   Sparkles,
+  UserRound,
   X,
 } from "lucide-react";
 import type { Course, PublicPreview as Preview, Status } from "../shared";
@@ -43,6 +44,7 @@ import "./workspace-clean.css";
 import "./workspace-frame.css";
 import "./desktop-surface.css";
 import { AppearanceButton, BrandMark, type Theme } from "./appearance";
+import { LearnProfile } from "./learn-profile";
 const Studio = lazy(() =>
   import("./studio").then((module) => ({ default: module.Studio })),
 );
@@ -81,6 +83,7 @@ type Page =
   | "live"
   | "ideas"
   | "editors"
+  | "profile"
   | "academy"
   | "creator"
   | "gtm";
@@ -96,6 +99,7 @@ function App() {
     outClassEdition(window.gitLearnDesktop?.edition),
   );
   const educator = edition === "educator";
+  const combinedBrowser = edition === "combined" && !window.gitLearnDesktop;
   const home = educator ? "academy" : "overview";
   const layoutControl = useWorkspaceLayout();
   const { layout } = layoutControl;
@@ -127,6 +131,7 @@ function App() {
       "live",
       "ideas",
       "editors",
+      "profile",
       "academy",
       "creator",
       "gtm",
@@ -401,7 +406,7 @@ function App() {
               "ideas",
               "editors",
               "history",
-              ...(edition === "combined" ? authoringPages : []),
+              ...(combinedBrowser ? authoringPages : []),
             ].includes(page)}
           >
             <summary title="More tools">
@@ -428,7 +433,7 @@ function App() {
                         } as const,
                       ]
                     : []),
-                  ...(edition === "combined" ? authoringNav : []),
+                  ...(combinedBrowser ? authoringNav : []),
                 ] as const
               ).map((item) => (
                 <button
@@ -480,6 +485,14 @@ function App() {
           </div>
         )}
         <div className="sidebar-bottom">
+          {page === "studio" && !educator && state && (
+            <button className="nav" onClick={() => navigate("profile")} aria-label="Learning profile" title="Learning profile">
+              {state.account?.email ? (
+                <span className="learn-profile-avatar">{state.account.email[0].toUpperCase()}</span>
+              ) : <UserRound size={17} />}
+              <span className="nav-label">Profile</span>
+            </button>
+          )}
           <button
             className={page === "setup" ? "nav active" : "nav"}
             onClick={() => navigate("setup")}
@@ -528,6 +541,8 @@ function App() {
                             ? "Ideas & architecture"
                             : page === "editors"
                               ? "Editors & extensions"
+                              : page === "profile"
+                                ? "Profile"
                               : page === "academy"
                                 ? "Academy"
                                 : page === "creator"
@@ -559,6 +574,17 @@ function App() {
                 : "Local first"}
             </span>
             <AppearanceButton theme={theme} onToggle={toggleTheme} />
+            {!educator && state && page !== "studio" && (
+              <button
+                className="learn-profile-avatar"
+                aria-label="Learning profile"
+                title="Learning profile"
+                aria-current={page === "profile" ? "page" : undefined}
+                onClick={() => navigate("profile")}
+              >
+                {state.account?.email ? state.account.email[0].toUpperCase() : <UserRound size={16} />}
+              </button>
+            )}
           </div>
         </header>
         <div className="content">
@@ -948,6 +974,17 @@ function App() {
                       setNote(next.session?.note || "");
                       navigate("studio", id);
                     });
+                  }}
+                />
+              )}
+              {page === "profile" && !educator && (
+                <LearnProfile
+                  account={state.account}
+                  api={request}
+                  onSettings={() => navigate("setup")}
+                  onPractice={() => {
+                    setPracticeTab("practice");
+                    navigate("practice");
                   }}
                 />
               )}

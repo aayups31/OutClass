@@ -199,6 +199,7 @@ export function LearningHub({
     [selected, setSelected] = useState<PracticeTask>(),
     [reflection, setReflection] = useState("");
   const [languageFilter, setLanguageFilter] = useState("course");
+  const [ideaOffset, setIdeaOffset] = useState(0);
   const action = useAction();
   const [memoryQuery, setMemoryQuery] = useState(""),
     [memory, setMemory] = useState<ReturnType<Practice["search"]>>([]);
@@ -232,18 +233,41 @@ export function LearningHub({
       : languageFilter === "all"
         ? undefined
         : languageFilter;
+  const completed = new Set(
+    tasks
+      .filter((task) => task.status === "completed")
+      .map((task) => task.exerciseId),
+  );
   const catalog =
-    data?.exercises.filter(
-      (e) =>
-        !e.transferFrom &&
-        (!selectedLanguage || e.language === selectedLanguage) &&
-        e.kind === (tab === "projects" ? "project" : "practice"),
-    ) || [];
+    data?.exercises
+      .filter(
+        (e) =>
+          !e.transferFrom &&
+          !e.retired &&
+          (languageFilter === "course" ||
+            !selectedLanguage ||
+            e.language === selectedLanguage) &&
+          (data.verifiedPracticals[e.language] || 0) >=
+            (e.requiresPracticals || 0) &&
+          e.kind === (tab === "projects" ? "project" : "practice"),
+      )
+      .sort(
+        (a, b) =>
+          Number(b.language === selectedLanguage) -
+            Number(a.language === selectedLanguage) ||
+          Number(completed.has(a.id)) - Number(completed.has(b.id)) ||
+          (b.requiresPracticals || 0) - (a.requiresPracticals || 0),
+      ) || [];
+  const offset = catalog.length ? ideaOffset % catalog.length : 0;
+  const ideas = [...catalog.slice(offset), ...catalog.slice(0, offset)].slice(
+    0,
+    3,
+  );
   const opportunity = data?.opportunities.find((o) => o.courseId === courseId);
   return (
     <div className="learning-hub">
       <div className="page-heading">
-        <h1>Build before the course ends.</h1>
+        <h1>Learn by doing.</h1>
       </div>
       <div className="learning-controls">
         <select
@@ -252,6 +276,7 @@ export function LearningHub({
           onChange={(e) => {
             setCourseId(e.target.value);
             setSelected(undefined);
+            setIdeaOffset(0);
           }}
         >
           {state.courses.map((c) => (
@@ -263,7 +288,10 @@ export function LearningHub({
         <select
           aria-label="Practice language"
           value={languageFilter}
-          onChange={(e) => setLanguageFilter(e.target.value)}
+          onChange={(e) => {
+            setLanguageFilter(e.target.value);
+            setIdeaOffset(0);
+          }}
         >
           <option value="course">For this course</option>
           <option value="all">All languages</option>
@@ -323,6 +351,7 @@ export function LearningHub({
             onClick={() => {
               setTab(t);
               setSelected(undefined);
+              setIdeaOffset(0);
             }}
           >
             {t === "path" ? "My direction" : t[0].toUpperCase() + t.slice(1)}
@@ -509,18 +538,32 @@ export function LearningHub({
                 ))}
               </>
             )}
-            <div className="learning-section-label">
-              {tab === "projects"
-                ? "Independent project briefs"
-                : "Choose a practical task"}
+            <div className="learning-section-label learning-ideas-heading">
+              <span>{tab === "projects" ? "Projects" : "Practice ideas"}</span>
+              {catalog.length > 3 && (
+                <button
+                  className="text-button"
+                  onClick={() => setIdeaOffset((current) => current + 3)}
+                >
+                  <RefreshCw size={13} /> More ideas
+                </button>
+              )}
             </div>
-            {catalog.map((exercise) => (
+            {!ideas.length && data && (
+              <p className="learning-caption">
+                {tab === "projects"
+                  ? "Pass two different practicals in a language to unlock its advanced project."
+                  : "No practicals match this language."}
+              </p>
+            )}
+            {ideas.map((exercise) => (
               <div className="learning-row" key={exercise.id}>
                 <Flag size={17} />
                 <div>
                   <h3>{exercise.title}</h3>
                   <p>
                     {exercise.language} · {exercise.minutes} minutes ·{" "}
+                    {exercise.requiresPracticals ? "Advanced · " : ""}
                     {exercise.skill}
                   </p>
                 </div>
@@ -663,19 +706,11 @@ export function LearningHub({
                 <div className="learning-detail-mark">
                   <Flag size={28} />
                 </div>
-                <h2>Make a small thing real.</h2>
+                <h2>Build a skill</h2>
                 <p>
-                  Choose a brief, implement your own approach, and run
-                  behavioral checks. Hints help you think through the next step.
+                  Pass two different practicals in one language to unlock its
+                  advanced project.
                 </p>
-                <p>
-                  Nothing writes the solution for you. Tasks stay beside your
-                  course and survive a restart.
-                </p>
-                <small>
-                  Curated OutClass exercises · JavaScript, TypeScript, Python, C
-                  and C++
-                </small>
               </>
             )}
           </aside>

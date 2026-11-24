@@ -94,6 +94,7 @@ export class Application {
     continueItems.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
     return {
       ...state,
+      account: this.ai.status().account,
       hasApiKey: !!this.apiKey,
       hasAI: this.ai.ready(),
       gitAvailable,

@@ -6,6 +6,8 @@ import { tmpdir } from "node:os";
 import { nativeArguments, nativeCompiler } from "./native-runtime.js";
 import { practiceLanguage } from "../project-types.js";
 import { nativeExercises, nativeHarness } from "./native-exercises.js";
+import { practiceCatalog } from "./practice-catalog.js";
+import { advancedProjects } from "./practice-projects.js";
 import { pathToFileURL } from "node:url";
 import type { Application } from "./application.js";
 import type { Workspace } from "./workspace.js";
@@ -33,6 +35,8 @@ export type Exercise = {
   topics: string[];
   transferFrom?: string;
   nativeChecks?: string[];
+  retired?: boolean;
+  requiresPracticals?: number;
 };
 export const exercises: Exercise[] = (
   ["javascript", "python"] as const
@@ -335,6 +339,16 @@ exercises.push(
     })),
   ...nativeExercises(),
 );
+// Retain the original contracts for saved attempts and their follow-up work.
+for (const exercise of exercises)
+  if (exercise.language !== "javascript") exercise.retired = true;
+exercises.push(...practiceCatalog, ...advancedProjects);
+
+function verifiedAttempt(task: PracticeTask) {
+  return task.status === "completed"
+    ? task.attempts.find((attempt) => attempt.passed && !attempt.stale)
+    : undefined;
+}
 
 export interface Attempt {
   id: string;
@@ -445,6 +459,19 @@ export class Practice {
     if (!spec) throw new UserError("Choose an available practical task.");
     return spec;
   }
+  private verifiedPracticals(tasks: PracticeTask[]) {
+    const verified = new Map<Exercise["language"], Set<string>>();
+    for (const task of tasks) {
+      if (task.reviewOf || task.transferOf || !verifiedAttempt(task)) continue;
+      const spec = this.exercise(task.exerciseId);
+      if (spec.kind !== "practice") continue;
+      if (!verified.has(spec.language)) verified.set(spec.language, new Set());
+      verified.get(spec.language)!.add(spec.id);
+    }
+    return Object.fromEntries(
+      Array.from(verified, ([language, ids]) => [language, ids.size]),
+    ) as Partial<Record<Exercise["language"], number>>;
+  }
   persist(task: PracticeTask) {
     const tasks = this.tasks();
     const index = tasks.findIndex((item) => item.id === task.id);
@@ -458,6 +485,7 @@ export class Practice {
       ? state.courses.filter((c) => c.id === courseId)
       : state.courses;
     const tasks = this.tasks();
+    const verifiedPracticals = this.verifiedPracticals(tasks);
     const reviews = tasks
       .filter((t) => t.status === "completed" && !t.reviewOf && !t.transferOf)
       .map((task) => {
@@ -520,6 +548,9 @@ export class Practice {
       const eligible = exercises.filter(
         (e) =>
           e.language === language &&
+          !e.retired &&
+          (verifiedPracticals[e.language] || 0) >=
+            (e.requiresPracticals || 0) &&
           !e.transferFrom &&
           !successful.some((t) => t.exerciseId === e.id),
       );
@@ -527,6 +558,7 @@ export class Practice {
         import("./learning-path.js").Direction
       >(`direction:${course.id}`);
       const spec =
+        eligible.find((exercise) => !!exercise.requiresPracticals) ||
         eligible.find(
           (e) =>
             e.kind === "project" &&
@@ -575,6 +607,7 @@ export class Practice {
       ];
     });
     return {
+      verifiedPracticals,
       exercises: exercises.map(
         ({ starter, hints, nativeChecks, ...spec }) => spec,
       ),
@@ -607,20 +640,23 @@ export class Practice {
       reviews: reviews.filter((r) => !courseId || r.courseId === courseId),
       reviewEnabled:
         this.app.store.get<boolean>("practice:reviewsEnabled") !== false,
-      skills: tasks
-        .filter(
-          (t) =>
-            t.status === "completed" && (!courseId || t.courseId === courseId),
-        )
-        .map((t) => ({
-          courseId: t.courseId,
-          taskId: t.id,
-          skill: this.exercise(t.exerciseId).skill,
-          evidence: t.attempts.find((a) => a.passed && !a.stale)!.id,
-          assistance: t.attempts.find((a) => a.passed && !a.stale)!.hints
-            ? "Practiced with OutClass help"
-            : "Passed without OutClass hints in this attempt",
-        })),
+      skills: tasks.flatMap((task) => {
+        const attempt = verifiedAttempt(task);
+        if (!attempt || (courseId && task.courseId !== courseId)) return [];
+        const spec = this.exercise(task.exerciseId);
+        return [
+          {
+            courseId: task.courseId,
+            taskId: task.id,
+            language: spec.language,
+            skill: spec.skill,
+            evidence: attempt.id,
+            assistance: attempt.hints
+              ? "Practiced with OutClass help"
+              : "Passed without OutClass hints in this attempt",
+          },
+        ];
+      }),
     };
   }
   defer(key: string, days: number) {
@@ -646,6 +682,17 @@ export class Practice {
       state = this.app.configured();
     const course = state.courses.find((c) => c.id === courseId);
     if (!course) throw new UserError("Choose a course first.");
+    if (
+      !reviewOf &&
+      !transferOf &&
+      spec.requiresPracticals &&
+      (this.verifiedPracticals(this.tasks())[spec.language] || 0) <
+        spec.requiresPracticals
+    )
+      throw new UserError(
+        `Pass ${spec.requiresPracticals} distinct practicals in this language to unlock this project.`,
+        409,
+      );
     if (spec.transferFrom) {
       const original = transferOf ? this.task(transferOf) : undefined;
       if (

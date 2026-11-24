@@ -1,0 +1,106 @@
+.learn-profile-avatar,
+.learn-profile-identity {
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  color: var(--accent);
+  background: var(--accent-soft);
+  font-weight: 680;
+}
+.learn-profile-avatar {
+  width: 34px;
+  height: 34px;
+}
+.learn-profile-avatar:hover {
+  background: var(--active);
+}
+.learn-profile {
+  max-width: 840px;
+  padding-block: clamp(42px, 8vw, 102px);
+}
+.learn-profile > header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 48px;
+}
+.learn-profile-identity {
+  width: 64px;
+  height: 64px;
+  font: 650 27px var(--heading);
+  box-shadow: 0 0 42px var(--wash-blue);
+  flex-shrink: 0;
+}
+.learn-profile h1 {
+  font: 540 clamp(30px, 5vw, 64px)/1.08 var(--heading);
+  letter-spacing: -0.06em;
+}
+.learn-profile p {
+  color: var(--muted);
+  margin-top: 8px;
+  overflow-wrap: anywhere;
+}
+.learn-profile-skills {
+  border-block-start: 1px solid var(--line);
+  padding-top: 22px;
+}
+.learn-profile-skills h2 {
+  font: 600 24px var(--heading);
+  margin-bottom: 18px;
+}
+.learn-profile-language {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+  border-top: 1px solid var(--line);
+  padding: 20px 0;
+}
+.learn-profile-language h3 {
+  margin: 3px 0 10px;
+  font-weight: 650;
+}
+.language-mark {
+  display: grid;
+  place-items: center;
+  flex: 0 0 39px;
+  aspect-ratio: 1;
+  border-radius: 6px;
+  font-weight: 800;
+  background: #2c426f;
+  color: #fff;
+}
+.language-mark[data-language="typescript"] {
+  background: #2366a5;
+}
+.language-mark[data-language="python"] {
+  background: #275173;
+  color: #ffe17a;
+}
+.language-mark[data-language="javascript"] {
+  background: #f5d34f;
+  color: #231e0a;
+}
+.language-mark[data-language="cpp"] {
+  background: #3b458d;
+}
+.learn-profile-language ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px 20px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+.learn-profile-language li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+}
+.learn-profile-language li svg {
+  color: var(--success);
+}
+.learn-profile-empty > button {
+  margin-top: 10px;
+}
