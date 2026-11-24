@@ -372,6 +372,8 @@ main {
   margin-bottom: 7px;
 }
 .button {
+  color: var(--ink);
+  background: var(--soft);
   min-height: 44px;
   display: inline-flex;
   align-items: center;
@@ -382,8 +384,12 @@ main {
   font-size: 12px;
   font-weight: 500;
   line-height: 1.4;
-  border: 1px solid transparent;
+  border: 1px solid var(--field-line);
   white-space: nowrap;
+}
+.button:not(.primary):not(.secondary):hover:enabled {
+  background: var(--hover);
+  border-color: var(--field-hover);
 }
 .button.primary {
   color: #ffffff;

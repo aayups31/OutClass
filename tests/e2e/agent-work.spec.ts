@@ -256,6 +256,7 @@ test("the four specialists produce, review, deliver and restore actual product a
     .locator(".product-drafts")
     .getByRole("button", { name: /A useful activity report/ })
     .click();
+  await page.getByRole("button", { name: "Muse", exact: true }).click();
   const creative = page.getByRole("region", {
     name: "Creative Director task workspace",
   });
@@ -297,6 +298,10 @@ test("the four specialists produce, review, deliver and restore actual product a
     .locator(".product-drafts")
     .getByRole("button", { name: /Practical Python launch/ })
     .click();
+  await page
+    .locator("summary")
+    .filter({ hasText: /^Signal$/ })
+    .click();
   const growth = page.getByRole("region", {
     name: "Growth Strategist task workspace",
   });
@@ -311,6 +316,10 @@ test("the four specialists produce, review, deliver and restore actual product a
   await expect(growth.getByText("Delivered", { exact: true })).toBeVisible();
   expect(expansion.state().campaigns).toHaveLength(5);
   expect(store.get("gtm:publication:v1") || []).toEqual([]);
+  await page
+    .locator("summary")
+    .filter({ hasText: /^Pulse$/ })
+    .click();
   const analytics = page.getByRole("region", {
     name: "Analytics task workspace",
   });

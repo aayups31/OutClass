@@ -245,6 +245,9 @@ test("author a course, launch Learn, approve grounded copy and prepare a manual 
     "Copy approved",
   );
   await page
+    .getByRole("button", { name: "Design & media", exact: true })
+    .click();
+  await page
     .getByRole("button", { name: "Compose design preview", exact: true })
     .click();
   await expect(page.locator(".creator-design-preview")).toBeVisible();

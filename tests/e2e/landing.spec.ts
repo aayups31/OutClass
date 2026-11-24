@@ -4,7 +4,7 @@ test("the local app opens the independently built product and setup guide", asyn
   page,
 }) => {
   await page.goto("/?view=setup");
-  await page.getByRole("link", { name: "Product & guide" }).click();
+  await page.getByRole("link", { name: "Guide", exact: true }).click();
   await expect(page).toHaveURL(/\/welcome\/$/);
   await expect(page).toHaveTitle("OutClass · Break free from tutorial hell");
   await page.getByRole("link", { name: "How it works", exact: true }).click();
