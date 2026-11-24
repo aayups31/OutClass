@@ -25,7 +25,10 @@ test.beforeEach(async () => {
 });
 test.afterEach(async () => {
   await web.locals.stopPrograms();
-  await new Promise<void>((r) => server.close(() => r()));
+  await new Promise<void>((resolve) => {
+    server.close(() => resolve());
+    server.closeAllConnections();
+  });
   store.close();
   await rm(dir, { recursive: true, force: true });
 });
