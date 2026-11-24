@@ -4,6 +4,7 @@ import type { AcademyReference } from "../academy-reference-contract";
 import {
   academySourceCatalog,
   findReferenceCourses,
+  relevantReferenceCourses,
   type ReferenceCourse,
 } from "../academy-source-catalog";
 
@@ -22,14 +23,20 @@ const emptyReference = (): AcademyReference => ({
 export function AcademyReferences({
   value = [],
   onChange,
+  lessonTopic = "",
 }: {
   value?: AcademyReference[];
   onChange: (references: AcademyReference[]) => void;
+  lessonTopic?: string;
 }) {
   const [query, setQuery] = useState("");
   const [editing, setEditing] = useState<string>();
   const [showCatalog, setShowCatalog] = useState(false);
-  const found = findReferenceCourses(query);
+  const recommended = relevantReferenceCourses(lessonTopic, 5);
+  const found =
+    !query.trim() && recommended.length
+      ? recommended
+      : findReferenceCourses(query);
   function add(course?: ReferenceCourse) {
     if (value.length >= 12) return;
     const reference = {
@@ -74,13 +81,13 @@ export function AcademyReferences({
         </button>
       </div>
       <p className="academy-fineprint">
-        Add relevant readings for Atlas and Forge. Links help you find material;
-        only reviewed excerpts are sent to the agents.
+        Atlas and Forge can use the excerpts you approve.
       </p>
       {showCatalog && (
         <div className="academy-reference-discovery">
           <label>
-            Search {academySourceCatalog.length} university course pages
+            Search {academySourceCatalog.length} official university course
+            pages
             <input
               aria-label="Search university sources"
               value={query}
@@ -88,11 +95,6 @@ export function AcademyReferences({
               placeholder="Python, algorithms, MIT, databases…"
             />
           </label>
-          <p className="academy-fineprint">
-            Public material varies by course; some resources require sign-in.
-            Check the original author and reuse terms. Institutions do not
-            endorse OutClass.
-          </p>
           <ul className="academy-reference-results">
             {found.slice(0, 5).map((course) => (
               <li key={course.id}>

@@ -53,6 +53,10 @@ const deliveryNames = {
 const academyTasks = [
   ["Design an assignment", goals.academy],
   [
+    "Write practice questions",
+    "Use an original short scenario and a tiny worked input. Ask learners to predict an output, diagnose a plausible error, and explain a changed requirement. Put the questions in the practice and reflection fields. Provide observable checks and progressive hints.",
+  ],
+  [
     "Strengthen an assignment",
     "Use the saved assignment as a baseline. In the summary identify the most consequential gap and cite the lesson. Preserve effective requirements and replace weak criteria with observable checks. Add debugging hints and an evidence-based reflection.",
   ],
@@ -69,6 +73,7 @@ export function AgentWorkPanel({
   onApplied,
   preferredLesson,
   forgeRequest,
+  forgeOnly = false,
 }: {
   domain: AgentWorkRequest["domain"];
   entity?: { id: string; revision: number };
@@ -77,14 +82,16 @@ export function AgentWorkPanel({
   onApplied?: () => Promise<void>;
   preferredLesson?: number;
   forgeRequest?: { kind: "exercise" | "capstone" };
+  forgeOnly?: boolean;
 }) {
+  const role = forgeOnly ? "Forge" : roles[domain];
   const [context, setContext] = useState<Context>(),
     [job, setJob] = useState<AgentWork>(),
     [history, setHistory] = useState<AgentWork[]>([]);
   const [goal, setGoal] = useState(goals[domain]),
     [lesson, setLesson] = useState(0),
     [asset, setAsset] = useState("");
-  const [scaffold, setScaffold] = useState<"exercise" | "capstone">();
+  const [scaffold, setScaffold] = useState(forgeRequest?.kind);
   useEffect(() => {
     if (forgeRequest) setScaffold(forgeRequest.kind);
   }, [forgeRequest]);
@@ -274,20 +281,17 @@ export function AgentWorkPanel({
     }
   }
   return (
-    <section
-      className="agent-work"
-      aria-label={`${roles[domain]} task workspace`}
-    >
+    <section className="agent-work" aria-label={`${role} task workspace`}>
       <header>
         <span className="agent-work-mark">
           <Sparkles size={17} />
         </span>
         <div>
-          <h3>{roles[domain]}</h3>
+          <h3>{role}</h3>
         </div>
         {(history.length > 1 || (history.length === 1 && !job)) && (
           <select
-            aria-label={`${roles[domain]} task history`}
+            aria-label={`${role} task history`}
             value={job?.id || ""}
             onChange={(e) =>
               setJob(history.find((r) => r.id === e.target.value))
@@ -312,9 +316,11 @@ export function AgentWorkPanel({
         <>
           {domain === "academy" && (
             <label>
-              Specialist
+              {forgeOnly ? "Deliverable" : "Specialist"}
               <select
-                aria-label="Academy specialist"
+                aria-label={
+                  forgeOnly ? "Forge deliverable" : "Academy specialist"
+                }
                 value={scaffold || "architect"}
                 disabled={busy || working(job?.phase)}
                 onChange={(e) => {
@@ -326,9 +332,19 @@ export function AgentWorkPanel({
                   );
                 }}
               >
-                <option value="architect">Atlas · lesson design</option>
-                <option value="exercise">Forge · exercise scaffold</option>
-                <option value="capstone">Forge · capstone scaffold</option>
+                <option value="architect">
+                  {forgeOnly ? "Assignment" : "Atlas · lesson design"}
+                </option>
+                <option value="exercise">
+                  {forgeOnly
+                    ? "Exercise with starter files"
+                    : "Forge · exercise scaffold"}
+                </option>
+                <option value="capstone">
+                  {forgeOnly
+                    ? "Capstone with starter files"
+                    : "Forge · capstone scaffold"}
+                </option>
               </select>
             </label>
           )}
@@ -366,7 +382,7 @@ export function AgentWorkPanel({
           <label className="agent-work-goal">
             Task
             <textarea
-              aria-label={`${roles[domain]} task`}
+              aria-label={`${role} task`}
               value={goal}
               maxLength={1500}
               onChange={(e) => setGoal(e.target.value)}
@@ -375,7 +391,7 @@ export function AgentWorkPanel({
           </label>
           <div className="agent-work-controls">
             <select
-              aria-label={`${roles[domain]} source lesson`}
+              aria-label={`${role} source lesson`}
               value={lesson}
               disabled={
                 !context ||
@@ -461,7 +477,7 @@ export function AgentWorkPanel({
                 ? "Working…"
                 : job?.phase === "failed" || job?.phase === "interrupted"
                   ? "Retry task"
-                  : scaffold
+                  : scaffold || forgeOnly
                     ? "Run Forge"
                     : "Run agent"}
             </button>
@@ -614,7 +630,7 @@ export function AgentWorkPanel({
               {(["ready", "applied"] as string[]).includes(job.phase) && (
                 <div className="agent-work-handoff">
                   <select
-                    aria-label={`${roles[domain]} handoff recipient`}
+                    aria-label={`${role} handoff recipient`}
                     value={shareTo}
                     onChange={(e) =>
                       setShareTo(e.target.value as AgentWorkRequest["domain"])

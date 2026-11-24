@@ -157,6 +157,47 @@ export function CourseWorkshopPanel({
   function patch<K extends keyof CourseBrief>(key: K, value: CourseBrief[K]) {
     setBrief((current) => ({ ...current, [key]: value }));
   }
+  function briefField(
+    key:
+      | "title"
+      | "audience"
+      | "outcome"
+      | "deliverable"
+      | "constraints"
+      | "exclusions"
+      | "runtime",
+  ) {
+    return (
+      <label key={key}>
+        {
+          {
+            title: "Course title",
+            audience: "Who is this for?",
+            outcome: "What will learners be able to do independently?",
+            deliverable: "What useful thing will they build?",
+            constraints: "Tools and constraints",
+            exclusions: "Outside this course",
+            runtime: "Runtime and version",
+          }[key]
+        }
+        <textarea
+          rows={key === "title" || key === "runtime" ? 1 : 2}
+          aria-label={`Workshop ${key}`}
+          value={brief[key]}
+          maxLength={
+            key === "title"
+              ? 200
+              : key === "audience"
+                ? 1000
+                : key === "runtime"
+                  ? 100
+                  : 1500
+          }
+          onChange={(event) => patch(key, event.target.value)}
+        />
+      </label>
+    );
+  }
   return (
     <section className="course-workshop" aria-label="Full course workshop">
       <div className="academy-material-heading">
@@ -164,10 +205,7 @@ export function CourseWorkshopPanel({
           <h2>
             <BookOpen size={20} /> Course workshop
           </h2>
-          <p>
-            Plan a complete course, write its lessons and inspect independent
-            critique before creating an instructor draft.
-          </p>
+          <p>Plan, write and review a complete course with Atlas and Forge.</p>
         </div>
       </div>
       <div className="academy-lesson-tabs">
@@ -215,34 +253,37 @@ export function CourseWorkshopPanel({
               ))}
             </select>
           </label>
-          <label>
-            Restore instructor workshop backup
-            <input
-              type="file"
-              accept=".json"
-              disabled={busy || dirty}
-              onChange={(event) => {
-                const file = event.target.files?.[0];
-                if (!file) return;
-                if (file.size > 40000000) {
-                  setError("Choose a backup under 40 MB.");
-                  return;
-                }
-                event.target.value = "";
-                void file
-                  .text()
-                  .then((text) => {
-                    const backup = JSON.parse(text);
-                    setRestoreCandidate({
-                      backup,
-                      brief: courseBrief.parse(backup.job?.brief),
-                    });
-                    setApproveRestore(false);
-                  })
-                  .catch((error) => setError(error.message));
-              }}
-            />
-          </label>
+          <details className="academy-compact-disclosure">
+            <summary>Restore a workshop backup</summary>
+            <label>
+              Instructor workshop backup
+              <input
+                type="file"
+                accept=".json"
+                disabled={busy || dirty}
+                onChange={(event) => {
+                  const file = event.target.files?.[0];
+                  if (!file) return;
+                  if (file.size > 40000000) {
+                    setError("Choose a backup under 40 MB.");
+                    return;
+                  }
+                  event.target.value = "";
+                  void file
+                    .text()
+                    .then((text) => {
+                      const backup = JSON.parse(text);
+                      setRestoreCandidate({
+                        backup,
+                        brief: courseBrief.parse(backup.job?.brief),
+                      });
+                      setApproveRestore(false);
+                    })
+                    .catch((error) => setError(error.message));
+                }}
+              />
+            </label>
+          </details>
           {restoreCandidate && (
             <fieldset disabled={busy}>
               <legend>Review workshop restore</legend>
@@ -302,98 +343,66 @@ export function CourseWorkshopPanel({
           {!job ? (
             <fieldset disabled={busy} className="course-brief">
               <legend>Course brief</legend>
-              {(
-                [
-                  "title",
-                  "audience",
-                  "outcome",
-                  "deliverable",
-                  "constraints",
-                  "exclusions",
-                  "runtime",
-                ] as const
-              ).map((key) => (
-                <label key={key}>
-                  {
-                    {
-                      title: "Course title",
-                      audience: "Who is this for?",
-                      outcome:
-                        "What will learners be able to do independently?",
-                      deliverable: "What useful thing will they build?",
-                      constraints: "Tools and constraints",
-                      exclusions: "Outside this course",
-                      runtime: "Runtime and version",
-                    }[key]
-                  }
+              {(["title", "audience", "outcome", "deliverable"] as const).map(
+                briefField,
+              )}
+              <details className="academy-compact-disclosure">
+                <summary>Scope and tooling</summary>
+                {(["constraints", "exclusions", "runtime"] as const).map(
+                  briefField,
+                )}
+                <label>
+                  Starting skills · one per line
                   <textarea
-                    rows={key === "title" || key === "runtime" ? 1 : 2}
-                    aria-label={`Workshop ${key}`}
-                    value={brief[key]}
-                    maxLength={
-                      key === "title"
-                        ? 200
-                        : key === "audience"
-                          ? 1000
-                          : key === "runtime"
-                            ? 100
-                            : 1500
+                    value={brief.startingSkills.join("\n")}
+                    onChange={(event) =>
+                      patch("startingSkills", event.target.value.split("\n"))
                     }
-                    onChange={(event) => patch(key, event.target.value)}
                   />
                 </label>
-              ))}
-              <label>
-                Starting skills · one per line
-                <textarea
-                  value={brief.startingSkills.join("\n")}
-                  onChange={(event) =>
-                    patch("startingSkills", event.target.value.split("\n"))
-                  }
-                />
-              </label>
-              <label>
-                Course hours
-                <input
-                  type="number"
-                  min={1}
-                  max={500}
-                  value={brief.hours}
-                  onChange={(event) =>
-                    patch("hours", Number(event.target.value))
-                  }
-                />
-              </label>
-              <label>
-                Number of lessons
-                <input
-                  type="number"
-                  min={3}
-                  max={40}
-                  value={brief.lessonCount}
-                  onChange={(event) =>
-                    patch("lessonCount", Number(event.target.value))
-                  }
-                />
-              </label>
-              <label>
-                Project language
-                <select
-                  value={brief.language}
-                  onChange={(event) =>
-                    patch(
-                      "language",
-                      event.target.value as CourseBrief["language"],
-                    )
-                  }
-                >
-                  <option value="python">Python</option>
-                  <option value="javascript">JavaScript</option>
-                  <option value="other">
-                    Other · manual technical verification
-                  </option>
-                </select>
-              </label>
+                <label>
+                  Course hours
+                  <input
+                    type="number"
+                    min={1}
+                    max={500}
+                    value={brief.hours}
+                    onChange={(event) =>
+                      patch("hours", Number(event.target.value))
+                    }
+                  />
+                </label>
+                <label>
+                  Number of lessons
+                  <input
+                    type="number"
+                    min={3}
+                    max={40}
+                    value={brief.lessonCount}
+                    onChange={(event) =>
+                      patch("lessonCount", Number(event.target.value))
+                    }
+                  />
+                </label>
+                <label>
+                  Project language
+                  <select
+                    value={brief.language}
+                    onChange={(event) =>
+                      patch(
+                        "language",
+                        event.target.value as CourseBrief["language"],
+                      )
+                    }
+                  >
+                    <option value="python">Python</option>
+                    <option value="javascript">JavaScript</option>
+                    <option value="other">
+                      Other · manual technical verification
+                    </option>
+                  </select>
+                </label>
+              </details>
               <label className="product-checkbox">
                 <input
                   type="checkbox"
