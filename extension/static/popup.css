@@ -227,6 +227,24 @@ input:focus-visible {
 [hidden] {
   display: none !important;
 }
+#capture { margin-bottom: 8px; }
+#capture-preview { padding: 10px 0 14px; }
+#capture-preview label { display: block; margin-bottom: 5px; }
+#capture-preview :is(input, textarea) {
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 8px;
+  font: inherit;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+}
+#capture-preview textarea { resize: vertical; min-height: 92px; }
+.capture-actions { display: flex; gap: 14px; align-items: center; }
+.capture-actions .retry { margin: 0; }
+#capture-preview input[type="checkbox"] { width: auto; margin: 0 3px 0 0; }
+#related-lessons-label { padding-block: 3px 9px; }
 .transcript-hint {
   font-size: 9px;
   line-height: 1.7;

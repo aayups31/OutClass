@@ -6,6 +6,7 @@ export const lessonSchema = z.object({
   sectionId: z.string().max(200).optional(),
   order: z.number().int().min(0).default(0),
   completed: z.boolean().optional(),
+  url: z.string().url().max(2000).optional(),
 });
 export const observationSchema = z.object({
   eventId: z.string().min(1).max(200),
@@ -15,6 +16,7 @@ export const observationSchema = z.object({
   currentLessonId: z.string().max(200).optional(),
   lessons: z.array(lessonSchema).max(500).default([]),
   videoSeconds: z.number().finite().min(0).max(86400).optional(),
+  preserveTitle: z.boolean().optional(),
 });
 export type Observation = z.infer<typeof observationSchema>;
 export type Lesson = z.infer<typeof lessonSchema> & {
@@ -23,7 +25,7 @@ export type Lesson = z.infer<typeof lessonSchema> & {
 };
 export interface Course {
   id: string;
-  platform?: "udemy" | "academy";
+  platform?: "udemy" | "web" | "academy";
   title: string;
   url: string;
   path: string;

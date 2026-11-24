@@ -881,14 +881,14 @@ export function createApp(
         courseId: text.min(1),
         title: z.string().min(1).max(200),
         content: z.string().min(1).max(240000),
-        kind: z.enum(["material", "transcript"]).default("material"),
+        kind: z.enum(["material", "transcript", "web-page"]).default("material"),
         lessonId: text.default(""),
         observation: observationSchema.optional(),
       })
       .parse(req.body);
     if (input.observation) {
       if (input.observation.courseId !== input.courseId)
-        throw new UserError("The transcript must match the selected course.");
+        throw new UserError("The source must match the selected course.");
       await application.serial(async () =>
         application.observe(input.observation!),
       );
@@ -901,6 +901,10 @@ export function createApp(
       input.lessonId,
     );
     res.json({ documentId, ...library.status(input.courseId) });
+  });
+  app.get("/api/lesson-material", (req, res) => {
+    const input = z.object({ courseId: text.min(1), lessonId: text.min(1) }).parse(req.query);
+    res.json(library.lessonMaterial(input.courseId, input.lessonId));
   });
   app.post("/api/assistant-enable", async (req, res) => {
     const input = z.object({ enabled: z.boolean() }).parse(req.body);

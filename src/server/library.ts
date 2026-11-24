@@ -130,6 +130,14 @@ export class CourseLibrary {
       messages: this.history(id),
     };
   }
+  lessonMaterial(courseId: string, lessonId: string) {
+    const course = this.course(courseId);
+    if (!course.lessons.some((lesson) => lesson.id === lessonId))
+      throw new UserError("That lesson does not belong to this course.", 404);
+    return this.app.store.db.prepare(
+      "SELECT title,content,kind FROM rag_documents WHERE course_id=? AND lesson_id=? AND generated=0 AND kind IN ('web-page','transcript') ORDER BY created_at DESC LIMIT 1",
+    ).get(courseId, lessonId) as { title: string; content: string; kind: string } | undefined ?? null;
+  }
   remove(id: string, documentId: string) {
     this.course(id);
     const doc = this.app.store.db
@@ -400,7 +408,7 @@ export class CourseLibrary {
     this.course(courseId);
     const all = this.app.store.db
       .prepare(
-        `SELECT * FROM rag_chunks WHERE course_id=? ${courseOnly ? "AND kind IN ('material','transcript')" : ""} LIMIT 2000`,
+        `SELECT * FROM rag_chunks WHERE course_id=? ${courseOnly ? "AND kind IN ('material','transcript','web-page')" : ""} LIMIT 2000`,
       )
       .all(courseId) as unknown as Chunk[];
     const scores = new Map<string, number>();
@@ -438,7 +446,7 @@ export class CourseLibrary {
     if (words.length) {
       const ranked = this.app.store.db
         .prepare(
-          "SELECT rag_chunks.id FROM rag_fts JOIN rag_chunks ON rag_fts.id=rag_chunks.id WHERE rag_fts MATCH ? AND rag_chunks.course_id=? AND (?=0 OR rag_chunks.kind IN ('material','transcript')) ORDER BY bm25(rag_fts,0,2,1) LIMIT 50",
+          "SELECT rag_chunks.id FROM rag_fts JOIN rag_chunks ON rag_fts.id=rag_chunks.id WHERE rag_fts MATCH ? AND rag_chunks.course_id=? AND (?=0 OR rag_chunks.kind IN ('material','transcript','web-page')) ORDER BY bm25(rag_fts,0,2,1) LIMIT 50",
         )
         .all(
           words.map((word) => `"${word}"`).join(" OR "),
@@ -574,7 +582,7 @@ export class CourseLibrary {
         cited = sources.map((source, i) => ({ ...source, number: i + 1 }));
       if (mode === "course" && !sources.length) {
         text =
-          "I don’t have a matching passage from this course yet. Add a transcript or resource in Sources, or import the visible transcript from the Udemy extension, then refresh the index. I won’t infer lecture content from the course title.";
+          "I don’t have a matching passage yet. Save the lesson with the OutClass extension or add a transcript or resource in Sources.";
         responseMode = "missing-context";
       } else {
         const history = this.history(courseId)

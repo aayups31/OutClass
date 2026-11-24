@@ -25,7 +25,7 @@
         />
       </svg>
       <strong>Out<span>Class</span></strong>
-      <small>UDEMY COMPANION</small>
+      <small>LEARNING COMPANION</small>
     </header>
     <div id="status">Connecting…</div>
     <section id="details"></section>
@@ -46,17 +46,25 @@
       </div>
     </form>
     <p id="error" role="alert"></p>
+    <button id="capture" class="primary">Capture this lesson</button>
+    <form id="capture-preview" hidden>
+      <label for="capture-title">Lesson title</label>
+      <input id="capture-title" required maxlength="260" />
+      <label for="capture-text">Material to save</label>
+      <textarea id="capture-text" rows="6" maxlength="12000" placeholder="Leave blank to save the lesson link."></textarea>
+      <label id="related-lessons-label" hidden><input id="related-lessons" type="checkbox" /> <span id="related-lessons-count"></span></label>
+      <div class="capture-actions">
+        <button class="primary" type="submit">Save in Learn</button>
+        <button class="retry" id="cancel-capture" type="button">Cancel</button>
+      </div>
+    </form>
     <button id="open" class="primary">
       Open my workspace <span aria-hidden="true">↗</span>
     </button>
     <button id="retry" class="retry">Retry pending updates</button>
     <button id="transcript" class="retry">Import visible transcript</button>
-    <p class="hint transcript-hint">
-      Open the Transcript panel in Udemy first. Its visible text is saved
-      locally to this course’s Sources.
-    </p>
+    <p class="hint transcript-hint">You can select a passage before capturing. For Udemy transcripts, open the Transcript panel first.</p>
     <p id="transcript-status" role="status"></p>
-    <footer>Watch. Make. Keep your progress.</footer>
     <script src="popup.js"></script>
   </body>
 </html>

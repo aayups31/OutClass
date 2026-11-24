@@ -1,4 +1,11 @@
 import { observationSchema, type Observation } from "../src/shared";
+import {
+  describeLearningPage,
+  isCurriculumLesson,
+  learningUrl,
+  webLearningId,
+} from "../src/learning-source";
+import { readLearningPage } from "./read-learning-page";
 const origin = "http://127.0.0.1:47831";
 let flushing: Promise<void> | undefined;
 let storageQueue: Promise<unknown> = Promise.resolve();
@@ -9,6 +16,39 @@ function stored<T>(action: () => Promise<T>): Promise<T> {
 }
 function outbox(value: unknown): Observation[] {
   return Array.isArray(value) ? value : [];
+}
+async function relatedLessons(current: URL, candidates: unknown) {
+  if (!Array.isArray(candidates)) return [];
+  const page = describeLearningPage(current);
+  const lessons = new Map<string, Observation["lessons"][number]>();
+  for (const item of candidates.slice(0, 300)) {
+    if (typeof item?.url !== "string" || typeof item.title !== "string")
+      continue;
+    const url = learningUrl(item.url);
+    if (!url || !isCurriculumLesson(url)) continue;
+    const target = describeLearningPage(url);
+    if (
+      target.provider !== page.provider ||
+      target.group !== page.group ||
+      target.lessonKey === page.lessonKey
+    )
+      continue;
+    const id =
+      target.provider === "Udemy"
+        ? target.lessonKey
+        : await webLearningId("lesson", target.lessonKey);
+    const title = item.title.trim().slice(0, 240);
+    if (!title || lessons.has(id)) continue;
+    lessons.set(id, {
+      id,
+      title,
+      section: target.section.slice(0, 300),
+      url: url.href,
+      order: lessons.size,
+    });
+    if (lessons.size >= 100) break;
+  }
+  return [...lessons.values()];
 }
 async function send(route: string, body?: unknown) {
   const { token } = await chrome.storage.local.get("token");
@@ -103,6 +143,85 @@ chrome.runtime.onMessage.addListener((message, sender, respond) => {
     return false;
   (async () => {
     if (message.type === "open-workspace") return send("open-desktop", {});
+    if (message.type === "preview-page" || message.type === "save-page") {
+      const [tab] = await chrome.tabs.query({
+        active: true,
+        currentWindow: true,
+      });
+      const url = learningUrl(tab?.url || "");
+      if (!tab?.id || !url)
+        throw new Error("Open an HTTPS learning page in this tab first.");
+      const page = describeLearningPage(url);
+      if (message.type === "preview-page") {
+        const [frame] = await chrome.scripting.executeScript({
+          target: { tabId: tab.id },
+          func: readLearningPage,
+          args: [page.provider],
+        });
+        const result = frame?.result;
+        if (!result || learningUrl(result.url)?.href !== url.href)
+          throw new Error(
+            "The page changed during capture. Try again on the lesson.",
+          );
+        return {
+          ...result,
+          url: url.href,
+          links: await relatedLessons(url, result.links),
+        };
+      }
+      if (message.url !== url.href)
+        throw new Error(
+          "The tab changed. Preview the current page before saving.",
+        );
+      const udemy =
+        page.provider === "Udemy" && url.pathname.startsWith("/course/");
+      const courseId = udemy
+        ? page.group
+        : await webLearningId("course", page.group);
+      const lessonId =
+        udemy && /^\d+$/.test(page.lessonKey)
+          ? page.lessonKey
+          : await webLearningId("lesson", page.lessonKey);
+      const title =
+        typeof message.title === "string"
+          ? message.title.trim().slice(0, 260)
+          : "";
+      const lessonTitle = title || page.title;
+      const related = await relatedLessons(url, message.links);
+      const observation = observationSchema.parse({
+        eventId: crypto.randomUUID(),
+        courseId,
+        title: page.title.slice(0, 300),
+        preserveTitle: true,
+        url: url.href,
+        currentLessonId: lessonId,
+        lessons: [
+          {
+            id: lessonId,
+            title: lessonTitle,
+            section: page.section.slice(0, 300),
+            url: url.href,
+          },
+          ...related,
+        ],
+      });
+      const text =
+        typeof message.text === "string"
+          ? message.text.trim().slice(0, 12000)
+          : "";
+      if (text)
+        await send("course-material", {
+          courseId,
+          lessonId,
+          title: lessonTitle.slice(0, 200),
+          content: text,
+          kind: message.kind === "transcript" ? "transcript" : "web-page",
+          observation,
+        });
+      else await send("observations", observation);
+      await stored(() => chrome.storage.local.set({ latest: observation }));
+      return { ok: true };
+    }
     if (message.type === "capture-transcript") {
       const tabs = await chrome.tabs.query({
         active: true,

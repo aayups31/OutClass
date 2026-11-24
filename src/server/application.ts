@@ -38,6 +38,7 @@ import { prepareGithub } from "./github.js";
 import { describe } from "./ai.js";
 import { AIProvider } from "./ai-provider.js";
 import { LearnDelivery } from "./learn-delivery.js";
+import { learningUrl, platformName } from "../learning-source.js";
 
 export class Application {
   readonly ai = new AIProvider(this);
@@ -146,29 +147,47 @@ export class Application {
   }
   observe(observation: Observation) {
     if (this.store.seen(observation.eventId)) return this.store.state();
-    const url = sanitizeUdemyUrl(observation.url);
-    assertClean(JSON.stringify({ ...observation, url }), "course metadata");
+    const source = learningUrl(observation.url);
+    if (!source) throw new UserError("Use an HTTPS link to a lesson or learning page.");
+    const isUdemy = platformName(source) === "Udemy" && source.pathname.startsWith("/course/");
+    const url = isUdemy ? sanitizeUdemyUrl(source.href) : source.href;
+    const platform = isUdemy ? "udemy" : "web";
+    if (!isUdemy && !/^web-course-[\da-f]{24}$/.test(observation.courseId))
+      throw new UserError("Use the extension or Add a course to save this learning link.");
+    const lessons = observation.lessons.map((lesson) => {
+      if (!lesson.url) return lesson;
+      const link = learningUrl(lesson.url);
+      if (!link || platformName(link) !== platformName(source))
+        throw new UserError("The lesson link must be on the same learning platform.");
+      return { ...lesson, url: link.href };
+    });
+    assertClean(JSON.stringify({ ...observation, url, lessons }), "course metadata");
     const state = this.store.state();
     let course = state.courses.find((item) => item.id === observation.courseId);
+    if (course && (course.platform || "udemy") !== platform)
+      throw new UserError("That course belongs to a different learning platform.");
+    if (course && !isUdemy && platformName(new URL(course.url)) !== platformName(source))
+      throw new UserError("That course belongs to a different learning site.");
     if (!course) {
       course = {
         id: observation.courseId,
+        platform,
         title: observation.title,
         url,
-        path: `udemy/${slug(observation.title)}-${shortId(observation.courseId)}`,
+        path: `${platform}/${slug(observation.title)}-${shortId(observation.courseId)}`,
         lessons: [],
         mirrored: false,
         observedAt: new Date().toISOString(),
       };
       state.courses.push(course);
     }
-    course.title = observation.title;
+    if (!observation.preserveTitle) course.title = observation.title;
     course.url = url;
     course.observedAt = new Date().toISOString();
     course.videoSeconds = observation.videoSeconds;
     if (observation.currentLessonId)
       course.currentLessonId = observation.currentLessonId;
-    for (const observed of observation.lessons) {
+    for (const observed of lessons) {
       const existing = course.lessons.find((item) => item.id === observed.id);
       if (existing)
         Object.assign(existing, { ...observed, path: existing.path });
@@ -516,7 +535,7 @@ export class Application {
         files.push({ path: filename, content: null });
     const metadata = {
       schemaVersion: 1,
-      platform: "udemy",
+      platform: state.courses.find((item) => item.id === session.courseId)?.platform || "udemy",
       courseId: session.courseId,
       lessonId: session.lessonId,
       lesson: session.lessonTitle,
