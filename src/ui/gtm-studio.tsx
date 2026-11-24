@@ -95,14 +95,6 @@ export function GTMStudioPanel({
   }
   return (
     <section className="gtm-studio-panel">
-      <div className="product-panel-heading">
-        <h2>Promotion studio</h2>
-        <span>Course material → channel-ready posts and previews</span>
-      </div>
-      <p>
-        Create your promotion here. GTM uses the shared production engine; you
-        do not need to build every asset manually in Creator Studio.
-      </p>
       <details open={!plans.length}>
         <summary>New promotion</summary>
         <fieldset disabled={busy}>

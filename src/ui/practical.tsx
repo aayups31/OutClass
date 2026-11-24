@@ -243,9 +243,7 @@ export function LearningHub({
   return (
     <div className="learning-hub">
       <div className="page-heading">
-        <div className="eyebrow">Learn by doing</div>
         <h1>Build before the course ends.</h1>
-        <p>Small practical steps. Your own decisions. A teacher beside you.</p>
       </div>
       <div className="learning-controls">
         <select

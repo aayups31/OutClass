@@ -768,8 +768,7 @@ export function AcademyWorkbench({
           </nav>
           {!course.lessons.length && (
             <p className="academy-outline-empty">
-              Import your outline or add a lesson. Your teaching material stays
-              yours.
+              Import an outline or add a lesson.
             </p>
           )}
         </aside>
@@ -778,15 +777,7 @@ export function AcademyWorkbench({
             {tab === "overview" && (
               <div className="academy-page">
                 <div className="academy-page-heading">
-                  <span>Course direction</span>
-                  <h2>
-                    A clear starting point.
-                    <br />A useful result.
-                  </h2>
-                  <p>
-                    Describe your learner and what they will be able to do.
-                    Build on your existing course material.
-                  </p>
+                  <h2>Course brief</h2>
                 </div>
                 <label>
                   Course title

@@ -1,12 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import {
-  Film,
-  Megaphone,
-  Plus,
-  CheckCircle2,
-  ArrowUpRight,
-  Download,
-} from "lucide-react";
+import { Plus, CheckCircle2, ArrowUpRight, Download } from "lucide-react";
 import type {
   CreativeDraft,
   CampaignDraft,
@@ -111,6 +104,9 @@ function StudioWorkspace({
   const [promotionDirty, setPromotionDirty] = useState(false);
   const [composerDirty, setComposerDirty] = useState(false);
   const [composerSession, setComposerSession] = useState(0);
+  const [creativeView, setCreativeView] = useState<
+    "Brief" | "Design & media" | "Muse"
+  >("Brief");
   const [gtmTab, setGtmTab] = useState<"create" | "campaigns">("create");
   const unsaved = useRef(false);
   unsaved.current = dirty || mediaDirty || promotionDirty || composerDirty;
@@ -205,10 +201,6 @@ function StudioWorkspace({
   const source = data?.releases.find((r) => r.id === creative.releaseId);
   const currentLesson = source?.lessons[creative.lessonIndex];
   const names = { creator: "Creator Studio", gtm: "GTM" };
-  const intros = {
-    creator: "Build your story from real teaching.",
-    gtm: "Plan a launch. Keep the evidence clear.",
-  };
   if (!data)
     return (
       <div className="product-workspace">
@@ -219,16 +211,9 @@ function StudioWorkspace({
     );
   return (
     <div className="product-workspace">
-      <div className="product-workspace-header">
-        <div>
-          <span className="product-local">Local authoring preview</span>
-          <h1>{names[mode]}</h1>
-          <p>{intros[mode]}</p>
-        </div>
-        <span className="product-emblem">
-          {mode === "creator" ? <Film /> : <Megaphone />}
-        </span>
-      </div>
+      <header className={`product-workspace-header ${mode}`}>
+        <h1>{names[mode]}</h1>
+      </header>
       {error && (
         <p className="product-message error" role="alert">
           {error}
@@ -297,6 +282,7 @@ function StudioWorkspace({
                 className="button"
                 onClick={() => {
                   if (canSwitch()) {
+                    setCreativeView("Brief");
                     setSelectedCreative(undefined);
                     setCreative({
                       title: "",
@@ -334,233 +320,255 @@ function StudioWorkspace({
               ))}
             </aside>
             <section className="product-editor">
-              <AgentPanel
-                onWorkApplied={workApplied}
-                domain="creative"
-                entity={selectedCreative}
-                dirty={dirty || mediaDirty || promotionDirty || composerDirty}
-                api={api}
-                onApply={(text) => {
-                  setCreative({ ...creative, copy: text });
-                  changed();
-                }}
-              />
-
-              <div className="product-panel-heading">
-                <h2>Writing & creative brief</h2>
-                <span>
-                  {dirty
-                    ? "Unsaved changes"
-                    : selectedCreative?.approval
-                      ? "Approved copy"
-                      : "Draft"}
-                </span>
-              </div>
-              <label>
-                Creative title
-                <input
-                  value={creative.title}
-                  maxLength={200}
-                  onChange={(e) => {
-                    setCreative({ ...creative, title: e.target.value });
-                    changed();
-                  }}
-                />
-              </label>
-              <div className="product-input-row">
-                <label>
-                  Course release
-                  <select
-                    aria-label="Course release"
-                    value={creative.releaseId}
-                    onChange={(e) => {
-                      setCreative({
-                        ...creative,
-                        releaseId: e.target.value,
-                        lessonIndex: 0,
-                      });
-                      changed();
-                    }}
-                  >
-                    <option value="">Choose a local course release</option>
-                    {data.releases.map((r) => (
-                      <option key={r.id} value={r.id}>
-                        {r.title} · v{r.revision}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label>
-                  Source lesson
-                  <select
-                    aria-label="Source lesson"
-                    value={creative.lessonIndex}
-                    disabled={!source}
-                    onChange={(e) => {
-                      setCreative({
-                        ...creative,
-                        lessonIndex: Number(e.target.value),
-                      });
-                      changed();
-                    }}
-                  >
-                    {source?.lessons.map((l, i) => (
-                      <option key={i} value={i}>
-                        {l.title}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              </div>
-              {currentLesson && (
-                <div className="product-source">
-                  <h3>Source evidence</h3>
-                  <p>{currentLesson.objective}</p>
-                  <details>
-                    <summary>Read the actual lesson</summary>
-                    <p className="product-preserve">{currentLesson.content}</p>
-                  </details>
-                </div>
-              )}
-              <label>
-                Creative brief
-                <textarea
-                  rows={3}
-                  maxLength={2000}
-                  placeholder="Audience, destination, tone and the single story to tell"
-                  value={creative.brief}
-                  onChange={(e) => {
-                    setCreative({ ...creative, brief: e.target.value });
-                    changed();
-                  }}
-                />
-              </label>
-              <label>
-                Primary brand color
-                <input
-                  type="color"
-                  value={creative.brandColor}
-                  onChange={(e) => {
-                    setCreative({ ...creative, brandColor: e.target.value });
-                    changed();
-                  }}
-                />
-              </label>
-              <label>
-                Editable copy
-                <textarea
-                  rows={7}
-                  maxLength={8000}
-                  value={creative.copy}
-                  onChange={(e) => {
-                    setCreative({ ...creative, copy: e.target.value });
-                    changed();
-                  }}
-                />
-              </label>
-              <button
-                className="button"
-                disabled={!currentLesson}
-                onClick={() => {
-                  setCreative({
-                    ...creative,
-                    copy: `${source!.title}\n\n${currentLesson!.objective}\n\nPractice: ${currentLesson!.practice}`,
-                  });
-                  changed();
-                }}
+              <nav
+                className="product-section-tabs"
+                aria-label="Creative workspace views"
               >
-                Use source objective as a starting draft
-              </button>
-              <label className="product-checkbox">
-                <input
-                  type="checkbox"
-                  checked={creative.rightsConfirmed}
-                  onChange={(e) => {
+                {(["Brief", "Design & media", "Muse"] as const).map((view) => (
+                  <button
+                    type="button"
+                    key={view}
+                    aria-pressed={creativeView === view}
+                    className={creativeView === view ? "selected" : ""}
+                    onClick={() => setCreativeView(view)}
+                  >
+                    {view}
+                  </button>
+                ))}
+              </nav>
+              <div hidden={creativeView !== "Muse"}>
+                <AgentPanel
+                  onWorkApplied={workApplied}
+                  domain="creative"
+                  entity={selectedCreative}
+                  dirty={dirty || mediaDirty || promotionDirty || composerDirty}
+                  api={api}
+                  onApply={(text) => {
+                    setCreative({ ...creative, copy: text });
+                    changed();
+                  }}
+                />
+              </div>
+              <div
+                className="creative-writing"
+                hidden={creativeView !== "Brief"}
+              >
+                <div className="product-panel-heading">
+                  <h2>Writing & creative brief</h2>
+                  <span>
+                    {dirty
+                      ? "Unsaved changes"
+                      : selectedCreative?.approval
+                        ? "Approved copy"
+                        : "Draft"}
+                  </span>
+                </div>
+                <label>
+                  Creative title
+                  <input
+                    value={creative.title}
+                    maxLength={200}
+                    onChange={(e) => {
+                      setCreative({ ...creative, title: e.target.value });
+                      changed();
+                    }}
+                  />
+                </label>
+                <div className="product-input-row">
+                  <label>
+                    Course release
+                    <select
+                      aria-label="Course release"
+                      value={creative.releaseId}
+                      onChange={(e) => {
+                        setCreative({
+                          ...creative,
+                          releaseId: e.target.value,
+                          lessonIndex: 0,
+                        });
+                        changed();
+                      }}
+                    >
+                      <option value="">Choose a local course release</option>
+                      {data.releases.map((r) => (
+                        <option key={r.id} value={r.id}>
+                          {r.title} · v{r.revision}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label>
+                    Source lesson
+                    <select
+                      aria-label="Source lesson"
+                      value={creative.lessonIndex}
+                      disabled={!source}
+                      onChange={(e) => {
+                        setCreative({
+                          ...creative,
+                          lessonIndex: Number(e.target.value),
+                        });
+                        changed();
+                      }}
+                    >
+                      {source?.lessons.map((l, i) => (
+                        <option key={i} value={i}>
+                          {l.title}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+                {currentLesson && (
+                  <div className="product-source">
+                    <h3>Source evidence</h3>
+                    <p>{currentLesson.objective}</p>
+                    <details>
+                      <summary>Read the actual lesson</summary>
+                      <p className="product-preserve">
+                        {currentLesson.content}
+                      </p>
+                    </details>
+                  </div>
+                )}
+                <label>
+                  Creative brief
+                  <textarea
+                    rows={3}
+                    maxLength={2000}
+                    placeholder="Audience, destination, tone and the single story to tell"
+                    value={creative.brief}
+                    onChange={(e) => {
+                      setCreative({ ...creative, brief: e.target.value });
+                      changed();
+                    }}
+                  />
+                </label>
+                <label>
+                  Primary brand color
+                  <input
+                    type="color"
+                    value={creative.brandColor}
+                    onChange={(e) => {
+                      setCreative({ ...creative, brandColor: e.target.value });
+                      changed();
+                    }}
+                  />
+                </label>
+                <label>
+                  Editable copy
+                  <textarea
+                    rows={7}
+                    maxLength={8000}
+                    value={creative.copy}
+                    onChange={(e) => {
+                      setCreative({ ...creative, copy: e.target.value });
+                      changed();
+                    }}
+                  />
+                </label>
+                <button
+                  className="button"
+                  disabled={!currentLesson}
+                  onClick={() => {
                     setCreative({
                       ...creative,
-                      rightsConfirmed: e.target.checked,
+                      copy: `${source!.title}\n\n${currentLesson!.objective}\n\nPractice: ${currentLesson!.practice}`,
                     });
                     changed();
                   }}
-                />
-                I have rights to use this material and have reviewed the claims.
-              </label>
-              <div className="product-actions">
-                <button
-                  className="button primary"
-                  disabled={!creative.title || !creative.releaseId}
-                  onClick={() =>
-                    void action(async () => {
-                      const saved = await api<Creative>(
-                        "expansion/creatives/save",
-                        {
-                          ...creative,
-                          id: selectedCreative?.id,
-                          expectedRevision: selectedCreative?.revision || 0,
-                        },
-                      );
-                      setCreative(creativeValues(saved));
-                      setSelectedCreative(saved);
-                      clean();
-                    }, "Creative draft saved.")
-                  }
                 >
-                  Save creative draft
+                  Use source objective as a starting draft
                 </button>
-                <button
-                  className="button"
-                  disabled={!selectedCreative || dirty}
-                  onClick={() => {
-                    if (
-                      confirm(
-                        "Approve this exact copy revision for a campaign brief?",
-                      )
-                    )
+                <label className="product-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={creative.rightsConfirmed}
+                    onChange={(e) => {
+                      setCreative({
+                        ...creative,
+                        rightsConfirmed: e.target.checked,
+                      });
+                      changed();
+                    }}
+                  />
+                  I have rights to use this material and have reviewed the
+                  claims.
+                </label>
+                <div className="product-actions">
+                  <button
+                    className="button primary"
+                    disabled={!creative.title || !creative.releaseId}
+                    onClick={() =>
                       void action(async () => {
-                        const approved = await api<Creative>(
-                          `expansion/creatives/${selectedCreative!.id}/approve`,
+                        const saved = await api<Creative>(
+                          "expansion/creatives/save",
                           {
-                            expectedRevision: selectedCreative!.revision,
-                            approve: true,
+                            ...creative,
+                            id: selectedCreative?.id,
+                            expectedRevision: selectedCreative?.revision || 0,
                           },
                         );
-                        setSelectedCreative(approved);
-                        setCreative(creativeValues(approved));
-                      }, "Copy approved. Further edits require new approval.");
-                  }}
-                >
-                  Approve copy
-                </button>
-                <button
-                  className="button"
-                  disabled={!selectedCreative || dirty}
-                  onClick={() =>
-                    exportFile(
-                      `outclass-creative-${selectedCreative!.id}.json`,
-                      selectedCreative,
-                    )
-                  }
-                >
-                  Export editable brief
-                </button>
+                        setCreative(creativeValues(saved));
+                        setSelectedCreative(saved);
+                        clean();
+                      }, "Creative draft saved.")
+                    }
+                  >
+                    Save creative draft
+                  </button>
+                  <button
+                    className="button"
+                    disabled={!selectedCreative || dirty}
+                    onClick={() => {
+                      if (
+                        confirm(
+                          "Approve this exact copy revision for a campaign brief?",
+                        )
+                      )
+                        void action(async () => {
+                          const approved = await api<Creative>(
+                            `expansion/creatives/${selectedCreative!.id}/approve`,
+                            {
+                              expectedRevision: selectedCreative!.revision,
+                              approve: true,
+                            },
+                          );
+                          setSelectedCreative(approved);
+                          setCreative(creativeValues(approved));
+                        }, "Copy approved. Further edits require new approval.");
+                    }}
+                  >
+                    Approve copy
+                  </button>
+                  <button
+                    className="button"
+                    disabled={!selectedCreative || dirty}
+                    onClick={() =>
+                      exportFile(
+                        `outclass-creative-${selectedCreative!.id}.json`,
+                        selectedCreative,
+                      )
+                    }
+                  >
+                    Export editable brief
+                  </button>
+                </div>
               </div>
-
-              <CreatorDesign
-                api={api}
-                creative={selectedCreative}
-                dirty={dirty}
-              />
-              <CreatorMedia
-                key={`${selectedCreative?.id || "new"}:${composerSession}`}
-                onTimelineDirty={setMediaDirty}
-                api={api}
-                creative={selectedCreative}
-                dirty={dirty}
-              />
-              <p className="product-limit">
-                Source-grounded writing and reviewed proposals stay editable.
-                Media production is managed separately below.
-              </p>
+              <div hidden={creativeView !== "Design & media"}>
+                <CreatorDesign
+                  api={api}
+                  creative={selectedCreative}
+                  dirty={dirty}
+                />
+                <CreatorMedia
+                  key={`${selectedCreative?.id || "new"}:${composerSession}`}
+                  onTimelineDirty={setMediaDirty}
+                  api={api}
+                  creative={selectedCreative}
+                  dirty={dirty}
+                />
+              </div>
             </section>
           </div>
         )}
@@ -616,17 +624,20 @@ function StudioWorkspace({
               </div>
             </aside>
             <section className="product-editor">
-              <AgentPanel
-                onWorkApplied={workApplied}
-                domain="growth"
-                entity={selectedCampaign}
-                dirty={dirty || mediaDirty || promotionDirty || composerDirty}
-                api={api}
-                onApply={(text) => {
-                  setCampaign({ ...campaign, goal: text.slice(0, 2000) });
-                  changed();
-                }}
-              />
+              <details className="agent-disclosure">
+                <summary>Signal</summary>
+                <AgentPanel
+                  onWorkApplied={workApplied}
+                  domain="growth"
+                  entity={selectedCampaign}
+                  dirty={dirty || mediaDirty || promotionDirty || composerDirty}
+                  api={api}
+                  onApply={(text) => {
+                    setCampaign({ ...campaign, goal: text.slice(0, 2000) });
+                    changed();
+                  }}
+                />
+              </details>
 
               <h2>Campaign planner</h2>
               <label>
@@ -794,8 +805,8 @@ function StudioWorkspace({
                   </p>
                 </div>
               )}
-              <div className="product-source">
-                <h3>Measurement plan</h3>
+              <details className="agent-disclosure">
+                <summary>Measurement plan</summary>
                 <ol>
                   <li>
                     Review the course destination and consent requirements.
@@ -813,7 +824,7 @@ function StudioWorkspace({
                     revenue or ROAS.
                   </li>
                 </ol>
-              </div>
+              </details>
 
               <GTMOperations
                 key={`${selectedCampaign?.id || "new"}:${composerSession}`}
@@ -822,13 +833,16 @@ function StudioWorkspace({
                 campaign={selectedCampaign}
                 dirty={dirty}
               />
-              <AgentPanel
-                onWorkApplied={workApplied}
-                domain="analytics"
-                entity={selectedCampaign}
-                dirty={dirty || mediaDirty || promotionDirty || composerDirty}
-                api={api}
-              />
+              <details className="agent-disclosure">
+                <summary>Pulse</summary>
+                <AgentPanel
+                  onWorkApplied={workApplied}
+                  domain="analytics"
+                  entity={selectedCampaign}
+                  dirty={dirty || mediaDirty || promotionDirty || composerDirty}
+                  api={api}
+                />
+              </details>
               <p className="product-limit">
                 Proposed budgets are plans, never spending instructions. Connect
                 verified channels before publishing.

@@ -4,26 +4,29 @@ import {
   ArrowLeft,
   Check,
   Folder,
-  ArrowUpRight,
   Link2,
   Sparkles,
   ShieldCheck,
-  Code2,
 } from "lucide-react";
 import type { DesktopEnvironment } from "../desktop/bridge";
 import type { Status } from "../shared";
 import "./onboarding.css";
+import { AppearanceButton, BrandMark, type Theme } from "./appearance";
 import { AIAccessSettings } from "./ai-access";
 
 type Request = <T>(route: string, body?: unknown) => Promise<T>;
 export function Onboarding({
   educator = false,
+  theme,
+  onToggleTheme,
   state,
   request,
   onDone,
   onRefresh,
 }: {
   educator?: boolean;
+  theme: Theme;
+  onToggleTheme: () => void;
   state: Status;
   request: Request;
   onDone: () => void;
@@ -76,64 +79,43 @@ export function Onboarding({
     <div className="onboarding">
       <aside className="onboarding-aside">
         <div className="onboarding-brand">
-          <ArrowUpRight size={25} />
-          <strong>{educator ? "OutClass Educator" : "OutClass"}</strong>
-          <span>01 / YOUR WORKSPACE</span>
+          <BrandMark />
+          <strong>OutClass</strong>
         </div>
         <div className="onboarding-story">
-          <p>
-            {educator ? "YOUR TEACHING WORKSPACE" : "FROM LESSON TO PRACTICE"}
-          </p>
-          {educator ? (
-            <h1>
-              Build courses that <span>teach by doing.</span>
-            </h1>
-          ) : (
-            <h1>
-              A place for
-              <br />
-              what you’re
-              <br />
-              <span>learning.</span>
-            </h1>
-          )}
-          <p>
-            {educator
-              ? "Design in Academy, preview in Learn, and prepare your launch."
-              : "Your courses, your code, your next breakthrough. All together, on your computer."}
-          </p>
+          <h1>
+            {educator ? "Educator" : "Learn"}
+            <span>.</span>
+          </h1>
         </div>
         <div className="onboarding-local">
           <ShieldCheck size={16} /> Your files stay on your computer.
         </div>
       </aside>
       <main className="onboarding-main">
-        <nav className="onboarding-progress" aria-label="Setup progress">
-          {[
-            "Welcome",
-            "Workspace",
-            "AI help",
-            ...(educator ? [] : ["Browser"]),
-          ].map((name, i) => (
-            <span
-              key={name}
-              aria-current={step === i ? "step" : undefined}
-              className={step >= i ? "current" : ""}
-            >
-              <b>{step > i ? <Check size={12} /> : i + 1}</b>
-              {name}
-            </span>
-          ))}
-        </nav>
+        <header className="onboarding-controls">
+          <nav className="onboarding-progress" aria-label="Setup progress">
+            {[
+              "Welcome",
+              "Workspace",
+              "AI help",
+              ...(educator ? [] : ["Browser"]),
+            ].map((name, i) => (
+              <span
+                key={name}
+                aria-current={step === i ? "step" : undefined}
+                className={step >= i ? "current" : ""}
+              >
+                <b>{step > i ? <Check size={12} /> : i + 1}</b>
+                {name}
+              </span>
+            ))}
+          </nav>
+          <AppearanceButton theme={theme} onToggle={onToggleTheme} />
+        </header>
         <section className="onboarding-content" aria-live="polite">
           {step === 0 && (
             <>
-              <Code2 className="onboarding-symbol" size={30} />
-              <div className="eyebrow">
-                {educator
-                  ? "ACADEMY · CREATOR STUDIO · GTM"
-                  : "A SMALL SETUP. A BETTER WAY TO LEARN."}
-              </div>
               <h2>
                 {educator
                   ? "Set up your educator workspace."
@@ -141,22 +123,9 @@ export function Onboarding({
               </h2>
               <p>
                 {educator
-                  ? "Choose a folder for your courses and connect AI if you want help building exercises and capstones."
-                  : "Set up a learning folder, connect your browser, and build alongside your Udemy courses. VS Code and GitHub are optional."}
+                  ? "Choose a home for your course drafts and teaching materials."
+                  : "Choose where to keep your lessons, code, and projects."}
               </p>
-              {!educator && (
-                <div className="onboarding-preview">
-                  <span>
-                    <Folder size={18} /> Courses find their own folder
-                  </span>
-                  <span>
-                    <Code2 size={18} /> A real editor, ready to practice
-                  </span>
-                  <span>
-                    <Sparkles size={18} /> Course answers with sources
-                  </span>
-                </div>
-              )}
               <button
                 className="button primary"
                 disabled={!environment || busy}
@@ -169,12 +138,11 @@ export function Onboarding({
           {step === 1 && (
             <>
               <Folder className="onboarding-symbol" size={30} />
-              <div className="eyebrow">YOUR LOCAL HOME</div>
+
               <h2>One folder. Every course.</h2>
               <p>
-                Choose a parent folder. OutClass creates separate practice
-                folders and versioned history inside it, then organizes every
-                course and lesson for you.
+                OutClass organizes your lessons and checkpoints inside this
+                folder.
               </p>
               <label>
                 Parent learning folder
@@ -199,18 +167,22 @@ export function Onboarding({
                   </button>
                 </div>
               </label>
-              <div className="onboarding-tree">
-                <strong>My Learning/</strong>
-                <span>
-                  ├ history/ <small>Git checkpoints, all courses</small>
-                </span>
-                <span>
-                  ├ projects/ <small>One evolving project per course</small>
-                </span>
-                <span>
-                  └ workspaces/ <small>Optional separate lesson folders</small>
-                </span>
-              </div>
+              <details className="onboarding-folder-details">
+                <summary>Folder structure</summary>
+                <div className="onboarding-tree">
+                  <strong>My Learning/</strong>
+                  <span>
+                    ├ history/ <small>Git checkpoints, all courses</small>
+                  </span>
+                  <span>
+                    ├ projects/ <small>One evolving project per course</small>
+                  </span>
+                  <span>
+                    └ workspaces/{" "}
+                    <small>Optional separate lesson folders</small>
+                  </span>
+                </div>
+              </details>
               {!state.gitAvailable && (
                 <p className="onboarding-warning">
                   Git is needed for local checkpoints.{" "}
@@ -252,13 +224,10 @@ export function Onboarding({
           {step === 2 && (
             <>
               <Sparkles className="onboarding-symbol" size={30} />
-              <div className="eyebrow">OPTIONAL, ON YOUR TERMS</div>
+
               <h2>A little help when you need it.</h2>
               <p>
-                OffCourse helps you reason about your code and course material.
-                Use a personal key, a local model, or included AI when its
-                hosted service is connected. You can also keep learning without
-                AI.
+                Connect AI now or skip this step. You can change it in Settings.
               </p>
               {state.hasApiKey || environment?.hasSavedKey ? (
                 <div className="onboarding-ready">
@@ -331,12 +300,11 @@ export function Onboarding({
           {step === 3 && (
             <>
               <Link2 className="onboarding-symbol" size={30} />
-              <div className="eyebrow">CONNECT THE LESSON</div>
+
               <h2>Bring Udemy into your workspace.</h2>
               <p>
-                The Chrome extension keeps your course and current lesson in
-                context. The store listing is being prepared; you can use the
-                included extension now.
+                Pair the Chrome extension to bring your current lesson into
+                Learn.
               </p>
               <ol className="onboarding-extension">
                 <li>

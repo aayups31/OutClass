@@ -284,11 +284,6 @@ export function AgentWorkPanel({
         </span>
         <div>
           <h3>{roles[domain]}</h3>
-          <p>
-            {domain === "analytics"
-              ? "Evidence into your next experiment."
-              : "Give a task. Review the work. Keep moving."}
-          </p>
         </div>
         {(history.length > 1 || (history.length === 1 && !job)) && (
           <select

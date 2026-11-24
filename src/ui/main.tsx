@@ -17,7 +17,6 @@ import {
   LayoutGrid,
   Link2,
   Loader2,
-  Moon,
   MoreHorizontal,
   Pause,
   Play,
@@ -26,7 +25,6 @@ import {
   Settings2,
   ShieldCheck,
   Sparkles,
-  Sun,
   X,
 } from "lucide-react";
 import type { Course, PublicPreview as Preview, Status } from "../shared";
@@ -43,6 +41,8 @@ import { EditorsAndExtensions } from "./editors";
 import { LearningHub, LiveWorkHub, PracticePrompt } from "./practical";
 import "./workspace-clean.css";
 import "./workspace-frame.css";
+import "./desktop-surface.css";
+import { AppearanceButton, BrandMark, type Theme } from "./appearance";
 const Studio = lazy(() =>
   import("./studio").then((module) => ({ default: module.Studio })),
 );
@@ -51,7 +51,7 @@ const ProductWorkspace = lazy(() =>
 );
 
 let token = "";
-type Theme = "light" | "dark";
+
 const initialTheme: Theme =
   document.documentElement.dataset.theme === "dark" ? "dark" : "light";
 async function request<T>(route: string, body?: unknown): Promise<T> {
@@ -100,11 +100,13 @@ function App() {
   const layoutControl = useWorkspaceLayout();
   const { layout } = layoutControl;
   const [theme, setTheme] = useState<Theme>(initialTheme);
+  const toggleTheme = () =>
+    setTheme((current) => (current === "dark" ? "light" : "dark"));
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
     document
       .querySelector('meta[name="theme-color"]')
-      ?.setAttribute("content", theme === "dark" ? "#101114" : "#fcfcfd");
+      ?.setAttribute("content", theme === "dark" ? "#0b0e17" : "#f6f7ff");
     try {
       localStorage.setItem("gitlearn-theme", theme);
     } catch {}
@@ -281,6 +283,8 @@ function App() {
     return (
       <Onboarding
         educator={educator}
+        theme={theme}
+        onToggleTheme={toggleTheme}
         state={state}
         request={request}
         onRefresh={refresh}
@@ -377,6 +381,7 @@ function App() {
               key={item.id}
               className={page === item.id ? "nav active" : "nav"}
               onClick={() => navigate(item.id)}
+              title={item.label}
               aria-label={item.label}
               aria-current={page === item.id ? "page" : undefined}
             >
@@ -430,6 +435,7 @@ function App() {
                   key={item.id}
                   className={page === item.id ? "nav active" : "nav"}
                   onClick={() => navigate(item.id)}
+                  title={item.label}
                   aria-label={item.label}
                   aria-current={page === item.id ? "page" : undefined}
                 >
@@ -487,7 +493,6 @@ function App() {
           <div className="connection">
             <span className={state ? "dot" : "dot offline"} />
             {state ? "Companion connected" : "Connecting…"}
-            <span className="version">v0.7.1</span>
           </div>
         </div>
       </aside>
@@ -545,7 +550,7 @@ function App() {
                 }
               }}
             >
-              Product & guide <ArrowUpRight size={13} />
+              Guide <ArrowUpRight size={13} />
             </a>
             <span className="local-pill">
               <span className="dot" />
@@ -553,22 +558,7 @@ function App() {
                 ? "Private GitHub connected"
                 : "Local first"}
             </span>
-            <button
-              className="theme-toggle"
-              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              aria-label={
-                theme === "dark"
-                  ? "Switch to light mode"
-                  : "Switch to dark mode"
-              }
-              title={
-                theme === "dark"
-                  ? "Switch to light mode"
-                  : "Switch to dark mode"
-              }
-            >
-              {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
-            </button>
+            <AppearanceButton theme={theme} onToggle={toggleTheme} />
           </div>
         </header>
         <div className="content">
@@ -619,9 +609,7 @@ function App() {
                     state={state}
                     selectedCourse={selectedCourse}
                     theme={theme}
-                    onToggleTheme={() =>
-                      setTheme(theme === "dark" ? "light" : "dark")
-                    }
+                    onToggleTheme={toggleTheme}
                     onSelectCourse={(id) => navigate("studio", id)}
                     api={request}
                     onCourses={() => navigate("courses")}
@@ -649,8 +637,7 @@ function App() {
               )}
               {page === "overview" && (
                 <>
-                  <div className="page-heading">
-                    <div className="eyebrow">Personal workspace</div>
+                  <div className="page-heading learn-masthead">
                     <h1>
                       {configured ? (
                         state.session ? (
@@ -665,61 +652,50 @@ function App() {
                         </>
                       )}
                     </h1>
-                    <p>
-                      {configured
-                        ? state.session
-                          ? "Stay with the lesson. Keep the work that matters."
-                          : "Pick up a lesson and keep building your learning history."
-                        : "Your courses, code, and checkpoints. All in one place."}
-                    </p>
                   </div>
-                  <div
-                    className="workspace-summary"
-                    aria-label="Workspace summary"
-                  >
-                    <button onClick={() => setPage("courses")}>
-                      <BookOpen size={15} />
-                      <span>Courses</span>
-                      <strong>{state.courses.length}</strong>
-                    </button>
-                    <button onClick={() => setPage("history")}>
-                      <GitCommitHorizontal size={15} />
-                      <span>Checkpoints</span>
-                      <strong>{state.checkpoints.length}</strong>
-                    </button>
-                    <div>
-                      <span
-                        className={
-                          state.session?.status === "active"
-                            ? "dot"
-                            : "dot offline"
-                        }
-                      />
-                      <span>Session</span>
-                      <strong>
-                        {state.session
-                          ? state.session.status === "active"
-                            ? "In progress"
-                            : "Paused"
-                          : configured
-                            ? "Idle"
-                            : "Not started"}
-                      </strong>
+                  {configured && (
+                    <div
+                      className="workspace-summary"
+                      aria-label="Workspace summary"
+                    >
+                      <button onClick={() => setPage("courses")}>
+                        <BookOpen size={15} />
+                        <span>Courses</span>
+                        <strong>{state.courses.length}</strong>
+                      </button>
+                      <button onClick={() => setPage("history")}>
+                        <GitCommitHorizontal size={15} />
+                        <span>Checkpoints</span>
+                        <strong>{state.checkpoints.length}</strong>
+                      </button>
+                      <div>
+                        <span
+                          className={
+                            state.session?.status === "active"
+                              ? "dot"
+                              : "dot offline"
+                          }
+                        />
+                        <span>Session</span>
+                        <strong>
+                          {state.session
+                            ? state.session.status === "active"
+                              ? "In progress"
+                              : "Paused"
+                            : configured
+                              ? "Idle"
+                              : "Not started"}
+                        </strong>
+                      </div>
                     </div>
-                  </div>
+                  )}
                   {!configured ? (
                     <section className="welcome">
                       <div className="welcome-text">
-                        <span className="tag">
-                          <BrandMark /> UDEMY → YOUR WORKSPACE
-                        </span>
-                        <h2>
-                          Give your learning
-                          <br />a place to build.
-                        </h2>
+                        <h2>Your learning folder</h2>
                         <p>
-                          Follow the course. Write code in your own editor. Keep
-                          every useful step in a history you can return to.
+                          Choose where to keep your courses, code, and
+                          checkpoints.
                         </p>
                         <button
                           className="button primary"
@@ -727,9 +703,6 @@ function App() {
                         >
                           Set up my workspace <ArrowRight size={17} />
                         </button>
-                        <span className="quiet-note">
-                          No GitHub repository needed to get started.
-                        </span>
                       </div>
                       <WorkspaceChecklist
                         state={state}
@@ -873,18 +846,14 @@ function App() {
                         </div>
                       </div>
                     </section>
-                  ) : (
+                  ) : !state.continueItems?.length ? (
                     <section className="ready-panel">
                       <span className="ready-index" aria-hidden="true">
                         <BookOpen size={22} strokeWidth={1.5} />
                       </span>
                       <div>
-                        <span className="eyebrow">Next session</span>
                         <h2>Pick up your next lesson.</h2>
-                        <p>
-                          Open Udemy to detect your course, or add a lesson
-                          yourself.
-                        </p>
+                        <p>Open a Udemy lesson or add a course manually.</p>
                       </div>
                       <button
                         className="button primary"
@@ -894,7 +863,7 @@ function App() {
                         Add a course
                       </button>
                     </section>
-                  )}
+                  ) : null}
                   {configured && (
                     <ContinueLearning
                       state={state}
@@ -911,96 +880,41 @@ function App() {
                       onLive={() => navigate("live")}
                     />
                   )}
-                  <div className="section-heading">
-                    <h2>{configured ? "Your courses" : "The workflow"}</h2>
-                    {configured && (
+                  {!!state.courses.length && configured && (
+                    <div className="section-heading">
+                      <h2>Your courses</h2>
                       <button
                         className="text-button"
                         onClick={() => setPage("courses")}
                       >
                         View all <ArrowRight size={16} />
                       </button>
-                    )}
-                  </div>
-                  {configured ? (
-                    state.courses.length ? (
-                      <div className="course-grid">
-                        {state.courses.slice(0, 3).map((course, index) => (
-                          <CourseCard
-                            key={course.id}
-                            index={index + 1}
-                            course={course}
-                            onStart={() => setStarting(course)}
-                            onMirror={() =>
-                              act(
-                                "mirror",
-                                () =>
-                                  request("mirror", { courseId: course.id }),
-                                "Course structure ready. Your lesson folders are waiting.",
-                              )
-                            }
-                            busy={!!busy}
-                          />
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="empty-inline">
-                        <BookOpen size={25} />
-                        <div>
-                          <strong>Your course will appear here.</strong>
-                          <p>
-                            Connect the Chrome extension in Setup, or add a
-                            course manually.
-                          </p>
-                        </div>
-                        <button
-                          className="button secondary"
-                          onClick={() => setAdd(true)}
-                        >
-                          Add manually <Plus size={16} />
-                        </button>
-                      </div>
-                    )
-                  ) : (
-                    <div className="steps">
-                      {[
-                        {
-                          number: "01",
-                          icon: BookOpen,
-                          title: "Bring the lesson in.",
-                          text: "Connect Udemy or add the lesson you’re watching.",
-                        },
-                        {
-                          number: "02",
-                          icon: Code2,
-                          title: "Do your own work.",
-                          text: "Write the code. Make a note. Use the tools you know.",
-                        },
-                        {
-                          number: "03",
-                          icon: GitCommitHorizontal,
-                          title: "Leave a record.",
-                          text: "Review your changes and keep a version you can return to.",
-                        },
-                      ].map((step) => (
-                        <article key={step.number}>
-                          <span className="step-number">{step.number}</span>
-                          <step.icon
-                            size={20}
-                            className="step-icon"
-                            strokeWidth={1.5}
-                          />
-                          <h3>{step.title}</h3>
-                          <p>{step.text}</p>
-                        </article>
+                    </div>
+                  )}
+                  {configured && !!state.courses.length && (
+                    <div className="course-grid">
+                      {state.courses.slice(0, 3).map((course, index) => (
+                        <CourseCard
+                          key={course.id}
+                          index={index + 1}
+                          course={course}
+                          onStart={() => setStarting(course)}
+                          onMirror={() =>
+                            act(
+                              "mirror",
+                              () => request("mirror", { courseId: course.id }),
+                              "Course structure ready. Your lesson folders are waiting.",
+                            )
+                          }
+                          busy={!!busy}
+                        />
                       ))}
                     </div>
                   )}
-                  {configured && (
+                  {configured && !!state.checkpoints.length && (
                     <>
                       <div className="section-heading">
                         <h2>Recent checkpoints</h2>
-                        <span className="muted">A record of the work.</span>
                       </div>
                       <HistoryList state={state} small />
                     </>
@@ -1054,18 +968,18 @@ function App() {
                 <>
                   <div className="page-heading heading-with-action">
                     <div>
-                      <div className="eyebrow">Library</div>
                       <h1>My courses</h1>
-                      <p>The lessons you follow. The work you make of them.</p>
                     </div>
-                    <button
-                      className="button primary"
-                      disabled={!configured}
-                      onClick={() => setAdd(true)}
-                    >
-                      <Plus size={17} />
-                      Add a course
-                    </button>
+                    {!!state.courses.length && (
+                      <button
+                        className="button primary"
+                        disabled={!configured}
+                        onClick={() => setAdd(true)}
+                      >
+                        <Plus size={17} />
+                        Add a course
+                      </button>
+                    )}
                   </div>
                   {configured && edition === "learn" && (
                     <AcademyEnrollment
@@ -1100,12 +1014,9 @@ function App() {
                       ))}
                     </div>
                   ) : (
-                    <div className="empty-big">
-                      <BookOpen size={36} />
-                      <h2>Your learning library starts here.</h2>
-                      <p>
-                        Add your Udemy course, or let the extension detect it.
-                      </p>
+                    <div className="empty-big library-empty">
+                      <h2>Add your first course.</h2>
+                      <p>Start with a lesson, or connect Udemy in Settings.</p>
                       <button
                         className="button primary"
                         onClick={() => setAdd(true)}
@@ -1120,11 +1031,7 @@ function App() {
               {page === "history" && (
                 <>
                   <div className="page-heading">
-                    <div className="eyebrow">Version history</div>
                     <h1>Your checkpoints</h1>
-                    <p>
-                      Code, notes, and the lesson behind them. Saved together.
-                    </p>
                   </div>
                   {state.settings.remote &&
                     state.checkpoints.some(
@@ -1293,24 +1200,6 @@ function App() {
         </div>
       )}
     </div>
-  );
-}
-function BrandMark() {
-  return (
-    <svg
-      className="brand-mark"
-      viewBox="0 0 48 48"
-      fill="none"
-      aria-hidden="true"
-    >
-      <path
-        d="M37 24A14 14 0 1 1 24 10M24 24 38 10M29 10h9v9"
-        stroke="currentColor"
-        strokeWidth="4.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
   );
 }
 function WorkspaceChecklist({

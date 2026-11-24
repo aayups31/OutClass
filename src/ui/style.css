@@ -1,4 +1,11 @@
 @font-face {
+  font-family: "Manrope";
+  src: url("../site/assets/fonts/Manrope.woff2") format("woff2");
+  font-weight: 200 800;
+  font-display: swap;
+}
+
+@font-face {
   font-family: "Inter";
   src: url("./assets/fonts/Inter-Variable.ttf") format("truetype");
   font-weight: 100 900;
@@ -12,50 +19,54 @@
   font-weight: 400;
   font-synthesis: none;
   color-scheme: light;
-  --paper: #fcfcfd;
+  --paper: #f6f7ff;
   --surface: #ffffff;
-  --ink: #24262d;
-  --muted: #6d717d;
-  --accent: #4263c7;
-  --action: #4263c7;
-  --action-hover: #3657b9;
-  --accent-soft: #eaf0ff;
-  --line: #e5e7ed;
-  --field-line: #d9dde6;
-  --field-hover: #a0a7b6;
-  --soft: #f5f6f9;
-  --hover: #edeff4;
-  --active: #e8edfa;
+  --ink: #17213c;
+  --muted: #53627e;
+  --accent: #384eb0;
+  --action: #384eb0;
+  --action-hover: #2c4098;
+  --accent-soft: #e8edff;
+  --line: #d8dff0;
+  --field-line: #bac5dc;
+  --field-hover: #7688ac;
+  --soft: #eef1fb;
+  --hover: #e6ebfa;
+  --active: #dfe7ff;
   --success: #378265;
   --warning: #95691d;
   --overlay: #10131b66;
   --shadow: #0f172a12;
-  --nav-glass: #f5f6f9f5;
-  --heading: "Inter", sans-serif;
+  --nav-glass: #eef1fbf5;
+  --heading: "Manrope", "Inter", sans-serif;
+  --wash-blue: #d9e5ff;
+  --wash-violet: #ebe4ff;
   color: var(--ink);
   background: var(--paper);
 }
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --paper: #101114;
-  --surface: #181a20;
-  --ink: #e9eaf0;
-  --muted: #9b9eac;
-  --accent: #819cff;
-  --action: #4263c7;
-  --action-hover: #4869ca;
-  --accent-soft: #1c2848;
-  --line: #2a2d36;
-  --field-line: #343844;
-  --field-hover: #5c6275;
-  --soft: #15171c;
-  --hover: #20232b;
-  --active: #1c2840;
+  --wash-blue: #172848;
+  --wash-violet: #202039;
+  --paper: #0b0e17;
+  --surface: #151c2d;
+  --ink: #edf1ff;
+  --muted: #aab7d2;
+  --accent: #a0b8ff;
+  --action: #384eb0;
+  --action-hover: #526ed1;
+  --accent-soft: #1d2a48;
+  --line: #28334b;
+  --field-line: #3c4b69;
+  --field-hover: #7385a8;
+  --soft: #101625;
+  --hover: #1c2740;
+  --active: #213251;
   --success: #75c5a0;
   --warning: #dcb36b;
   --overlay: #06070ba6;
   --shadow: #00000040;
-  --nav-glass: #15171cf5;
+  --nav-glass: #101625f5;
 }
 
 * {
