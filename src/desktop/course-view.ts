@@ -102,7 +102,7 @@ export function createCourseView(window: BrowserWindow, applicationId: string) {
   }
   window.once("closed", close);
   window.webContents.on("did-start-navigation", (event) => {
-    if (event.isMainFrame && !event.isInPlace) close();
+    if (event.isMainFrame && !event.isSameDocument) close();
   });
   return { open, bounds, close };
 }
