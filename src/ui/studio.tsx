@@ -59,6 +59,7 @@ import { SessionDirection } from "./session-direction";
 import type { PracticeTask } from "../server/practice";
 import { LearnAssignment } from "./learn-package";
 import { CourseViewer } from "./course-viewer";
+import { LearningSourceLink } from "./learning-source-link";
 
 type Api = <T>(route: string, body?: unknown) => Promise<T>;
 function parentFolders(path: string) {
@@ -862,7 +863,7 @@ export function Studio({
         <BookOpen size={28} />
         <h1>Bring your first course.</h1>
         <p>
-          Open a Udemy lesson with the extension connected, or add its details
+          Capture a lesson with the Chrome extension, or add its details
           manually.
         </p>
         <button className="button primary" onClick={onCourses}>
@@ -908,9 +909,9 @@ export function Studio({
               <strong>{course.title}</strong>
               <p>{session?.section || `${course.lessons.length} lessons`}</p>
               {course.platform !== "academy" && (
-                <a href={course.url} target="_blank" rel="noreferrer">
+                <LearningSourceLink href={course.lessons.find((lesson) => lesson.id === session?.lessonId)?.url || course.url}>
                   Open course site <ArrowUpRight size={12} />
-                </a>
+                </LearningSourceLink>
               )}
               <button onClick={onCourses}>Manage courses</button>
             </div>
@@ -2509,6 +2510,11 @@ export function Studio({
               Lines {evidence.startLine}–{evidence.endLine}
             </span>
             <pre>{evidence.text}</pre>
+            {["web-page", "transcript"].includes(evidence.kind) && (
+              <LearningSourceLink href={course.lessons.find((lesson) => lesson.id === evidence.lessonId)?.url}>
+                Open source <ArrowUpRight size={13} />
+              </LearningSourceLink>
+            )}
             <small>
               Retrieved from the local course index at the time of this answer.
             </small>

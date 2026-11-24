@@ -51,7 +51,7 @@ test("desktop first-run, encrypted key persistence, local files, and bundled Jav
       await readFile(path.join(extensionDirectory, "manifest.json"), "utf8"),
     );
     expect(extensionManifest.version).toBe(version);
-    expect(extensionManifest.name).toBe("OutClass — Udemy learning companion");
+    expect(extensionManifest.name).toBe("OutClass — Learning companion");
     expect(
       (await readFile(path.join(extensionDirectory, "background.js"))).length,
     ).toBeGreaterThan(1000);
@@ -69,7 +69,7 @@ test("desktop first-run, encrypted key persistence, local files, and bundled Jav
     await page.getByLabel("OpenAI API key").fill(sampleKey);
     await page.getByRole("button", { name: "Continue with AI help" }).click();
     await expect(
-      page.getByRole("heading", { name: "Bring Udemy into your workspace." }),
+      page.getByRole("heading", { name: "Bring the web into your workspace." }),
     ).toBeVisible();
     const encrypted = await readFile(
       path.join(directory, "profile", "openai-key.encrypted"),
@@ -89,7 +89,7 @@ test("desktop first-run, encrypted key persistence, local files, and bundled Jav
     let reopened = await desktop.firstWindow();
     await expect(
       reopened.getByRole("heading", {
-        name: "Bring Udemy into your workspace.",
+        name: "Bring the web into your workspace.",
       }),
     ).toBeVisible();
     const state = await reopened.evaluate(async () => {

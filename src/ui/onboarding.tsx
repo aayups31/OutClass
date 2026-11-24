@@ -301,7 +301,7 @@ export function Onboarding({
             <>
               <Link2 className="onboarding-symbol" size={30} />
 
-              <h2>Bring Udemy into your workspace.</h2>
+              <h2>Bring the web into your workspace.</h2>
               <p>
                 Pair the Chrome extension to bring your current lesson into
                 Learn.
@@ -353,9 +353,8 @@ export function Onboarding({
                 </div>
               )}
               <p className="hint">
-                Then open a Udemy lesson, return here, and start coding. Use
-                Import visible transcript in the extension to add course
-                sources. You can finish connecting later in settings.
+                Open a lesson or coding challenge and choose Capture this lesson
+                in the extension. You can finish connecting later in Settings.
               </p>
               <button
                 className="button primary"

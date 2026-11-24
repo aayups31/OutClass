@@ -62,7 +62,7 @@ test("first-time setup → Udemy lesson → source code → reviewed local check
   ).toBeVisible();
   await page.getByRole("button", { name: "Add a course", exact: true }).click();
   const dialog = page.getByRole("dialog");
-  await expect(dialog.getByLabel("Udemy lesson link")).toBeFocused();
+  await expect(dialog.getByLabel("Lesson link")).toBeFocused();
   await page.keyboard.press("Shift+Tab");
   await expect(
     dialog.getByRole("button", { name: "Close dialog" }),
@@ -82,7 +82,7 @@ test("first-time setup → Udemy lesson → source code → reviewed local check
   ).toBeFocused();
   await page.getByRole("button", { name: "Add a course", exact: true }).click();
   await dialog
-    .getByLabel("Udemy lesson link")
+    .getByLabel("Lesson link")
     .fill("https://www.udemy.com/course/cpp-practice/learn/lecture/42");
   await dialog.getByLabel("Course name").fill("C++ Masterclass");
   await dialog.getByLabel("Section", { exact: true }).fill("Pointers");

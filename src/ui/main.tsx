@@ -45,6 +45,8 @@ import "./workspace-frame.css";
 import "./desktop-surface.css";
 import { AppearanceButton, BrandMark, type Theme } from "./appearance";
 import { LearnProfile } from "./learn-profile";
+import { describeLearningPage, learningUrl, platformName, webLearningId } from "../learning-source";
+import { LearningSourceLink } from "./learning-source-link";
 const Studio = lazy(() =>
   import("./studio").then((module) => ({ default: module.Studio })),
 );
@@ -879,7 +881,7 @@ function App() {
                       </span>
                       <div>
                         <h2>Pick up your next lesson.</h2>
-                        <p>Open a Udemy lesson or add a course manually.</p>
+                        <p>Capture a lesson with the Chrome extension or add a link.</p>
                       </div>
                       <button
                         className="button primary"
@@ -1053,7 +1055,7 @@ function App() {
                   ) : (
                     <div className="empty-big library-empty">
                       <h2>Add your first course.</h2>
-                      <p>Start with a lesson, or connect Udemy in Settings.</p>
+                      <p>Capture a lesson with the Chrome extension or add a link.</p>
                       <button
                         className="button primary"
                         onClick={() => setAdd(true)}
@@ -1256,7 +1258,7 @@ function WorkspaceChecklist({
     },
     {
       icon: Link2,
-      title: "Udemy connection",
+      title: "Chrome extension",
       detail: "Bring in lessons with the extension",
       done: state.extensionConnected,
       label: "Optional",
@@ -1346,7 +1348,8 @@ function CourseCard({
   onMirror: () => void;
   busy: boolean;
 }) {
-  const platform = course.platform === "academy" ? "Academy" : "Udemy";
+  const sourceUrl = learningUrl(course.url);
+  const platform = course.platform === "academy" ? "Academy" : sourceUrl ? platformName(sourceUrl) : "Web";
   const lesson =
     course.lessons.find((item) => item.id === course.currentLessonId) ||
     course.lessons[0];
@@ -1356,14 +1359,12 @@ function CourseCard({
       <div className="course-information">
         <div className="course-card-top">
           <span className="platform">{platform}</span>
-          <a
+          <LearningSourceLink
             href={course.url}
-            target="_blank"
-            rel="noreferrer"
             aria-label={`Open ${course.title} on ${platform}`}
           >
             <ArrowUpRight size={18} />
-          </a>
+          </LearningSourceLink>
         </div>
         <h3>{course.title}</h3>
         <p className="lesson-count">
@@ -1577,19 +1578,16 @@ function ManualCourse({
   const [url, setUrl] = useState("");
   const [section, setSection] = useState("Lessons");
   const [lesson, setLesson] = useState("");
-  const existing = state.courses.find((course) => {
-    try {
-      return (
-        new URL(course.url).pathname.split("/")[2] ===
-        new URL(url).pathname.split("/")[2]
-      );
-    } catch {
-      return false;
-    }
+  const parsed = learningUrl(url);
+  const identity = parsed && describeLearningPage(parsed);
+  const existing = identity && state.courses.find((course) => {
+    const source = learningUrl(course.url);
+    return course.platform !== "academy" && source &&
+      describeLearningPage(source).group === identity.group;
   });
   return (
     <Modal
-      title="Bring in your Udemy lesson"
+      title="Add a lesson from the web"
       subtitle="Use the lesson link from your browser. You can add more lessons as you go."
       close={close}
     >
@@ -1600,17 +1598,19 @@ function ManualCourse({
           act(
             "course",
             async () => {
-              const parsed = new URL(url);
-              const courseId = parsed.pathname.split("/")[2];
-              const match = parsed.pathname.match(/lecture\/(\d+)/);
-              const lessonId = match?.[1] || `manual-${crypto.randomUUID()}`;
+              if (!parsed || !identity) throw new Error("Use an HTTPS link to a lesson or learning page.");
+              const udemy = identity.provider === "Udemy" && parsed.pathname.startsWith("/course/");
+              const courseId = udemy ? identity.group : await webLearningId("course", identity.group);
+              const lessonId = udemy
+                ? (/^\d+$/.test(identity.lessonKey) ? identity.lessonKey : `manual-${crypto.randomUUID()}`)
+                : await webLearningId("lesson", identity.lessonKey);
               await request("observations", {
                 eventId: crypto.randomUUID(),
                 courseId,
-                title: title || existing?.title,
-                url,
+                title: title.trim() || existing?.title || identity.title,
+                url: parsed.href,
                 currentLessonId: lessonId,
-                lessons: [{ id: lessonId, title: lesson, section, order: 0 }],
+                lessons: [{ id: lessonId, title: lesson.trim(), section, order: 0, url: parsed.href }],
               });
               close();
             },
@@ -1619,11 +1619,11 @@ function ManualCourse({
         }}
       >
         <label>
-          Udemy lesson link
+          Lesson link
           <input
             type="url"
             required
-            placeholder="https://www.udemy.com/course/…/learn/lecture/…"
+            placeholder="https://…"
             value={url}
             onChange={(event) => {
               setUrl(event.target.value);
@@ -1633,9 +1633,8 @@ function ManualCourse({
         <label>
           Course name
           <input
-            required
             value={title}
-            placeholder={existing?.title || "e.g. C++ Masterclass"}
+            placeholder={existing?.title || identity?.title || "e.g. Python foundations"}
             onChange={(event) => setTitle(event.target.value)}
           />
         </label>
@@ -2111,7 +2110,7 @@ function Setup({
               </span>
               <div>
                 <h2>Connect the Chrome extension</h2>
-                <p>Let your Udemy lesson find its way into your workspace.</p>
+                <p>Capture learning pages and transcripts from your browser.</p>
               </div>
               {state.extensionConnected && (
                 <span className="save-status">

@@ -200,7 +200,7 @@ export function EditorsAndExtensions({
             )}
           </div>
           <p className="hint">
-            Expires in five minutes. Separate from the Udemy browser pairing
+            Expires in five minutes. Separate from the Chrome extension pairing
             code. One active course session at a time; connect another course
             explicitly.
           </p>

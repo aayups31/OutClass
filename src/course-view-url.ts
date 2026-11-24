@@ -9,6 +9,10 @@ const providers = [
   "ocw.mit.edu",
   "khanacademy.org",
   "freecodecamp.org",
+  "leetcode.com",
+  "codecademy.com",
+  "boot.dev",
+  "coddy.tech",
 ];
 
 export function courseViewUrl(value: string) {

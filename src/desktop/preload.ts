@@ -11,6 +11,7 @@ const bridge: DesktopBridge = {
   chooseFolder: () => ipcRenderer.invoke("desktop:folder"),
   setApiKey: (key) => ipcRenderer.invoke("desktop:key", key),
   openExternal: (url) => ipcRenderer.invoke("desktop:external", url),
+  openLearningSource: (url) => ipcRenderer.invoke("desktop:learning-source", url),
   openExtensionFolder: () => ipcRenderer.invoke("desktop:extension"),
   courseViewer: {
     open: (url, bounds) => ipcRenderer.invoke("course-view:open", url, bounds),

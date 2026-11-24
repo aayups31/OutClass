@@ -11,6 +11,7 @@ export interface DesktopBridge {
   chooseFolder(): Promise<string | null>;
   setApiKey(key: string): Promise<void>;
   openExternal(url: string): Promise<void>;
+  openLearningSource?(url: string): Promise<void>;
   openExtensionFolder(): Promise<void>;
   courseViewer?: {
     open(url: string, bounds: ViewerBounds): Promise<void>;

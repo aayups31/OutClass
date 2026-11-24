@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
   ArrowUpRight,
+  BookOpen,
   ChevronLeft,
   ChevronRight,
   GripHorizontal,
@@ -10,12 +11,15 @@ import {
 } from "lucide-react";
 import type { Course } from "../shared";
 import type { LearnDelivery } from "../server/learn-delivery";
-import { courseViewUrl, lessonViewUrl } from "../course-view-url";
+import { lessonViewUrl } from "../course-view-url";
 import { LessonBlocks } from "./lesson-blocks";
+import { learningUrl, platformName } from "../learning-source";
+import { LearningSourceLink } from "./learning-source-link";
 import "./course-viewer.css";
 
 type Position = { x: number; y: number };
 type Assignment = NonNullable<ReturnType<LearnDelivery["snapshot"]>>;
+type WebMaterial = { title: string; content: string; kind: string };
 
 export function CourseViewer({
   course,
@@ -42,7 +46,7 @@ export function CourseViewer({
   const [link, setLink] = useState(() => {
     try {
       const saved = localStorage.getItem(linkKey) || "";
-      return courseViewUrl(saved) ? saved : "";
+      return learningUrl(saved) ? saved : "";
     } catch {
       return "";
     }
@@ -52,13 +56,30 @@ export function CourseViewer({
   const [showSite, setShowSite] = useState(false);
   const [error, setError] = useState("");
   const [material, setMaterial] = useState<Assignment | null>();
+  const [captured, setCaptured] = useState<{
+    lessonId: string;
+    value: WebMaterial | null;
+  }>();
+  const [reading, setReading] = useState<boolean>();
   const frame = useRef<HTMLElement>(null);
   const surface = useRef<HTMLDivElement>(null);
   const grab = useRef<Position | undefined>(undefined);
   const lesson = lessons[index];
   const academy = course.platform === "academy" && !!lesson && !link;
-  const source = link || course.url;
-  const browserUrl = courseViewUrl(source);
+  const source = link || lesson?.url || course.url;
+  const browserUrl = learningUrl(source);
+  const savedMaterial =
+    !link && captured?.lessonId === lesson?.id ? captured?.value : undefined;
+  const videoProvider =
+    browserUrl &&
+    ["YouTube", "Udemy", "Vimeo"].includes(platformName(browserUrl));
+  const preferReading =
+    !link && !academy && course.platform === "web" && !videoProvider;
+  const showReading =
+    !academy &&
+    !link &&
+    !!lesson &&
+    (reading ?? (preferReading && savedMaterial !== null));
   const embedded =
     !academy && lessonViewUrl(source, link ? undefined : lesson?.id);
   const embeddedUrl = embedded ? new URL(embedded) : null;
@@ -68,10 +89,14 @@ export function CourseViewer({
     embeddedUrl.href !== browserUrl.href &&
     (embeddedUrl.pathname.startsWith("/embed/") ||
       embeddedUrl.hostname === "player.vimeo.com");
-  const player = showSite && canSwitchView ? browserUrl?.href : embedded;
+  const player = showReading
+    ? ""
+    : showSite && canSwitchView
+      ? browserUrl?.href
+      : embedded;
   const showNative = !!(desktop && player && !editing && !error);
   const browserHref = browserUrl?.hostname.endsWith("udemy.com")
-    ? player || browserUrl.href
+    ? embedded || browserUrl.href
     : browserUrl?.href;
 
   const measure = () => {
@@ -81,6 +106,23 @@ export function CourseViewer({
       : { x: 0, y: 0, width: 0, height: 0 };
   };
   useEffect(() => desktop?.onHover(setNativeHover), [desktop]);
+  useEffect(() => {
+    if (academy || link || !lesson) return;
+    let current = true;
+    const id = lesson.id;
+    void api<WebMaterial | null>(
+      `lesson-material?courseId=${encodeURIComponent(course.id)}&lessonId=${encodeURIComponent(id)}`,
+    )
+      .then((value) => {
+        if (current) setCaptured({ lessonId: id, value });
+      })
+      .catch(() => {
+        if (current) setCaptured({ lessonId: id, value: null });
+      });
+    return () => {
+      current = false;
+    };
+  }, [academy, link, lesson?.id, course.id, course.observedAt, api]);
   useEffect(() => {
     if (!desktop || !player || editing) return;
     let current = true;
@@ -162,10 +204,11 @@ export function CourseViewer({
     setError("");
     setLink(value);
     setShowSite(false);
+    setReading(undefined);
     setEditing(false);
   }
 
-  const showLink = editing || (!academy && !player);
+  const showLink = editing || (!academy && !browserUrl);
   return (
     <section
       className="course-viewer"
@@ -228,7 +271,11 @@ export function CourseViewer({
               aria-label="Previous lesson"
               title="Previous lesson"
               disabled={index === 0}
-              onClick={() => setIndex(index - 1)}
+              onClick={() => {
+                setReading(undefined);
+                setError("");
+                setIndex(index - 1);
+              }}
             >
               <ChevronLeft size={15} />
             </button>
@@ -237,7 +284,11 @@ export function CourseViewer({
               aria-label="Next lesson"
               title="Next lesson"
               disabled={index >= lessons.length - 1}
-              onClick={() => setIndex(index + 1)}
+              onClick={() => {
+                setReading(undefined);
+                setError("");
+                setIndex(index + 1);
+              }}
             >
               <ChevronRight size={15} />
             </button>
@@ -255,7 +306,24 @@ export function CourseViewer({
         >
           <Link2 size={14} />
         </button>
-        {desktop && canSwitchView && !editing && (
+        {desktop && embedded && savedMaterial && !editing && (
+          <button
+            type="button"
+            aria-label={
+              showReading ? "Open live lesson in viewer" : "Read saved material"
+            }
+            title={
+              showReading ? "Open live lesson in viewer" : "Read saved material"
+            }
+            onClick={() => {
+              setError("");
+              setReading(!showReading);
+            }}
+          >
+            <BookOpen size={14} />
+          </button>
+        )}
+        {desktop && canSwitchView && !editing && !showReading && (
           <button
             type="button"
             aria-label={showSite ? "Use video player" : "Use course site view"}
@@ -269,15 +337,13 @@ export function CourseViewer({
           </button>
         )}
         {browserHref && !editing && (
-          <a
+          <LearningSourceLink
             href={browserHref}
-            target="_blank"
-            rel="noreferrer"
             aria-label="Open lesson in browser"
             title="Open lesson in browser"
           >
             <ArrowUpRight size={15} />
-          </a>
+          </LearningSourceLink>
         )}
         <button
           type="button"
@@ -299,13 +365,12 @@ export function CourseViewer({
             className="course-viewer-link"
             onSubmit={(event) => {
               event.preventDefault();
-              if (!courseViewUrl(entered.trim())) {
-                setError(
-                  "Use an HTTPS lesson link from a supported course site.",
-                );
+              const address = learningUrl(entered);
+              if (!address) {
+                setError("Use an HTTPS lesson link.");
                 return;
               }
-              chooseLink(entered.trim());
+              chooseLink(address.href);
             }}
           >
             <label htmlFor="course-viewer-link">Lesson link</label>
@@ -340,11 +405,15 @@ export function CourseViewer({
                 : "Opening lesson…"}
             </p>
           )
-        ) : !desktop && !error ? (
+        ) : showReading && savedMaterial ? (
+          <div className="captured-lesson-text">{savedMaterial.content}</div>
+        ) : showReading && savedMaterial === undefined ? (
+          <p role="status">Opening saved material…</p>
+        ) : !showNative && !error ? (
           <p>
-            <a href={browserHref} target="_blank" rel="noreferrer">
+            <LearningSourceLink href={browserHref}>
               Open lesson in browser <ArrowUpRight size={14} />
-            </a>
+            </LearningSourceLink>
           </p>
         ) : null}
         {error && <p role="alert">{error}</p>}

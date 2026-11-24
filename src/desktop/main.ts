@@ -18,6 +18,7 @@ import { LocalTerminals } from "./terminal";
 import { approvedSocialLink } from "./social-links";
 import { createCourseView } from "./course-view";
 import { courseViewUrl } from "../course-view-url";
+import { learningUrl } from "../learning-source";
 import {
   EDUCATOR_PORT,
   LEARN_PORT,
@@ -468,6 +469,12 @@ else {
       ipcMain.handle("desktop:external", (event, url) => {
         trusted(event);
         return external(String(url));
+      });
+      ipcMain.handle("desktop:learning-source", (event, value: unknown) => {
+        trusted(event);
+        const url = typeof value === "string" && learningUrl(value);
+        if (!url) throw new Error("Could not open this learning link.");
+        return shell.openExternal(url.href);
       });
       ipcMain.handle("desktop:extension", async (event) => {
         trusted(event);

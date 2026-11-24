@@ -185,7 +185,7 @@ export function SetupDiagnostics({
               : "AI connected · enable guides below",
         ],
         [
-          "Udemy extension",
+          "Chrome extension",
           result.extensionConnected,
           result.extensionConnected
             ? "Paired with this device"

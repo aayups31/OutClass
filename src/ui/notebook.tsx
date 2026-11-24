@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import type { Course } from "../shared";
 import type { ProjectIdea, NotebookNote } from "../server/notebook";
+import { learningUrl } from "../learning-source";
 import "./notebook.css";
 type Api = <T>(route: string, body?: unknown) => Promise<T>;
 export type NotebookState = {
@@ -373,6 +374,66 @@ export function ArchitectNotebook({
                 });
               }}
             >
+              {!noteId && project.courseIds.length > 0 && (
+                <select
+                  aria-label="Add a saved web lesson to the note"
+                  value=""
+                  disabled={busy || note.length >= 4300}
+                  onChange={(event) => {
+                    const [id, lessonId] = JSON.parse(event.target.value) as [
+                      string,
+                      string,
+                    ];
+                    const course = courses.find((item) => item.id === id);
+                    const lesson = course?.lessons.find(
+                      (item) => item.id === lessonId,
+                    );
+                    const url = lesson?.url && learningUrl(lesson.url);
+                    if (!lesson || !url) return;
+                    setBusy(true);
+                    setError("");
+                    void api<{ content: string } | null>(
+                      `lesson-material?courseId=${encodeURIComponent(id)}&lessonId=${encodeURIComponent(lessonId)}`,
+                    )
+                      .then((source) => {
+                        const excerpt = source?.content.slice(0, 1000);
+                        const addition = [
+                          `Lesson: ${lesson.title}`,
+                          url.href,
+                          excerpt && `Excerpt:\n${excerpt}`,
+                        ]
+                          .filter(Boolean)
+                          .join("\n");
+                        setNote((previous) =>
+                          [previous, addition]
+                            .filter(Boolean)
+                            .join("\n\n")
+                            .slice(0, 6000),
+                        );
+                      })
+                      .catch((reason: Error) => setError(reason.message))
+                      .finally(() => setBusy(false));
+                  }}
+                >
+                  <option value="" disabled>
+                    Attach a web lesson
+                  </option>
+                  {courses
+                    .filter((course) => project.courseIds.includes(course.id))
+                    .flatMap((course) =>
+                      course.lessons
+                        .filter((lesson) => !!lesson.url && !lesson.archived)
+                        .map((lesson) => (
+                          <option
+                            key={`${course.id}:${lesson.id}`}
+                            value={JSON.stringify([course.id, lesson.id])}
+                          >
+                            {lesson.title}
+                          </option>
+                        )),
+                    )}
+                </select>
+              )}
               <label>
                 {noteId ? "Edit your note" : "Capture a thought"}
                 <textarea

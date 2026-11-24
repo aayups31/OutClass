@@ -97,3 +97,9 @@
   max-height: 36vh;
   max-width: 100%;
 }
+.captured-lesson-text {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  line-height: 1.6;
+  color: var(--ink);
+}
