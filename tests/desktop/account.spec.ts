@@ -11,9 +11,14 @@ test("packaged account sessions use Windows encryption, restore and sign out wit
     expires_at: Math.floor(Date.now() / 1000) + 600,
     email: "learner@example.com",
   };
+  const authRoutes: string[] = [];
   const service = createGateway({
     authenticate: async () => "13cb7941-378a-4936-a9c8-78453c20fbdf",
-    auth: async (route) => (route === "otp" ? { sent: true } : session),
+    auth: async (route) => {
+      authRoutes.push(route);
+      return route === "signup" ? { sent: true } : session;
+    },
+    learnProgress: async () => ({ devices: [{ courses: [], skills: [] }] }),
     answer: async () => ({
       answer: "What behavior should you test first?",
       citations: [],
@@ -37,6 +42,7 @@ test("packaged account sessions use Windows encryption, restore and sign out wit
         (e): e is [string, string] => e[1] !== undefined,
       ),
     ),
+    OUTCLASS_AI_SERVICE: "http://127.0.0.1:47847",
     GITLEARN_PORT: "47846",
     GITLEARN_DATA_DIR: path.join(directory, "data"),
     GITLEARN_DESKTOP_USER_DATA: path.join(directory, "profile"),
@@ -58,54 +64,23 @@ test("packaged account sessions use Windows encryption, restore and sign out wit
       (await fetch("/welcome/assets/release.json")).json(),
     );
     expect(await desktop.evaluate(({ app }) => app.getVersion())).toBe(version);
-    expect(
-      await page.evaluate(
-        async () => (await (await fetch("/api/health")).json()).version,
-      ),
-    ).toBe(version);
-    // A local preview may be newer than the published downloads. Keep those
-    // links pinned to the public release until its new assets are published.
-    const publishedGuide = JSON.parse(
-      await readFile("src/site/assets/release.json", "utf8"),
-    );
+    expect(await page.evaluate(async () => (await (await fetch("/api/health")).json()).version)).toBe(version);
+    const publishedGuide = JSON.parse(await readFile("src/site/assets/release.json", "utf8"));
     expect(bundledGuide).toEqual(publishedGuide);
-    expect(bundledGuide.windows.url).toContain(
-      `OutClass-Setup-${publishedGuide.version}.exe`,
-    );
-    await page.evaluate(
-      async (root) => {
-        const { token } = await (
-          await fetch("/api/bootstrap", { method: "POST" })
-        ).json();
-        const post = async (route: string, body: unknown) => {
-          const r = await fetch(`/api/${route}`, {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(body),
-          });
-          const d = await r.json();
-          if (!r.ok) throw new Error(d.error);
-          return d;
-        };
-        await post("setup", { repoPath: root, aiEnabled: false });
-        await post("ai-config", {
-          mode: "included",
-          service: "http://127.0.0.1:47847",
-          localEndpoint: "http://127.0.0.1:11434/v1",
-          localModel: "",
-        });
-        await post("ai-sign-in", { email: "learner@example.com" });
-        await post("ai-verify", {
-          email: "learner@example.com",
-          code: "123456",
-        });
-        await post("assistant-enable", { enabled: true });
-      },
-      path.join(directory, "history"),
-    );
+    expect(bundledGuide.windows.url).toContain(`OutClass-Setup-${publishedGuide.version}.exe`);
+    await page.getByRole("button", { name: "Let’s get started" }).click();
+    await page.getByLabel("Parent learning folder").fill(path.join(directory, "history"));
+    await page.getByRole("button", { name: "Create my workspace" }).click();
+    await page.getByRole("button", { name: "Create account", exact: true }).click();
+    await page.getByLabel("Email", { exact: true }).fill(session.email);
+    await page.getByLabel("Password", { exact: true }).fill("outclass-test-password");
+    await page.getByRole("button", { name: "Send verification code" }).click();
+    await page.getByLabel("Verification code").fill("12345678");
+    if (await page.getByLabel("Sync course progress and skills to my account").count())
+      await page.getByLabel("Sync course progress and skills to my account").check();
+    await page.getByRole("button", { name: "Verify email" }).click();
+    await expect(page.getByText(`Signed in as ${session.email}`)).toBeVisible();
+    expect(authRoutes).toEqual(["signup", "verify"]);
     const encrypted = await readFile(
       path.join(directory, "profile", "ai-account.encrypted"),
     );
@@ -143,6 +118,7 @@ test("packaged account sessions use Windows encryption, restore and sign out wit
         access: await (await fetch("/api/ai-access", { headers })).json(),
         usage: await (await fetch("/api/ai-usage", { headers })).json(),
         state: await (await fetch("/api/state", { headers })).json(),
+        progress: await (await fetch("/api/account-progress", { headers })).json(),
         social: await (
           await fetch("/api/expansion/social", { headers })
         ).json(),
@@ -153,6 +129,7 @@ test("packaged account sessions use Windows encryption, restore and sign out wit
     expect(result.state.hasApiKey).toBe(false);
     expect(result.state.hasAI).toBe(true);
     expect(result.usage.remaining).toBe(20);
+    if (result.progress.enabled) expect(result.progress.syncedAt).toBeTruthy();
     expect(JSON.stringify(result)).not.toContain(session.access_token);
     expect(
       result.social.find((s: { provider: string }) => s.provider === "x")

@@ -63,11 +63,13 @@ test("desktop first-run, encrypted key persistence, local files, and bundled Jav
       .fill(path.join(directory, "My Learning"));
     await page.getByRole("button", { name: "Create my workspace" }).click();
     await expect(
-      page.getByRole("heading", { name: "A little help when you need it." }),
+      page.getByRole("heading", { name: "Make it your workspace." }),
     ).toBeVisible();
     const sampleKey = "sk-localdesktoptest123456789";
+    await expect(page.getByRole("button", { name: "Sign in with password" })).toBeVisible();
+    await page.getByText("Use a personal key", { exact: true }).click();
     await page.getByLabel("OpenAI API key").fill(sampleKey);
-    await page.getByRole("button", { name: "Continue with AI help" }).click();
+    await page.getByRole("button", { name: "Continue", exact: true }).click();
     await expect(
       page.getByRole("heading", { name: "Bring the web into your workspace." }),
     ).toBeVisible();

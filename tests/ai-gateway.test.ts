@@ -147,6 +147,23 @@ it("reports email-delivery failures without exposing SMTP credentials", async ()
   expect(body).not.toContain("SMTP");
   expect(body).not.toContain("password");
 });
+it("creates desktop accounts with a password, verifies signup codes and scopes sync to the bearer owner", async () => {
+  const learnProgress = vi.fn(async () => ({ devices: [] }));
+  const f = await fixture({ learnProgress });
+  const email = "learner@example.com", password = "test-password";
+  expect((await f.post("/v1/auth/register", { email, password: "too-short".slice(0, 5) })).status).toBe(400);
+  expect((await f.post("/v1/auth/register", { email, password })).status).toBe(200);
+  expect(f.deps.auth).toHaveBeenCalledWith("signup", { email, password });
+  expect((await f.post("/v1/auth/confirm-registration", { email, code: "12345678" })).status).toBe(200);
+  expect(f.deps.auth).toHaveBeenCalledWith("verify", { email, token: "12345678", type: "signup" });
+  expect((await f.post("/v1/auth/password", { email, password })).status).toBe(200);
+  expect(f.deps.auth).toHaveBeenCalledWith("token?grant_type=password", { email, password });
+  const input = { deviceId: user, snapshot: { courses: [], skills: [] } };
+  expect((await f.post("/v1/learn/progress", input, "invalid")).status).toBe(401);
+  expect(learnProgress).not.toHaveBeenCalled();
+  expect((await f.post("/v1/learn/progress", { ...input, userId: "client-selected-id" })).status).toBe(200);
+  expect(learnProgress).toHaveBeenCalledWith(user, input);
+});
 it("passes the exact raw Stripe payload and distinguishes invalid signatures from retryable failures", async () => {
   const webhook = vi.fn(async (_body: Buffer, _signature: string) => {});
   const f = await fixture({ webhook });

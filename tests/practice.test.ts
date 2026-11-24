@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, expect, it } from "vitest";
+import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -6,6 +6,9 @@ import { Store } from "../src/server/store";
 import { Application } from "../src/server/application";
 import { Workspace } from "../src/server/workspace";
 import { Practice } from "../src/server/practice";
+import { CourseLibrary } from "../src/server/library";
+import { LearnTools } from "../src/server/learn-tools";
+import { LearnProgress } from "../src/server/learn-progress";
 let folder: string,
   store: Store,
   app: Application,
@@ -31,6 +34,66 @@ afterEach(async () => {
   await workspace.stopAll();
   store.close();
   await rm(folder, { recursive: true, force: true });
+});
+it("searches saved lesson evidence and verifies a reviewed lesson practical using real checks", async () => {
+  const library = new CourseLibrary(app);
+  const tools = new LearnTools(app, library, practice);
+  library.document("js", "Scoring transcript", "Double each input to compute a practice score. Zero stays zero.", "transcript", "1");
+  library.document("python", "Python scoring notes", "Double each input with Python to compute the score.", "material", "1");
+  await app.start("js", "1");
+  await app.saveNote("Remember to start from a double score example.");
+  const session = store.state().session!;
+  await workspace.save(session.id, "sample.js", "// Example: double score\nconst score = 4;", null);
+  expect(await tools.search("double score")).toEqual(expect.arrayContaining([
+    expect.objectContaining({ courseId: "js", kind: "Code" }),
+    expect.objectContaining({ courseId: "js", kind: "Note" }),
+    expect.objectContaining({ courseId: "python", kind: "Source" }),
+  ]));
+  const state = store.state();
+  state.settings.assistantEnabled = true;
+  store.save(state);
+  const answer = {
+    title: "Score each round", skill: "Integer transformation", brief: "Double the input to produce the round score.",
+    requirements: ["Return an integer.", "Keep a zero input at zero."],
+    hints: ["Work through the example by hand.", "Check the effect of adding the input to itself."],
+    minutes: 12,
+    cases: [0, 2, -3].map((input) => ({ label: `Round ${input}`, inputJson: String(input), outputJson: String(input * 2) })),
+  };
+  vi.spyOn(app.ai, "ready").mockReturnValue(true);
+  const structured = vi.spyOn(app.ai, "structured")
+    .mockResolvedValueOnce({ answer: "Two courses saved examples for doubling. [1] [2]", citations: [1, 2] })
+    .mockResolvedValueOnce({ ...answer, cases: answer.cases.map((item) => ({ ...item, inputJson: "null" })) })
+    .mockResolvedValueOnce(answer);
+  const sourced = await tools.ask(["js", "python"], "double score");
+  expect(sourced.sources.map((item) => item.courseId)).toEqual(["js", "python"]);
+  expect(structured).toHaveBeenCalledTimes(1);
+  await expect(tools.draft("js", "1", "javascript")).rejects.toThrow("invalid or repeated");
+  const draft = await tools.draft("js", "1", "javascript");
+  expect(draft.checks).toHaveLength(3);
+  expect(practice.tasks()).toHaveLength(0);
+  await expect(practice.start("python", draft.id)).rejects.toThrow("drafted for");
+  const task = await practice.start("js", draft.id);
+  expect(tools.next().practical?.id).toBe(draft.id);
+  expect((await practice.hint(task.id)).level).toBe(1);
+  const file = await workspace.read(session.id, task.path);
+  await workspace.save(session.id, task.path, "export function solve(value) { return value * 2; }\n", file.version);
+  expect((await practice.check(task.id, session.id)).status).toBe("completed");
+  expect(practice.dashboard().skills).toEqual(expect.arrayContaining([expect.objectContaining({
+    language: "javascript", skill: "Integer transformation",
+  })]));
+  const progress = new LearnProgress(app, practice);
+  app.ai.session = { email: "learner@example.com", access_token: "test-access", refresh_token: "test-refresh", expires_at: 9999999999 };
+  const sync = vi.spyOn(app.ai, "learnProgress").mockResolvedValue({ devices: [] });
+  await progress.sync();
+  expect(sync).not.toHaveBeenCalled();
+  progress.configure(true);
+  await progress.sync();
+  expect(sync).toHaveBeenCalledWith(expect.objectContaining({ snapshot: progress.status().progress }));
+  expect(JSON.stringify(sync.mock.calls)).not.toContain("Remember");
+  expect(JSON.stringify(sync.mock.calls)).not.toContain(task.path);
+  app.ai.session = { ...app.ai.session, email: "different@example.com" };
+  expect(progress.status().enabled).toBe(false);
+  expect(progress.status().syncedAt).toBeNull();
 });
 it("suggests practice before course completion, supports deferral, and never invents evidence", async () => {
   expect(practice.dashboard().opportunities).toEqual([]);
