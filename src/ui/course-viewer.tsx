@@ -5,6 +5,7 @@ import {
   ChevronRight,
   GripHorizontal,
   Link2,
+  PanelTop,
   X,
 } from "lucide-react";
 import type { Course } from "../shared";
@@ -48,6 +49,7 @@ export function CourseViewer({
   });
   const [entered, setEntered] = useState("");
   const [editing, setEditing] = useState(false);
+  const [showSite, setShowSite] = useState(false);
   const [error, setError] = useState("");
   const [material, setMaterial] = useState<Assignment | null>();
   const frame = useRef<HTMLElement>(null);
@@ -57,8 +59,16 @@ export function CourseViewer({
   const academy = course.platform === "academy" && !!lesson && !link;
   const source = link || course.url;
   const browserUrl = courseViewUrl(source);
-  const player =
+  const embedded =
     !academy && lessonViewUrl(source, link ? undefined : lesson?.id);
+  const embeddedUrl = embedded ? new URL(embedded) : null;
+  const canSwitchView =
+    embeddedUrl &&
+    browserUrl &&
+    embeddedUrl.href !== browserUrl.href &&
+    (embeddedUrl.pathname.startsWith("/embed/") ||
+      embeddedUrl.hostname === "player.vimeo.com");
+  const player = showSite && canSwitchView ? browserUrl?.href : embedded;
   const showNative = !!(desktop && player && !editing && !error);
   const browserHref = browserUrl?.hostname.endsWith("udemy.com")
     ? player || browserUrl.href
@@ -151,6 +161,7 @@ export function CourseViewer({
     } catch {}
     setError("");
     setLink(value);
+    setShowSite(false);
     setEditing(false);
   }
 
@@ -244,6 +255,19 @@ export function CourseViewer({
         >
           <Link2 size={14} />
         </button>
+        {desktop && canSwitchView && !editing && (
+          <button
+            type="button"
+            aria-label={showSite ? "Use video player" : "Use course site view"}
+            title={showSite ? "Use video player" : "Use course site view"}
+            onClick={() => {
+              setError("");
+              setShowSite(!showSite);
+            }}
+          >
+            <PanelTop size={14} />
+          </button>
+        )}
         {browserHref && !editing && (
           <a
             href={browserHref}

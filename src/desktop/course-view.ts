@@ -78,11 +78,14 @@ export function createCourseView(window: BrowserWindow, applicationId: string) {
       window.webContents.send("course-view:hover", hovered);
     });
     view = current;
+    current.setBackgroundColor("#0b0e17");
     window.contentView.addChildView(current);
     bounds(rectangle);
     try {
       if (
-        url.hostname === "www.youtube.com" &&
+        ["www.youtube.com", "www.youtube-nocookie.com"].includes(
+          url.hostname,
+        ) &&
         url.pathname.startsWith("/embed/")
       ) {
         await contents.loadURL(url.href, {
@@ -98,5 +101,8 @@ export function createCourseView(window: BrowserWindow, applicationId: string) {
     }
   }
   window.once("closed", close);
+  window.webContents.on("did-start-navigation", (event) => {
+    if (event.isMainFrame && !event.isInPlace) close();
+  });
   return { open, bounds, close };
 }
