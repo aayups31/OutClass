@@ -8,21 +8,26 @@ export function ContinueLearning({
   onContinue,
   onChooseFolder,
   limit = 3,
+  recoveringOnly = false,
 }: {
   state: Status;
   busy: boolean;
   onContinue: (courseId: string) => void;
   onChooseFolder: (course: Course) => void;
   limit?: number;
+  recoveringOnly?: boolean;
 }) {
-  if (!state.continueItems?.length) return null;
+  const items = (state.continueItems || []).filter(
+    (item) => !recoveringOnly || (item.courseId === state.session?.courseId && !item.folderAvailable),
+  );
+  if (!items.length) return null;
   return (
     <section className="continue-learning" aria-label="Continue learning">
       <div className="section-heading">
         <h2>Continue building</h2>
         <span className="quiet-note">Your place is saved on this device</span>
       </div>
-      {state.continueItems.slice(0, limit).map((anchor) => {
+      {items.slice(0, limit).map((anchor) => {
         const course = state.courses.find(
           (item) => item.id === anchor.courseId,
         )!;

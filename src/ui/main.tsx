@@ -904,10 +904,11 @@ function App() {
                     <LearnNext
                       api={request}
                       revision={`${state.session?.id}:${state.checkpoints[0]?.id}:${state.courses.length}`}
-                      resume={!state.session && <ContinueLearning
+                      resume={<ContinueLearning
                         state={state}
                         busy={!!busy}
                         limit={1}
+                        recoveringOnly={!!state.session}
                         onChooseFolder={setRecovering}
                         onContinue={(courseId) => void continueLearning(courseId)}
                       />}
