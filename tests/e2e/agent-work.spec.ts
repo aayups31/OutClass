@@ -199,11 +199,11 @@ test("the four specialists produce, review, deliver and restore actual product a
   await page
     .getByLabel("Academy course", { exact: true })
     .selectOption({ label: "Python activity reports" });
-  await page.getByRole("button", { name: "Atlas", exact: true }).click();
+  await page.getByRole("button", { name: "Forge", exact: true }).click();
   const academy = page.getByRole("region", {
-    name: "Atlas task workspace",
+    name: "Forge task workspace",
   });
-  await academy.getByRole("button", { name: "Run agent", exact: true }).click();
+  await academy.getByRole("button", { name: "Run Forge", exact: true }).click();
   await expect(
     academy.getByText("Ready for review", { exact: true }),
   ).toBeVisible();
@@ -227,10 +227,10 @@ test("the four specialists produce, review, deliver and restore actual product a
   await page
     .getByLabel("Academy course", { exact: true })
     .selectOption({ label: "Python activity reports" });
-  await page.getByRole("button", { name: "Atlas", exact: true }).click();
+  await page.getByRole("button", { name: "Forge", exact: true }).click();
   await expect(academy.getByText("Delivered", { exact: true })).toBeVisible();
   await academy
-    .getByLabel("Academy specialist", { exact: true })
+    .getByLabel("Forge deliverable", { exact: true })
     .selectOption("capstone");
   await academy.getByRole("button", { name: "Run Forge" }).click();
   await expect(

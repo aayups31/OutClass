@@ -69,10 +69,12 @@ test("builds a complete course through the workshop and delivers private-key-bac
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
   await page.goto(base + "/?view=academy");
+  await page.getByRole("button", { name: "Atlas", exact: true }).click();
   await page
     .getByRole("button", { name: "Full course workshop", exact: true })
     .click();
   const panel = page.getByRole("region", { name: "Full course workshop" });
+  await panel.getByText("Scope and tooling", { exact: true }).click();
   for (const key of [
     "title",
     "audience",

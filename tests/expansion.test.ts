@@ -37,6 +37,18 @@ function release() {
     approve: true,
   });
 }
+it("keeps author-created chapter names in drafts and publishes grouping through lessons", () => {
+  const saved = expansion.saveCourse({
+    ...draft,
+    chapters: ["First report", "Optional follow-up"],
+    lessons: [{ ...draft.lessons[0], chapter: "First report" }],
+    expectedRevision: 0,
+  });
+  expect(expansion.state().courses[0].chapters).toEqual(saved.chapters);
+  const published = expansion.release(saved.id, { expectedRevision: saved.revision, approve: true });
+  expect(published).not.toHaveProperty("chapters");
+  expect(published.lessons[0].chapter).toBe("First report");
+});
 it("imports a scoped hosted assignment into the real Learn workspace and preserves its lesson sources", async () => {
   await app.setup(path.join(dir, "history"), false);
   const id = "ef6669f8-4248-454f-8ba3-d8e22bc4aa88";

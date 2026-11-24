@@ -25,6 +25,12 @@ it("uses bounded source-scoped proposals, preserves drafts, and rejects invented
           practice: "Write totals",
           content: "A dictionary stores values by key.",
         },
+        {
+          title: "Private later lesson",
+          objective: "Compare totals",
+          practice: "Explain the final report",
+          content: "Unique full text reserved for another lesson.",
+        },
       ],
       expectedRevision: 0,
     });
@@ -41,7 +47,12 @@ it("uses bounded source-scoped proposals, preserves drafts, and rejects invented
       limitations: ["Not executed"],
     };
     const model = vi.spyOn(app.ai, "structured").mockResolvedValue(reply);
-    expect((await agents.run("academy", c.id, 1)).state).toBe("completed");
+    const focused = await agents.run("academy", c.id, 1, 0);
+    expect(focused).toMatchObject({ state: "completed", lessonIndex: 0 });
+    expect(focused.sources.map(({ id }) => id)).toEqual(["lesson:0"]);
+    const sent = model.mock.calls[0][0].context;
+    expect(sent).not.toContain("Unique full text reserved");
+    expect(JSON.parse(sent).teachingPatterns.length).toBeGreaterThan(0);
     expect(model).toHaveBeenCalledTimes(1);
     expect(e.state().courses[0].revision).toBe(1);
     model.mockResolvedValue({

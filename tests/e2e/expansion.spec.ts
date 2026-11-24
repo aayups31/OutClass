@@ -30,6 +30,65 @@ test.afterEach(async () => {
   await rm(dir, { recursive: true, force: true });
 });
 
+test("creates empty chapters, saves them, and moves lessons between chapters", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 960 });
+  await page.goto(base + "/?view=academy");
+  await page
+    .getByLabel("Course title", { exact: true })
+    .fill("Field reporting");
+  const addChapter = async (name: string) => {
+    await page
+      .getByRole("button", { name: "Add chapter", exact: true })
+      .click();
+    await page.getByLabel("Chapter name", { exact: true }).fill(name);
+    await page
+      .getByRole("button", { name: "Create chapter", exact: true })
+      .click();
+  };
+  await addChapter("Start with a sample");
+  await addChapter("Review your results");
+  await page
+    .getByRole("button", { name: "Save course draft", exact: true })
+    .click();
+  await expect(
+    page.getByText("Saved · revision 1", { exact: true }),
+  ).toBeVisible();
+  await page.reload();
+  await page
+    .getByLabel("Academy course", { exact: true })
+    .selectOption({ label: "Field reporting" });
+  const outline = page.getByRole("navigation", { name: "Course lessons" });
+  await outline
+    .getByRole("button", { name: "Add lesson to chapter Start with a sample" })
+    .click();
+  await page
+    .getByLabel("Lesson title 1", { exact: true })
+    .fill("Inspect the report");
+  await page
+    .getByLabel("Chapter for lesson 1")
+    .selectOption("Review your results");
+  await expect(
+    outline.getByRole("button", {
+      name: "Remove empty chapter Start with a sample",
+    }),
+  ).toBeVisible();
+  await page
+    .getByRole("button", { name: "Save course draft", exact: true })
+    .click();
+  await expect(
+    page.getByText("Saved · revision 2", { exact: true }),
+  ).toBeVisible();
+  await page.reload();
+  await page
+    .getByLabel("Academy course", { exact: true })
+    .selectOption({ label: "Field reporting" });
+  await expect(page.getByLabel("Chapter for lesson 1")).toHaveValue(
+    "Review your results",
+  );
+});
+
 test("author a course, launch Learn, approve grounded copy and prepare a manual campaign", async ({
   page,
   request,
