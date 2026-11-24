@@ -12,6 +12,12 @@ export interface DesktopBridge {
   setApiKey(key: string): Promise<void>;
   openExternal(url: string): Promise<void>;
   openExtensionFolder(): Promise<void>;
+  courseViewer?: {
+    open(url: string, bounds: ViewerBounds): Promise<void>;
+    bounds(bounds: ViewerBounds): Promise<void>;
+    close(): Promise<void>;
+    onHover(listener: (hovered: boolean) => void): () => void;
+  };
   terminals: {
     list(): Promise<TerminalInfo[]>;
     create(sessionId: string): Promise<TerminalInfo>;
@@ -22,6 +28,12 @@ export interface DesktopBridge {
     subscribe(listener: (event: TerminalEvent) => void): () => void;
   };
 }
+export type ViewerBounds = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
 export interface TerminalInfo {
   id: string;
   sessionId: string;

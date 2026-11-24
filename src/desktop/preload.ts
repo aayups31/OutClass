@@ -12,6 +12,17 @@ const bridge: DesktopBridge = {
   setApiKey: (key) => ipcRenderer.invoke("desktop:key", key),
   openExternal: (url) => ipcRenderer.invoke("desktop:external", url),
   openExtensionFolder: () => ipcRenderer.invoke("desktop:extension"),
+  courseViewer: {
+    open: (url, bounds) => ipcRenderer.invoke("course-view:open", url, bounds),
+    bounds: (bounds) => ipcRenderer.invoke("course-view:bounds", bounds),
+    close: () => ipcRenderer.invoke("course-view:close"),
+    onHover: (listener) => {
+      const receive = (_event: Electron.IpcRendererEvent, hovered: boolean) =>
+        listener(hovered);
+      ipcRenderer.on("course-view:hover", receive);
+      return () => ipcRenderer.removeListener("course-view:hover", receive);
+    },
+  },
   terminals: {
     list: () => ipcRenderer.invoke("terminal:list"),
     create: (sessionId) => ipcRenderer.invoke("terminal:create", sessionId),

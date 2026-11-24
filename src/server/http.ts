@@ -821,6 +821,26 @@ export function createApp(
     const input = fileQuery.parse(req.body);
     res.json(await workspace.run(input.sessionId, input.path));
   });
+  app.post("/api/workspace-folder", async (req, res) => {
+    const input = fileQuery.parse(req.body);
+    await application.serial(() =>
+      workspace.createFolder(input.sessionId, input.path),
+    );
+    res.json({ ok: true });
+  });
+  app.post("/api/workspace-clone", async (req, res) => {
+    const input = z
+      .object({
+        sessionId: text.min(1),
+        url: text.min(1).max(2000),
+        folder: text.max(300),
+      })
+      .parse(req.body);
+    await application.serial(() =>
+      workspace.cloneRepository(input.sessionId, input.url, input.folder),
+    );
+    res.json({ ok: true });
+  });
   app.get("/api/workspace-run-status", (req, res) =>
     res.json(workspace.runStatus(text.min(1).parse(req.query.sessionId))),
   );

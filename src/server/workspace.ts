@@ -113,6 +113,7 @@ export class Workspace {
         ),
       );
     const files: { path: string; size: number; version: string }[] = [];
+    const folders: string[] = [];
     let skipped = 0;
     const walk = async (relative: string, depth: number) => {
       if (depth > 12) return;
@@ -120,7 +121,7 @@ export class Workspace {
         path.join(session.workspace, relative),
         { withFileTypes: true },
       )) {
-        if (files.length >= 400) {
+        if (files.length >= 400 || folders.length >= 400) {
           skipped++;
           continue;
         }
@@ -135,8 +136,10 @@ export class Workspace {
         try {
           const { target } = await this.location(id, name);
           const info = await lstat(target);
-          if (info.isDirectory()) await walk(name, depth + 1);
-          else if (info.isFile() && info.size <= 512000) {
+          if (info.isDirectory()) {
+            folders.push(name);
+            await walk(name, depth + 1);
+          } else if (info.isFile() && info.size <= 512000) {
             const bytes = await readFile(target);
             if (!bytes.includes(0))
               files.push({ path: name, size: info.size, version: hash(bytes) });
@@ -154,6 +157,7 @@ export class Workspace {
       sessionId: id,
       workspace: session.workspace,
       files,
+      folders: folders.sort((a, b) => a.localeCompare(b)),
       skipped,
       anchor: this.app.store.get<ResumeAnchor>(`resume:${session.courseId}`),
       lastRun: evidence ? (await this.runs(id, versions))[0] : undefined,
@@ -364,6 +368,55 @@ export class Workspace {
     await this.location(id, relative, true);
     await writeFile(target, content, { flag: version === null ? "wx" : "w" });
     return { path: relative, content, version: hash(content) };
+  }
+  async createFolder(id: string, relative: string) {
+    const { target } = await this.location(id, relative, true);
+    await mkdir(target, { recursive: true });
+  }
+  async cloneRepository(id: string, address: string, folder: string) {
+    const match = /^https:\/\/github\.com\/([\w-]+)\/([\w.-]+?)\/?$/i.exec(
+      address.trim(),
+    );
+    if (!match)
+      throw new UserError(
+        "Use a GitHub HTTPS link such as https://github.com/owner/repository.",
+      );
+    const repository = match[2].replace(/\.git$/i, "");
+    const relative = folder ? `${folder}/${repository}` : repository;
+    const { target } = await this.location(id, relative, true);
+    if (await lstat(target).catch(() => null))
+      throw new UserError(
+        "A file or folder with that repository name already exists.",
+        409,
+      );
+    const parent = path.dirname(target);
+    if (folder) await this.location(id, folder);
+    const noConfig = process.platform === "win32" ? "NUL" : "/dev/null";
+    await git.run(
+      "git",
+      [
+        "-c",
+        "credential.helper=",
+        "-c",
+        "core.symlinks=false",
+        "-c",
+        "http.followRedirects=false",
+        "clone",
+        "--depth=1",
+        "--template=",
+        "--",
+        `https://github.com/${match[1]}/${repository}.git`,
+        target,
+      ],
+      parent,
+      undefined,
+      {
+        GIT_CONFIG_GLOBAL: noConfig,
+        GIT_CONFIG_NOSYSTEM: "1",
+        GIT_ALLOW_PROTOCOL: "https",
+        GIT_CONFIG_COUNT: "0",
+      },
+    );
   }
   stop(id: string) {
     const process = this.jobs.get(id);

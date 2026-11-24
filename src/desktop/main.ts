@@ -16,6 +16,8 @@ import dotenv from "dotenv";
 import type { DesktopEnvironment } from "./bridge";
 import { LocalTerminals } from "./terminal";
 import { approvedSocialLink } from "./social-links";
+import { createCourseView } from "./course-view";
+import { courseViewUrl } from "../course-view-url";
 import {
   EDUCATOR_PORT,
   LEARN_PORT,
@@ -104,10 +106,7 @@ function external(url: string) {
     target.protocol !== "https:" ||
     (!allowedExternal.has(target.hostname) &&
       !approvedSocialLink(target) &&
-      !(
-        /^(?:[a-z0-9-]+\.)*udemy\.com$/.test(target.hostname) &&
-        target.pathname.startsWith("/course/")
-      )) ||
+      !courseViewUrl(target.href)) ||
     target.username ||
     target.password
   )
@@ -500,6 +499,24 @@ else {
           nodeIntegration: false,
           sandbox: true,
         },
+      });
+      const applicationId = educator
+        ? "com.outclass.educator"
+        : edition === "learn"
+          ? "com.outclass.learn"
+          : "com.gitlearn.workspace";
+      const courseView = createCourseView(window, applicationId);
+      ipcMain.handle("course-view:open", (event, url, bounds) => {
+        trusted(event);
+        return courseView.open(url, bounds);
+      });
+      ipcMain.handle("course-view:bounds", (event, bounds) => {
+        trusted(event);
+        courseView.bounds(bounds);
+      });
+      ipcMain.handle("course-view:close", (event) => {
+        trusted(event);
+        courseView.close();
       });
       window.webContents.setWindowOpenHandler(({ url }) => {
         external(url).catch(() => {});

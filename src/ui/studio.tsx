@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { basicSetup } from "codemirror";
 import { EditorView, keymap } from "@codemirror/view";
@@ -21,7 +21,10 @@ import {
   Code2,
   Copy,
   FileCode2,
+  FilePlus2,
   Folder,
+  FolderPlus,
+  GitFork,
   GitCommitHorizontal,
   Loader2,
   MessageSquare,
@@ -42,6 +45,7 @@ import {
   Square,
   Terminal,
   Upload,
+  Video,
   X,
 } from "lucide-react";
 import type { Course, Status, ResumeAnchor, RunContext } from "../shared";
@@ -54,8 +58,15 @@ import { ArchitectNotebook, type NotebookState } from "./notebook";
 import { SessionDirection } from "./session-direction";
 import type { PracticeTask } from "../server/practice";
 import { LearnAssignment } from "./learn-package";
+import { CourseViewer } from "./course-viewer";
 
 type Api = <T>(route: string, body?: unknown) => Promise<T>;
+function parentFolders(path: string) {
+  const parts = path.split("/");
+  return parts
+    .slice(0, -1)
+    .map((_, index) => parts.slice(0, index + 1).join("/"));
+}
 type File = {
   path: string;
   content: string;
@@ -375,8 +386,37 @@ export function Studio({
     [active, setActive] = useState("");
   const [error, setError] = useState(""),
     [action, setAction] = useState("");
-  const [newFile, setNewFile] = useState(false),
-    [fileName, setFileName] = useState("main.py");
+  const [create, setCreate] = useState<"file" | "folder" | "clone">(),
+    [fileName, setFileName] = useState("");
+  const [folders, setFolders] = useState<string[]>([]);
+  const [openFolders, setOpenFolders] = useState<string[]>([]);
+  const explorerItems = useMemo(() => {
+    const items = [
+      ...folders.map((path) => ({ path, folder: true })),
+      ...files.map(({ path }) => ({ path, folder: false })),
+    ];
+    return items
+      .map((item) => ({
+        ...item,
+        parts: item.path.split("/"),
+        parents: parentFolders(item.path),
+      }))
+      .sort((first, second) => {
+        const a = first.parts;
+        const b = second.parts;
+        const shared = a.findIndex((part, index) => part !== b[index]);
+        if (shared < 0) return a.length - b.length;
+        if (shared >= b.length) return 1;
+        const aIsFolder = shared < a.length - 1 || first.folder;
+        const bIsFolder = shared < b.length - 1 || second.folder;
+        return (
+          Number(bIsFolder) - Number(aIsFolder) ||
+          a[shared].localeCompare(b[shared])
+        );
+      });
+  }, [files, folders]);
+  const [targetFolder, setTargetFolder] = useState("");
+  const [followingCourse, setFollowingCourse] = useState(false);
   const [output, setOutput] = useState(""),
     [exitCode, setExitCode] = useState<number | null>(null),
     [running, setRunning] = useState(false),
@@ -530,12 +570,36 @@ export function Studio({
   };
   const loadFiles = async () => {
     if (!session) return;
-    const result = await api<{ files: { path: string; size: number }[] }>(
-      `workspace-files?sessionId=${session.id}`,
-    );
+    const result = await api<{
+      files: { path: string; size: number }[];
+      folders: string[];
+    }>(`workspace-files?sessionId=${session.id}`);
     setFiles(result.files);
+    setFolders(result.folders);
     return result.files;
   };
+  function beginCreate(kind: "file" | "folder" | "clone") {
+    setFileName(kind === "clone" || !targetFolder ? "" : `${targetFolder}/`);
+    setCreate(kind);
+  }
+  function closeFile(name: string) {
+    const closing = drafts[name];
+    if (
+      closing.content !== closing.saved &&
+      !window.confirm(`Discard unsaved edits to ${name} and close it?`)
+    )
+      return;
+    const next = { ...drafts };
+    delete next[name];
+    setDrafts(next);
+    if (active === name) {
+      const fallback = Object.values(next).at(-1);
+      setActive(fallback?.path || "");
+      setCursor(fallback?.cursor || 0);
+      setPreviewUrl("");
+      setSelection("");
+    }
+  }
   const openFile = async (name: string) => {
     if (!session) return;
     setPreviewUrl("");
@@ -550,12 +614,19 @@ export function Studio({
       }));
     }
     setActive(name);
+    setOpenFolders((previous) => [
+      ...new Set([...previous, ...parentFolders(name)]),
+    ]);
     setCursor(drafts[name]?.cursor || 0);
   };
   useEffect(() => {
     let cancelled = false;
     setDrafts({});
     setFiles([]);
+    setFolders([]);
+    setOpenFolders([]);
+    setTargetFolder("");
+    setCreate(undefined);
     setActive("");
     setOutput("");
     setLastRun(undefined);
@@ -566,12 +637,14 @@ export function Studio({
     if (session)
       api<{
         files: { path: string; size: number }[];
+        folders: string[];
         anchor?: ResumeAnchor;
         lastRun?: RunContext;
       }>(`workspace-files?sessionId=${session.id}`)
         .then(async (result) => {
           if (cancelled) return;
           setFiles(result.files);
+          setFolders(result.folders);
           setLastRun(result.lastRun);
           setOutput(result.lastRun?.output || "");
           setDock("none");
@@ -594,6 +667,9 @@ export function Studio({
               });
               setCursor(cursor);
               setActive(first.path);
+              setOpenFolders((previous) => [
+                ...new Set([...previous, ...parentFolders(first.path)]),
+              ]);
             }
           }
         })
@@ -604,6 +680,9 @@ export function Studio({
       cancelled = true;
     };
   }, [session?.id]);
+  useEffect(() => {
+    setFollowingCourse(false);
+  }, [course?.id]);
   useEffect(() => {
     let cancelled = false;
     setLibrary(undefined);
@@ -828,9 +907,11 @@ export function Studio({
             <div>
               <strong>{course.title}</strong>
               <p>{session?.section || `${course.lessons.length} lessons`}</p>
-              <a href={course.url} target="_blank" rel="noreferrer">
-                Open on Udemy <ArrowUpRight size={12} />
-              </a>
+              {course.platform !== "academy" && (
+                <a href={course.url} target="_blank" rel="noreferrer">
+                  Open course site <ArrowUpRight size={12} />
+                </a>
+              )}
               <button onClick={onCourses}>Manage courses</button>
             </div>
           </details>
@@ -857,6 +938,18 @@ export function Studio({
             {session.contributionId ? "End work session" : "Checkpoint"}
           </button>
         )}
+        <button
+          className="course-viewer-toggle"
+          aria-label={followingCourse ? "Hide course viewer" : "Follow course"}
+          title={followingCourse ? "Hide course viewer" : "Follow course"}
+          aria-expanded={followingCourse}
+          onClick={() => {
+            setMobileTab("editor");
+            setFollowingCourse(!followingCourse);
+          }}
+        >
+          <Video size={16} />
+        </button>
         <button
           className="lesson-toggle"
           aria-label="Lesson"
@@ -987,6 +1080,15 @@ export function Studio({
         </button>
       </div>
       <section className="studio-main" aria-label="Local coding workspace">
+        {followingCourse && mobileTab === "editor" && (
+          <CourseViewer
+            key={`${course.id}:${session?.lessonId || ""}`}
+            course={course}
+            lessonId={session?.lessonId || course.currentLessonId}
+            api={api}
+            onClose={() => setFollowingCourse(false)}
+          />
+        )}
         {error && (
           <div className="studio-error" role="alert">
             {error}
@@ -1033,51 +1135,98 @@ export function Studio({
           </div>
         ) : (
           <>
-            {newFile && (
+            {create && (
               <form
                 className="new-file"
                 onSubmit={(event) => {
                   event.preventDefault();
                   safe("create", async () => {
-                    const created = await api<Omit<File, "saved">>(
-                      "workspace-file",
-                      {
+                    const name = fileName.trim();
+                    if (create === "folder") {
+                      await api("workspace-folder", {
                         sessionId: session.id,
-                        path: fileName,
-                        content: /\.py$/i.test(fileName)
-                          ? '# Your next idea starts here.\nprint("Hello, OutClass")\n'
-                          : /\.js$/i.test(fileName)
-                            ? '// Your next idea starts here.\nconsole.log("Hello, OutClass");\n'
-                            : /\.html?$/i.test(fileName)
-                              ? '<!doctype html>\n<html lang="en">\n<head><title>My lesson</title></head>\n<body><h1>Hello, OutClass</h1></body>\n</html>\n'
-                              : "",
-                        version: null,
-                      },
-                    );
-                    setDrafts((previous) => ({
-                      ...previous,
-                      [created.path]: { ...created, saved: created.content },
-                    }));
-                    setActive(created.path);
-                    setNewFile(false);
+                        path: name,
+                      });
+                    } else if (create === "clone") {
+                      await api("workspace-clone", {
+                        sessionId: session.id,
+                        url: name,
+                        folder: targetFolder,
+                      });
+                    } else {
+                      const created = await api<Omit<File, "saved">>(
+                        "workspace-file",
+                        {
+                          sessionId: session.id,
+                          path: name,
+                          content: /\.py$/i.test(name)
+                            ? '# Your next idea starts here.\nprint("Hello, OutClass")\n'
+                            : /\.js$/i.test(name)
+                              ? '// Your next idea starts here.\nconsole.log("Hello, OutClass");\n'
+                              : /\.html?$/i.test(name)
+                                ? '<!doctype html>\n<html lang="en">\n<head><title>My lesson</title></head>\n<body><h1>Hello, OutClass</h1></body>\n</html>\n'
+                                : "",
+                          version: null,
+                        },
+                      );
+                      setDrafts((previous) => ({
+                        ...previous,
+                        [created.path]: { ...created, saved: created.content },
+                      }));
+                      setActive(created.path);
+                      setCursor(0);
+                      setSelection("");
+                      setPreviewUrl("");
+                    }
+                    setCreate(undefined);
                     await loadFiles();
+                    const parts = (create === "clone" ? targetFolder : name)
+                      .split("/")
+                      .filter(Boolean);
+                    const parents = parts
+                      .slice(0, create === "file" ? -1 : undefined)
+                      .map((_part, index) =>
+                        parts.slice(0, index + 1).join("/"),
+                      );
+                    setOpenFolders((previous) => [
+                      ...new Set([...previous, ...parents]),
+                    ]);
                   });
                 }}
               >
                 <input
-                  aria-label="New file path"
+                  aria-label={
+                    create === "file"
+                      ? "New file path"
+                      : create === "folder"
+                        ? "New folder path"
+                        : "GitHub repository URL"
+                  }
                   autoFocus
                   value={fileName}
                   onChange={(event) => setFileName(event.target.value)}
-                  placeholder="main.py or src/main.js"
+                  placeholder={
+                    create === "file"
+                      ? "src/main.py"
+                      : create === "folder"
+                        ? "src/examples"
+                        : "https://github.com/owner/repository"
+                  }
+                  required
+                  disabled={!!action}
                 />
                 <button type="submit" disabled={!!action}>
-                  Create
+                  {create === "clone"
+                    ? action
+                      ? "Cloning…"
+                      : "Clone"
+                    : "Create"}
                 </button>
                 <button
                   type="button"
-                  aria-label="Cancel new file"
-                  onClick={() => setNewFile(false)}
+                  aria-label="Cancel"
+                  onClick={() => setCreate(undefined)}
+                  disabled={!!action}
                 >
                   <X size={14} />
                 </button>
@@ -1117,9 +1266,45 @@ export function Studio({
               ) : (
                 <aside className="file-explorer" aria-label="File explorer">
                   <div>
-                    <span>Files</span>
+                    <button
+                      className="explorer-root"
+                      title="Select workspace root"
+                      onClick={() => setTargetFolder("")}
+                    >
+                      Files
+                    </button>
+                    <button
+                      aria-label="New file in selected folder"
+                      title="New file"
+                      disabled={!!action || running}
+                      onClick={() => beginCreate("file")}
+                    >
+                      <FilePlus2 size={14} />
+                    </button>
+                    <button
+                      aria-label="New folder"
+                      title="New folder"
+                      disabled={!!action || running}
+                      onClick={() => beginCreate("folder")}
+                    >
+                      <FolderPlus size={14} />
+                    </button>
+                    <button
+                      aria-label="Clone GitHub repository"
+                      title={
+                        targetFolder
+                          ? `Clone into ${targetFolder}`
+                          : "Clone GitHub repository"
+                      }
+                      disabled={!!action || running}
+                      onClick={() => beginCreate("clone")}
+                    >
+                      <GitFork size={14} />
+                    </button>
                     <button
                       aria-label="Refresh files"
+                      title="Refresh files"
+                      disabled={!!action}
                       onClick={() =>
                         safe("refresh", async () => {
                           await loadFiles();
@@ -1129,28 +1314,64 @@ export function Studio({
                       <RefreshCw size={12} />
                     </button>
                   </div>
-                  {files.map((item) => (
-                    <button
-                      key={item.path}
-                      className={active === item.path ? "selected" : ""}
-                      title={item.path}
-                      onClick={() => safe("open", () => openFile(item.path))}
-                    >
-                      <FileCode2 size={12} />
-                      <span>
-                        {item.path.split("/").pop()}
-                        {item.path.includes("/") && (
-                          <small>
-                            {item.path.slice(0, item.path.lastIndexOf("/"))}
-                          </small>
+                  {explorerItems.map((item) => {
+                    const { parts } = item;
+                    if (
+                      item.parents.some((name) => !openFolders.includes(name))
+                    )
+                      return null;
+                    const expanded = openFolders.includes(item.path);
+                    return (
+                      <button
+                        key={item.path}
+                        className={
+                          (item.folder ? targetFolder : active) === item.path
+                            ? "selected"
+                            : ""
+                        }
+                        title={item.path}
+                        aria-expanded={item.folder ? expanded : undefined}
+                        style={{
+                          paddingInlineStart: 7 + 11 * (parts.length - 1),
+                        }}
+                        onClick={() => {
+                          if (item.folder) {
+                            setTargetFolder(
+                              expanded
+                                ? parts.slice(0, -1).join("/")
+                                : item.path,
+                            );
+                            setOpenFolders((previous) =>
+                              expanded
+                                ? previous.filter((path) => path !== item.path)
+                                : [...previous, item.path],
+                            );
+                          } else {
+                            setTargetFolder(parts.slice(0, -1).join("/"));
+                            void safe("open", () => openFile(item.path));
+                          }
+                        }}
+                      >
+                        {item.folder ? (
+                          expanded ? (
+                            <ChevronDown size={12} />
+                          ) : (
+                            <ChevronRight size={12} />
+                          )
+                        ) : null}
+                        {item.folder ? (
+                          <Folder size={12} />
+                        ) : (
+                          <FileCode2 size={12} />
                         )}
-                      </span>
-                      {drafts[item.path] &&
-                        drafts[item.path].content !==
-                          drafts[item.path].saved && <i />}
-                    </button>
-                  ))}
-                  {!files.length && <p>Create a file to start building.</p>}
+                        <span>{parts.at(-1)}</span>
+                        {drafts[item.path] &&
+                          drafts[item.path].content !==
+                            drafts[item.path].saved && <i />}
+                      </button>
+                    );
+                  })}
+                  {!files.length && !folders.length && <p>No files yet.</p>}
                 </aside>
               )}
 
@@ -1168,28 +1389,48 @@ export function Studio({
                 <div className="editor-tabs">
                   <div className="editor-file-tabs">
                     {Object.values(drafts).map((item) => (
-                      <button
+                      <div
+                        className={
+                          active === item.path
+                            ? "editor-tab selected"
+                            : "editor-tab"
+                        }
                         key={item.path}
-                        className={active === item.path ? "selected" : ""}
-                        onClick={() => {
-                          setActive(item.path);
-                          setPreviewUrl("");
-                          setSelection("");
-                        }}
                       >
-                        <FileCode2 size={12} />
-                        {item.path.split("/").pop()}
-                        {item.content !== item.saved && <i />}
-                      </button>
+                        <button
+                          className={active === item.path ? "selected" : ""}
+                          title={item.path}
+                          onClick={() => {
+                            setActive(item.path);
+                            setCursor(item.cursor || 0);
+                            setPreviewUrl("");
+                            setSelection("");
+                          }}
+                        >
+                          <FileCode2 size={12} />
+                          {item.path.split("/").pop()}
+                          {item.content !== item.saved && <i />}
+                        </button>
+                        <button
+                          className="close-editor-tab"
+                          aria-label={`Close ${item.path}`}
+                          title={`Close ${item.path}`}
+                          disabled={!!action}
+                          onClick={() => closeFile(item.path)}
+                        >
+                          <X size={12} />
+                        </button>
+                      </div>
                     ))}
                   </div>
                   <div className="editor-actions">
                     <button
                       disabled={!!action || running}
-                      onClick={() => setNewFile(!newFile)}
+                      aria-label="New file"
+                      title="New file"
+                      onClick={() => beginCreate("file")}
                     >
-                      <Plus size={13} />
-                      New file
+                      <FilePlus2 size={15} />
                     </button>
                     <button
                       disabled={
@@ -1291,8 +1532,12 @@ export function Studio({
                   <div className="editor-blank">
                     <FileCode2 size={27} />
                     <span>Select a file, or create your first one.</span>
-                    <button onClick={() => setNewFile(true)}>
-                      Create a file <Plus size={13} />
+                    <button
+                      aria-label="Create first file"
+                      title="New file"
+                      onClick={() => beginCreate("file")}
+                    >
+                      <FilePlus2 size={15} />
                     </button>
                   </div>
                 )}
