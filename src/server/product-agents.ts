@@ -9,11 +9,13 @@ import { UserError } from "./safety.js";
 import { GTMAnalytics } from "./gtm-analytics.js";
 import { AgentHandoffs, type AgentDomain } from "./agent-handoffs.js";
 import { referenceEvidence } from "./academy-references.js";
+import { academyTeachingPatterns } from "../academy-source-catalog.js";
 export type ProductAgentRun = {
   id: string;
   domain: AgentDomain;
   entityId: string;
   revision: number;
+  lessonIndex?: number;
   startedAt: string;
   finishedAt?: string;
   state: "executing" | "completed" | "failed" | "interrupted";
@@ -28,7 +30,11 @@ export class ProductAgents {
     private app: Application,
     private state: () => ExpansionState,
   ) {}
-  context(domain: ProductAgentRun["domain"], entityId: string) {
+  context(
+    domain: ProductAgentRun["domain"],
+    entityId: string,
+    lessonIndex?: number,
+  ) {
     const state = this.state();
     const entity =
       domain === "academy"
@@ -61,12 +67,16 @@ export class ProductAgents {
         ? state.courses.find((c) => c.id === entityId)!.lessons
         : release?.lessons || [];
     const focus =
-      domain === "creative"
-        ? state.creatives.find((c) => c.id === entityId)?.lessonIndex
-        : domain === "growth" || domain === "analytics"
-          ? state.campaigns.find((c) => c.id === entityId)?.creativeSnapshot
-              .lessonIndex
-          : undefined;
+      domain === "academy"
+        ? lessonIndex
+        : domain === "creative"
+          ? state.creatives.find((c) => c.id === entityId)?.lessonIndex
+          : domain === "growth" || domain === "analytics"
+            ? state.campaigns.find((c) => c.id === entityId)?.creativeSnapshot
+                .lessonIndex
+            : undefined;
+    if (domain === "academy" && focus !== undefined && !lessons[focus])
+      throw new UserError("Choose a saved lesson before asking Atlas.", 404);
     const sourceLessons = lessons
       .map((lesson, index) => ({ lesson, index }))
       .filter((item) => focus === undefined || item.index === focus)
@@ -170,10 +180,11 @@ export class ProductAgents {
     domain: ProductAgentRun["domain"],
     entityId: string,
     revision: number,
+    lessonIndex?: number,
   ) {
     if (this.active.has(entityId) || this.active.size >= 2)
       throw new UserError("Another agent run is in progress.", 409);
-    const context = this.context(domain, entityId);
+    const context = this.context(domain, entityId, lessonIndex);
     if (context.revision !== revision)
       throw new UserError("Reload this draft before asking its agent.", 409);
     if (!this.app.ai.ready())
@@ -183,6 +194,9 @@ export class ProductAgents {
       domain,
       entityId,
       revision,
+      ...(domain === "academy" && lessonIndex !== undefined
+        ? { lessonIndex }
+        : {}),
       startedAt: new Date().toISOString(),
       state: "executing",
       sources: context.sources,
@@ -191,19 +205,47 @@ export class ProductAgents {
     this.active.add(entityId);
     this.save(record);
     try {
+      const course =
+        domain === "academy"
+          ? this.state().courses.find((item) => item.id === entityId)
+          : undefined;
+      const lesson =
+        lessonIndex === undefined ? undefined : course?.lessons[lessonIndex];
+      const draft =
+        course && lesson
+          ? {
+              title: course.title,
+              audience: course.audience,
+              outcome: course.outcome,
+              curriculum: course.lessons.map(({ title, objective }, index) => ({
+                title,
+                objective,
+                index,
+              })),
+            }
+          : context.entity;
       const answer = await this.app.ai.structured({
         task: domain,
         schema: productAgentAnswer,
         name: `outclass_${domain}_proposal`,
         instructions: productAgentInstructions[domain],
         context: JSON.stringify({
+          selectedLesson:
+            domain === "academy" ? (lessonIndex ?? null) : undefined,
           // Only approved, separately attributed readings may reach a model.
-          draftExcerpt: JSON.stringify(context.entity, (key, value) =>
+          draftExcerpt: JSON.stringify(draft, (key, value) =>
             key === "references" ? undefined : value,
           ).slice(0, 8000),
           sources: context.sources,
+          teachingPatterns: course
+            ? academyTeachingPatterns(
+                `${course.title} ${course.outcome} ${lesson?.title || ""} ${lesson?.objective || ""}`,
+              )
+            : undefined,
           request:
-            "Propose the next useful revision, with source-grounded editable draft text. The draft excerpt may be truncated.",
+            domain === "academy" && lessonIndex !== undefined
+              ? "Draft original teaching material for the selected lesson, with a worked explanation, a misconception and a comprehension check. Other lesson titles in the draft only describe the course sequence."
+              : "Propose the next useful revision, with source-grounded editable draft text. The draft excerpt may be truncated.",
         }),
       });
       const ids = new Set(context.sources.map((s) => s.id));

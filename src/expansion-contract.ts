@@ -78,6 +78,16 @@ export const courseDraft = z
     outcome: text(2000),
     rightsConfirmed: z.boolean(),
     lessons: z.array(academyLesson).max(COURSE_LESSON_LIMIT),
+    chapters: z
+      .array(text(100).min(1))
+      .max(COURSE_LESSON_LIMIT)
+      .refine(
+        (names) =>
+          new Set(names.map((name) => name.toLowerCase())).size ===
+          names.length,
+        "Chapter names must be unique.",
+      )
+      .optional(),
     learningProject: learningProject.optional(),
     design: courseDesign.optional(),
   })

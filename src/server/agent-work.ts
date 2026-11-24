@@ -31,6 +31,7 @@ import {
 import type { ProductAgentRun } from "./product-agents.js";
 import { lessonEvidence } from "../academy-design.js";
 import { referenceEvidence } from "./academy-references.js";
+import { academyTeachingPatterns } from "../academy-source-catalog.js";
 
 const key = "suite:work:v1";
 const digest = (value: unknown) =>
@@ -317,6 +318,12 @@ export class AgentWorkService {
           .map((s) => s.id),
       },
       brief,
+      teachingPatterns:
+        input.domain === "academy"
+          ? academyTeachingPatterns(
+              `${course.title} ${lesson.title} ${lesson.objective}`,
+            )
+          : undefined,
       referenceCoverage:
         input.domain === "academy"
           ? {

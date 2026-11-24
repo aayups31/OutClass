@@ -195,7 +195,8 @@ export class Expansion {
       if (existing) return existing;
       if (state.releases.length >= 120)
         throw new UserError("The local release limit has been reached.");
-      const { id: courseId, updatedAt: _at, ...content } = draft;
+      // Empty chapter names are authoring metadata. Published grouping uses lesson.chapter.
+      const { id: courseId, updatedAt: _at, chapters: _chapters, ...content } = draft;
       const release: CourseRelease = {
         ...content,
         courseId,
@@ -717,11 +718,12 @@ export function expansionRoutes(
         entityId: z.string().uuid(),
         expectedRevision: z.number().int(),
         approveProvider: z.literal(true),
+        lessonIndex: z.number().int().min(0).max(COURSE_LESSON_LIMIT - 1).optional(),
       })
       .strict()
       .parse(req.body);
     res.json(
-      await agents.run(input.domain, input.entityId, input.expectedRevision),
+      await agents.run(input.domain, input.entityId, input.expectedRevision, input.lessonIndex),
     );
   });
   router.get("/state", (_req, res) => res.json(expansion.state()));

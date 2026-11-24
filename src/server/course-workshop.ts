@@ -27,6 +27,7 @@ import {
 import type { Application } from "./application.js";
 import { Expansion } from "./expansion.js";
 import { CourseResearch } from "./course-research.js";
+import { academyTeachingPatterns } from "../academy-source-catalog.js";
 import { assertClean, UserError } from "./safety.js";
 import { COURSE_CHAR_LIMIT } from "../course-limits.js";
 import { CourseSandbox, type SandboxReport } from "./course-sandbox.js";
@@ -519,6 +520,9 @@ export class CourseWorkshop {
           context: JSON.stringify({
             brief: job.brief,
             sources,
+            teachingPatterns: academyTeachingPatterns(
+              `${job.brief.title} ${job.brief.outcome}`,
+            ),
             instructorFeedback: job.feedback || "",
           }),
         });
@@ -560,6 +564,9 @@ export class CourseWorkshop {
           brief: job.brief,
           plan: job.plan,
           selectedLesson: selected,
+          teachingPatterns: academyTeachingPatterns(
+            `${selected.title} ${selected.teaches.join(" ")}`,
+          ),
           index,
           previousLessons: prior,
           sources,

@@ -265,3 +265,28 @@ export function findReferenceCourses(query: string) {
     ),
   );
 }
+
+export function relevantReferenceCourses(query: string, limit = 3) {
+  const terms = new Set(query.toLowerCase().match(/[a-z0-9+#]{3,}/g) || []);
+  return academySourceCatalog
+    .map((course) => {
+      const topicWords = new Set(
+        course.topics.flatMap((topic) => topic.match(/[a-z0-9+#]{3,}/g) || []),
+      );
+      return {
+        course,
+        score: [...terms].filter(
+          (term) => topicWords.has(term) || course.code.toLowerCase() === term,
+        ).length,
+      };
+    })
+    .filter(({ score }) => score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, limit)
+    .map(({ course }) => course);
+}
+
+/** Original teaching suggestions. These cannot be cited as supplied passages. */
+export function academyTeachingPatterns(query: string) {
+  return relevantReferenceCourses(query).map(({ focus }) => focus);
+}

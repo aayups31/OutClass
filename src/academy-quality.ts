@@ -17,6 +17,7 @@ export function courseContent(c: AcademyDraft): AcademyDraft {
     outcome: c.outcome,
     rightsConfirmed: c.rightsConfirmed,
     lessons: c.lessons,
+    ...(c.chapters?.length ? { chapters: c.chapters } : {}),
     ...(c.learningProject ? { learningProject: c.learningProject } : {}),
     ...(c.design ? { design: c.design } : {}),
   };
@@ -422,7 +423,7 @@ export function auditAcademy(course: Revision<AcademyDraft>): AcademyAudit {
       "Consider one evolving project",
       "Let learners make something useful throughout the course. A project is optional; individual exercises can be appropriate.",
     );
-  const content = courseContent(course),
+  const { chapters: _chapters, ...content } = courseContent(course),
     courseHash = digest(content);
   return {
     hash: digest({
