@@ -4,14 +4,24 @@ export function readLearningPage(provider: string) {
   const clean = (value: string, limit: number, preserveSpacing = false) => {
     const lines = value.replace(/\r/g, "");
     return (preserveSpacing ? lines : lines.replace(/[ \t]+/g, " "))
-      .replace(/\n{3,}/g, "\n\n").trim().slice(0, limit);
+      .replace(/\n{3,}/g, "\n\n")
+      .trim()
+      .slice(0, limit);
   };
-  const visible = (element: HTMLElement) =>
-    element.getClientRects().length > 0 &&
-    !element.closest(
-      '[hidden],[aria-hidden="true"],form,[contenteditable],.monaco-editor,.cm-editor',
-    ) &&
-    getComputedStyle(element).visibility === "visible";
+  const visible = (element: HTMLElement) => {
+    if (
+      element.closest(
+        '[hidden],[aria-hidden="true"],form,[contenteditable],.monaco-editor,.cm-editor',
+      )
+    )
+      return false;
+    const style = getComputedStyle(element);
+    // A display:contents container can expose fully rendered lesson text.
+    return (
+      style.visibility === "visible" &&
+      (element.getClientRects().length > 0 || style.display === "contents")
+    );
+  };
   const first = (selectors: string) =>
     Array.from(document.querySelectorAll<HTMLElement>(selectors)).find(visible);
   const heading =
@@ -55,7 +65,10 @@ export function readLearningPage(provider: string) {
     return result("");
   const selected = clean(selection?.toString() || "", 12000, true);
   if (selected) return result(selected);
-  if (provider === "LeetCode" && /\/(editorial|solutions|submissions)(?:\/|$)/.test(location.pathname))
+  if (
+    provider === "LeetCode" &&
+    /\/(editorial|solutions|submissions)(?:\/|$)/.test(location.pathname)
+  )
     return result("");
 
   if (provider === "YouTube") {
@@ -92,7 +105,8 @@ export function readLearningPage(provider: string) {
     "h1,h2,h3,h4,p,pre,li,blockquote,dd",
   )) {
     if (
-      element === heading || !visible(element) ||
+      element === heading ||
+      !visible(element) ||
       element.parentElement?.closest(
         "li, pre, blockquote, nav, footer, aside, [role=navigation]",
       )
