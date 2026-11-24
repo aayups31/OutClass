@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { lessonPractice, lessonPracticeInstructions } from "./lesson-practice-contract.js";
 import {
   coursePlan,
   courseLessonAnswer,
@@ -71,6 +72,7 @@ export const hostedRequest = z.object({
     "course_plan",
     "course_lesson",
     "course_critique",
+    "lesson_practice",
   ]),
   context: z.string().min(1).max(90000),
   history: z
@@ -93,6 +95,7 @@ export function answerSchema(
   task: z.infer<typeof hostedRequest>["task"],
   context?: string,
 ) {
+  if (task === "lesson_practice") return lessonPractice;
   if (task === "course_plan") return coursePlan;
   if (task === "course_lesson")
     return context ? lessonGenerationSchema(context) : courseLessonAnswer;
@@ -112,6 +115,7 @@ export function answerSchema(
 export function answerInstructions(
   task: z.infer<typeof hostedRequest>["task"],
 ) {
+  if (task === "lesson_practice") return lessonPracticeInstructions;
   if (task === "course_plan") return planningInstructions;
   if (task === "course_lesson")
     return `${lessonWritingInstructions}\n${courseWritingConstraints}\n${courseEditorialConstraints}`;
