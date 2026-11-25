@@ -719,11 +719,12 @@ export function expansionRoutes(
         expectedRevision: z.number().int(),
         approveProvider: z.literal(true),
         lessonIndex: z.number().int().min(0).max(COURSE_LESSON_LIMIT - 1).optional(),
+        researchWeb: z.boolean().optional(),
       })
       .strict()
       .parse(req.body);
     res.json(
-      await agents.run(input.domain, input.entityId, input.expectedRevision, input.lessonIndex),
+      await agents.run(input.domain, input.entityId, input.expectedRevision, input.lessonIndex, input.researchWeb),
     );
   });
   router.get("/state", (_req, res) => res.json(expansion.state()));

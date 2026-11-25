@@ -20,7 +20,7 @@ export type ProductAgentRun = {
   finishedAt?: string;
   state: "executing" | "completed" | "failed" | "interrupted";
   error?: string;
-  sources: { id: string; title: string; text: string }[];
+  sources: { id: string; title: string; text: string; url?: string }[];
   answer?: ReturnType<typeof productAgentAnswer.parse>;
   maxCalls: 1 | 2;
 };
@@ -181,6 +181,7 @@ export class ProductAgents {
     entityId: string,
     revision: number,
     lessonIndex?: number,
+    researchWeb = false,
   ) {
     if (this.active.has(entityId) || this.active.size >= 2)
       throw new UserError("Another agent run is in progress.", 409);
@@ -189,6 +190,8 @@ export class ProductAgents {
       throw new UserError("Reload this draft before asking its agent.", 409);
     if (!this.app.ai.ready())
       throw new UserError("Choose an AI connection in Settings first.");
+    if (researchWeb && domain !== "academy")
+      throw new UserError("University search is available in Academy.");
     const record: ProductAgentRun = {
       id: randomUUID(),
       domain,
@@ -200,7 +203,7 @@ export class ProductAgents {
       startedAt: new Date().toISOString(),
       state: "executing",
       sources: context.sources,
-      maxCalls: 1,
+      maxCalls: researchWeb ? 2 : 1,
     };
     this.active.add(entityId);
     this.save(record);
@@ -211,6 +214,21 @@ export class ProductAgents {
           : undefined;
       const lesson =
         lessonIndex === undefined ? undefined : course?.lessons[lessonIndex];
+      if (researchWeb && course) {
+        const notes = await this.app.ai.academyResearch(
+          `${course.title}\n${lesson?.title || ""}\n${lesson?.objective || course.outcome}`.slice(
+            0,
+            1600,
+          ),
+        );
+        if (this.context(domain, entityId).revision !== revision)
+          throw new UserError(
+            "The course changed during research. Reload it before drafting.",
+            409,
+          );
+        record.sources = [...record.sources, ...notes];
+        this.save(record);
+      }
       const draft =
         course && lesson
           ? {
@@ -236,7 +254,7 @@ export class ProductAgents {
           draftExcerpt: JSON.stringify(draft, (key, value) =>
             key === "references" ? undefined : value,
           ).slice(0, 8000),
-          sources: context.sources,
+          sources: record.sources,
           teachingPatterns: course
             ? academyTeachingPatterns(
                 `${course.title} ${course.outcome} ${lesson?.title || ""} ${lesson?.objective || ""}`,
@@ -248,7 +266,7 @@ export class ProductAgents {
               : "Propose the next useful revision, with source-grounded editable draft text. The draft excerpt may be truncated.",
         }),
       });
-      const ids = new Set(context.sources.map((s) => s.id));
+      const ids = new Set(record.sources.map((s) => s.id));
       if (this.context(domain, entityId).revision !== revision)
         throw new UserError(
           "The draft changed during this proposal. Run the agent again for the current revision.",
@@ -257,6 +275,15 @@ export class ProductAgents {
       if (answer.steps.some((s) => s.sourceIds.some((id) => !ids.has(id))))
         throw new UserError(
           "The proposal referenced a source that was not supplied. It was not applied.",
+        );
+      if (
+        researchWeb &&
+        !answer.steps.some((step) =>
+          step.sourceIds.some((id) => id.startsWith("web:")),
+        )
+      )
+        throw new UserError(
+          "Atlas did not cite its university research. Review the sources and retry.",
         );
       record.answer = answer;
       record.state = "completed";

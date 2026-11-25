@@ -19,22 +19,44 @@ let dir: string,
   web: ReturnType<typeof createApp>;
 const base = "http://127.0.0.1:47853";
 const originalVerify = CourseSandbox.prototype.verify;
+const source = {
+  id: "web:2222222222222222",
+  title: "University lecture on functions",
+  text: "Use a small worked example that learners can trace before asking them to generalize.",
+  url: "https://cs50.harvard.edu/python/weeks/0/",
+};
 test.beforeAll(async () => {
   dir = await mkdtemp(path.join(tmpdir(), "outclass-course-browser-"));
   store = new Store(path.join(dir, "data"));
   const app = new Application(store, "fixture-key");
   await app.setup(path.join(dir, "history"), false);
-  app.ai.structured = (async (options) =>
-    options.task === "course_plan"
-      ? structuredClone(workshopPlan)
-      : options.task === "course_lesson"
-        ? writtenLesson(JSON.parse(options.context).index)
-        : {
-            findings: [],
-            limitations: [
-              "Fixture workflow verification; no real provider was called.",
-            ],
-          }) as typeof app.ai.structured;
+  app.ai.academyResearch = async () => [source];
+  app.ai.structured = (async (options) => {
+    if (options.task === "course_plan")
+      return {
+        ...workshopPlan,
+        rationale: `${workshopPlan.rationale} Start with a trace [${source.id}].`,
+      };
+    if (options.task === "course_lesson")
+      return {
+        ...writtenLesson(JSON.parse(options.context).index),
+        sourceIds: [source.id],
+        grounding: [
+          {
+            sourceId: source.id,
+            quote: source.text,
+            claim:
+              "Give learners a concrete trace before the independent build.",
+          },
+        ],
+      };
+    return {
+      findings: [],
+      limitations: [
+        "Fixture workflow verification; no real provider was called.",
+      ],
+    };
+  }) as typeof app.ai.structured;
   CourseSandbox.prototype.verify = async () => ({
     hash: "a".repeat(64),
     verified: true,
@@ -92,6 +114,11 @@ test("builds a complete course through the workshop and delivers private-key-bac
     .fill("functions\nloops");
   await page.getByLabel("Number of lessons", { exact: true }).fill("3");
   await page.getByLabel("Course hours", { exact: true }).fill("4");
+  await page
+    .getByLabel("Search university courses online before planning", {
+      exact: true,
+    })
+    .check();
   await page.getByLabel(/I approve up to 11 provider calls/).check();
   await page
     .getByRole("button", { name: "Save course brief", exact: true })
@@ -99,6 +126,9 @@ test("builds a complete course through the workshop and delivers private-key-bac
   await page
     .getByRole("button", { name: "Generate course plan", exact: true })
     .click();
+  await expect(
+    panel.getByRole("link", { name: source.title, exact: true }).first(),
+  ).toHaveAttribute("href", source.url);
   await page
     .getByRole("button", { name: "Accept course plan", exact: true })
     .click();

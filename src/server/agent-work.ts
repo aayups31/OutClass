@@ -32,6 +32,8 @@ import type { ProductAgentRun } from "./product-agents.js";
 import { lessonEvidence } from "../academy-design.js";
 import { referenceEvidence } from "./academy-references.js";
 import { academyTeachingPatterns } from "../academy-source-catalog.js";
+import { webAcademySource, webSourceCredits } from "../academy-web-research.js";
+import { COURSE_SOURCE_LIMIT } from "../course-limits.js";
 
 const key = "suite:work:v1";
 const digest = (value: unknown) =>
@@ -89,7 +91,7 @@ export type AgentWork = {
   finishedAt?: string;
   calls: number;
   sourceHash: string;
-  sources: { id: string; title: string; text: string }[];
+  sources: { id: string; title: string; text: string; url?: string }[];
   events: { at: string; message: string }[];
   answer?: AgentWorkAnswer;
   reviewHash?: string;
@@ -392,6 +394,10 @@ export class AgentWorkService {
       );
     if (!this.app.ai.ready())
       throw new UserError("Connect AI in Settings before starting this task.");
+    if (input.researchWeb && (input.domain !== "academy" || input.maxCalls < 2))
+      throw new UserError(
+        "Allow two provider calls for online research and assignment drafting.",
+      );
     if (
       input.domain === "growth" &&
       (!input.providers.length ||
@@ -468,6 +474,13 @@ export class AgentWorkService {
         if (!a.sourceIds.includes(`lesson:${input.lessonIndex}`))
           throw new UserError(
             "Cite the selected lesson itself. Course and project references can supplement it.",
+          );
+        if (
+          input.researchWeb &&
+          !a.sourceIds.some((id) => id.startsWith("web:"))
+        )
+          throw new UserError(
+            "Ground the draft in at least one cited university source.",
           );
         if (
           row.sources.some((source) => source.id.startsWith("reading:")) &&
@@ -635,18 +648,40 @@ export class AgentWorkService {
           "The source changed before this task started. Reload it and retry.",
           409,
         );
+      if (row.request.researchWeb) {
+        const lesson = snapshot.course.lessons[row.request.lessonIndex];
+        row.phase = "drafting";
+        row.calls++;
+        this.save(row, "Searching public university course material.");
+        const sources = await this.app.ai.academyResearch(
+          `${snapshot.course.title}\n${lesson.title}\n${lesson.objective}`.slice(
+            0,
+            1600,
+          ),
+        );
+        if (this.stopped || this.get(id).phase === "canceled") return;
+        if (this.context(row.request).hash !== row.sourceHash)
+          throw new UserError(
+            "The lesson changed during research. Run the task again.",
+            409,
+          );
+        row.sources = [...row.sources, ...sources];
+        this.save(row, "Found cited university teaching approaches.");
+      }
       while (row.calls < row.request.maxCalls) {
         if (this.stopped || this.get(id).phase === "canceled") return;
-        row.phase = row.calls ? "repairing" : "drafting";
+        const correcting = !!row.answer;
+        row.phase = correcting ? "repairing" : "drafting";
         row.calls++;
         this.save(
           row,
-          row.calls === 1
-            ? "Producing the requested deliverable."
-            : "Correcting the validation findings within the approved call limit.",
+          correcting
+            ? "Correcting the validation findings within the approved call limit."
+            : "Producing the requested deliverable.",
         );
         const payload = {
           ...snapshot.context,
+          sources: row.sources,
           ...(row.request.scaffold ? { scaffold: row.request.scaffold } : {}),
           goal: row.request.goal,
           requestedProviders: row.request.providers,
@@ -840,6 +875,22 @@ export class AgentWorkService {
           lesson.objective = artifact.objective;
           lesson.practice = artifact.practice;
           lesson.learn = assignmentFromArtifact(artifact, lesson.learn);
+          const citedWebSources = row.sources.flatMap((source) => {
+            const parsed = webAcademySource.safeParse(source);
+            return parsed.success &&
+              artifact.sourceIds.includes(source.id) &&
+              !lesson.content.includes(parsed.data.url)
+              ? [parsed.data]
+              : [];
+          });
+          if (citedWebSources.length) {
+            const content = lesson.content + webSourceCredits(citedWebSources);
+            if (content.length > COURSE_SOURCE_LIMIT)
+              throw new UserError(
+                "Shorten the lesson to make space for its university references.",
+              );
+            lesson.content = content;
+          }
           const next = this.expansion.saveCourse({
             id: row.request.entityId,
             expectedRevision: row.request.expectedRevision,
@@ -847,6 +898,7 @@ export class AgentWorkService {
             audience: course.audience,
             outcome: course.outcome,
             rightsConfirmed: course.rightsConfirmed,
+            ...(course.chapters ? { chapters: course.chapters } : {}),
             lessons: course.lessons,
             ...(course.learningProject
               ? { learningProject: course.learningProject }

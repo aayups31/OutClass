@@ -27,6 +27,12 @@ import {
 import type { Application } from "./application.js";
 import { Expansion } from "./expansion.js";
 import { CourseResearch } from "./course-research.js";
+import {
+  academyWebResults,
+  webAcademySource,
+  webSourceCredits,
+  type WebAcademySource,
+} from "../academy-web-research.js";
 import { academyTeachingPatterns } from "../academy-source-catalog.js";
 import { assertClean, UserError } from "./safety.js";
 import { COURSE_CHAR_LIMIT } from "../course-limits.js";
@@ -34,6 +40,8 @@ import { CourseSandbox, type SandboxReport } from "./course-sandbox.js";
 const digest = (value: unknown) =>
   createHash("sha256").update(JSON.stringify(value)).digest("hex");
 const lessonWritingInstructions = `${baseLessonWritingInstructions}\n${courseWritingConstraints}\n${courseEditorialConstraints}`;
+type WorkshopSource =
+  ReturnType<CourseResearch["search"]>[number] | WebAcademySource;
 export type CourseJob = {
   id: string;
   revision: number;
@@ -45,8 +53,10 @@ export type CourseJob = {
   planAccepted: boolean;
   lessons: Record<string, CourseLessonAnswer>;
   pendingLessons?: Record<string, CourseLessonAnswer>;
-  pendingEvidence?: Record<string, ReturnType<CourseResearch["search"]>>;
-  evidence: Record<string, ReturnType<CourseResearch["search"]>>;
+  pendingEvidence?: Record<string, WorkshopSource[]>;
+  evidence: Record<string, WorkshopSource[]>;
+  researchWeb?: boolean;
+  webSources?: WebAcademySource[];
   critique?: z.infer<typeof courseCritique>;
   critiqueDecisions?: Record<
     string,
@@ -123,6 +133,19 @@ export class CourseWorkshop {
     if (!job) throw new UserError("Course workshop not found.", 404);
     return job;
   }
+  private sources(job: CourseJob, topic: string): WorkshopSource[] {
+    const approved = this.research.search(topic);
+    if (!job.webSources?.length) return approved;
+    const terms = new Set(topic.toLowerCase().match(/[a-z0-9]{4,}/g) || []);
+    const score = (source: WebAcademySource) => {
+      const record = `${source.title} ${source.text}`.toLowerCase();
+      return [...terms].filter((term) => record.includes(term)).length;
+    };
+    const relevant = [...job.webSources]
+      .sort((a, b) => score(b) - score(a))
+      .slice(0, 3);
+    return [...approved.slice(0, 6 - relevant.length), ...relevant];
+  }
   private save(job: CourseJob, message: string) {
     job.revision++;
     job.events.push({ at: new Date().toISOString(), message });
@@ -158,6 +181,7 @@ export class CourseWorkshop {
         brief: courseBrief,
         maxCalls: z.number().int().min(5).max(100),
         approveProvider: z.literal(true),
+        researchWeb: z.boolean().optional(),
       })
       .strict()
       .parse(raw);
@@ -166,9 +190,12 @@ export class CourseWorkshop {
       throw new UserError(
         "Export or complete existing workshops before creating more than 30.",
       );
-    if (input.maxCalls < input.brief.lessonCount * 2 + 1)
+    if (
+      input.maxCalls <
+      input.brief.lessonCount * 2 + 1 + (input.researchWeb ? 1 : 0)
+    )
       throw new UserError(
-        "Budget one planning call and one writing and independent critique call per lesson.",
+        "Budget planning, writing, independent critique and any selected university search.",
       );
     const job: CourseJob = {
       id: randomUUID(),
@@ -177,6 +204,7 @@ export class CourseWorkshop {
       planAccepted: false,
       lessons: {},
       evidence: {},
+      ...(input.researchWeb ? { researchWeb: true } : {}),
       phase: "draft",
       calls: 0,
       maxCalls: input.maxCalls,
@@ -214,6 +242,7 @@ export class CourseWorkshop {
         feedback: z.string().max(4000),
         maxCalls: z.number().int().min(5).max(100),
         approveProvider: z.literal(true),
+        researchWeb: z.boolean().optional(),
       })
       .strict()
       .parse(raw);
@@ -225,6 +254,7 @@ export class CourseWorkshop {
     assertClean(input.feedback, "instructor feedback");
     job.feedback = input.feedback;
     job.maxCalls = input.maxCalls;
+    if (input.researchWeb !== undefined) job.researchWeb = input.researchWeb;
     this.save(
       job,
       "Instructor guidance and explicit provider-call budget updated.",
@@ -323,7 +353,12 @@ export class CourseWorkshop {
           plan: coursePlan.optional(),
           proposedPlan: coursePlan.optional(),
           lessons: z.record(z.string(), courseLessonAnswer),
-          evidence: z.record(z.string(), z.array(source).max(6)),
+          evidence: z.record(
+            z.string(),
+            z.array(z.union([source, webAcademySource])).max(6),
+          ),
+          researchWeb: z.boolean().optional(),
+          webSources: academyWebResults.optional(),
           feedback: z.string().max(4000).optional(),
           history: z
             .array(
@@ -341,12 +376,14 @@ export class CourseWorkshop {
       brief: input.job.brief,
       maxCalls,
       approveProvider: true,
+      researchWeb: input.job.researchWeb,
     });
     Object.assign(saved, {
       plan: input.job.plan,
       proposedPlan: input.job.proposedPlan,
       lessons: input.job.lessons,
       evidence: input.job.evidence,
+      webSources: input.job.webSources,
       feedback: input.job.feedback,
       history: input.job.history,
     });
@@ -475,9 +512,10 @@ export class CourseWorkshop {
   }
   async next(id: string, revision: number, retryLessonId?: string) {
     const job = this.editable(id, revision);
+    const searchNeeded = !!job.researchWeb && !job.webSources;
     if (this.active.size >= 1)
       throw new UserError("Another course-generation stage is active.", 409);
-    if (job.calls >= job.maxCalls)
+    if (job.calls + (searchNeeded ? 2 : 1) > job.maxCalls)
       throw new UserError(
         "The approved provider-call budget is exhausted. Export the work before starting another workshop.",
       );
@@ -504,12 +542,30 @@ export class CourseWorkshop {
     delete job.error;
     this.save(
       job,
-      "Provider stage started; call reserved within the approved budget.",
+      searchNeeded
+        ? "Searching public university course material."
+        : "Provider stage started; call reserved within the approved budget.",
     );
-    const guard = job.revision;
+    let guard = job.revision;
     try {
+      if (searchNeeded) {
+        const sources = await this.app.ai.academyResearch(
+          `${job.brief.title}\n${job.brief.outcome}`.slice(0, 1600),
+        );
+        if (
+          this.stopped ||
+          this.get(id).revision !== guard ||
+          this.get(id).phase !== "running"
+        )
+          return this.get(id);
+        job.webSources = sources;
+        job.calls++;
+        this.save(job, "University research saved. Starting the draft.");
+        guard = job.revision;
+      }
       if (!job.plan) {
-        const sources = this.research.search(
+        const sources = this.sources(
+          job,
           `${job.brief.title} ${job.brief.outcome}`,
         );
         const plan = await this.app.ai.structured({
@@ -527,6 +583,20 @@ export class CourseWorkshop {
           }),
         });
         job.proposedPlan = plan;
+        if (job.webSources?.length) {
+          const ids = [...plan.rationale.matchAll(/\[(web:[^\]]+)\]/g)].map(
+            (match) => match[1],
+          );
+          if (
+            !ids.length ||
+            ids.some(
+              (id) => !job.webSources!.some((source) => source.id === id),
+            )
+          )
+            throw new UserError(
+              "The plan must cite supplied university sources beside the teaching decisions they informed.",
+            );
+        }
         const findings = validatePlan(job.brief, plan);
         if (findings.length)
           throw new UserError(findings.map((f) => f.detail).join(" "));
@@ -534,7 +604,8 @@ export class CourseWorkshop {
         delete job.proposedPlan;
       } else if (index >= 0) {
         const selected = job.plan.lessons[index],
-          sources = this.research.search(
+          sources = this.sources(
+            job,
             `${selected.title} ${selected.teaches.join(" ")} ${job.brief.outcome}`,
           );
         const prior = job.plan.lessons.slice(0, index).map((lesson) => ({
@@ -802,6 +873,7 @@ export class CourseWorkshop {
       if (!written)
         throw new UserError(`Write ${planned.title} before delivery.`);
       for (const source of job.evidence[planned.id] || []) {
+        if (!("documentId" in source)) continue;
         const current = documentIds.get(source.documentId);
         if (
           !current ||
@@ -824,7 +896,14 @@ export class CourseWorkshop {
           )
           .join("; "),
         practice: written.independentTask,
-        content: renderTeaching(written),
+        content:
+          renderTeaching(written) +
+          webSourceCredits(
+            (job.evidence[planned.id] || []).filter(
+              (source): source is WebAcademySource =>
+                "url" in source && written.sourceIds.includes(source.id),
+            ),
+          ),
         learn: {
           ...written.assignment,
           prerequisiteLessons: planned.prerequisiteIds.map((id) =>
@@ -838,7 +917,9 @@ export class CourseWorkshop {
           ...new Set(
             (job.evidence[planned.id] || [])
               .filter((source) => written.sourceIds.includes(source.id))
-              .map((source) => source.documentId),
+              .flatMap((source) =>
+                "documentId" in source ? [source.documentId] : [],
+              ),
           ),
         ].map((documentId) => ({
           documentId,
@@ -868,7 +949,9 @@ export class CourseWorkshop {
           ...new Set(
             (job.evidence[planned.id] || [])
               .filter((source) => written.sourceIds.includes(source.id))
-              .map((source) => source.documentId),
+              .flatMap((source) =>
+                "documentId" in source ? [source.documentId] : [],
+              ),
           ),
         ].map((id) => documentIds.get(id)!.metadata.reference),
       };
@@ -1016,6 +1099,7 @@ export class CourseWorkshop {
           feedback: z.string().max(4000),
           maxCalls: z.number().int(),
           approveProvider: z.literal(true),
+          researchWeb: z.boolean().optional(),
         })
         .strict()
         .parse(req.body);

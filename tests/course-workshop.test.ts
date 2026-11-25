@@ -49,19 +49,44 @@ it("rejects impossible prerequisite and workload plans and invalid assessment ke
   ).toBe(true);
 });
 it("plans, writes, independently critiques and delivers a complete course without leaking keys", async () => {
+  const webSource = {
+    id: "web:9f570acddd4a8593",
+    title: "MIT OCW · Programming in Python",
+    url: "https://ocw.mit.edu/courses/6-0001-introduction-to-computer-science-and-programming-in-python-fall-2016/",
+    text: "Start by tracing one repeated value before learners generalize an accumulation rule.",
+  };
+  const search = vi
+    .spyOn(app.ai, "academyResearch")
+    .mockResolvedValue([webSource]);
   const provider = vi
     .spyOn(app.ai, "structured")
-    .mockImplementation(async (options) =>
-      options.task === "course_plan"
-        ? structuredClone(workshopPlan)
-        : options.task === "course_lesson"
-          ? writtenLesson(JSON.parse(options.context).index)
-          : { findings: [], limitations: ["No code execution was supplied."] },
-    );
+    .mockImplementation(async (options) => {
+      const context = JSON.parse(options.context);
+      expect(context.sources).toContainEqual(webSource);
+      if (options.task === "course_plan")
+        return {
+          ...structuredClone(workshopPlan),
+          rationale: `${workshopPlan.rationale} Start with traces [${webSource.id}].`,
+        };
+      if (options.task === "course_lesson")
+        return {
+          ...writtenLesson(context.index),
+          sourceIds: [webSource.id],
+          grounding: [
+            {
+              sourceId: webSource.id,
+              claim: "The practice starts with one trace.",
+              quote: webSource.text,
+            },
+          ],
+        };
+      return { findings: [], limitations: ["No code execution was supplied."] };
+    });
   let job = workshop.create({
     brief: workshopBrief,
     maxCalls: 10,
     approveProvider: true,
+    researchWeb: true,
   });
   job = await workshop.next(job.id, job.revision);
   expect(job.planAccepted).toBe(false);
@@ -71,6 +96,8 @@ it("plans, writes, independently critiques and delivers a complete course withou
     job = await workshop.next(job.id, job.revision);
   expect(job.phase).toBe("ready");
   expect(provider).toHaveBeenCalledTimes(7);
+  expect(search).toHaveBeenCalledTimes(1);
+  expect(job.calls).toBe(8);
   expect(() => workshop.deliver(job.id, job.revision, true)).toThrow(
     /Verify each/,
   );
@@ -97,6 +124,7 @@ it("plans, writes, independently critiques and delivers a complete course withou
   const expansion = new Expansion(app),
     saved = expansion.state().courses[0];
   expect(saved.lessons).toHaveLength(3);
+  expect(saved.lessons[0].content).toContain(webSource.url);
   expect(saved.design?.plan.outcomes).toHaveLength(2);
   expect(JSON.stringify(saved)).not.toContain("correctChoice");
   expect(JSON.stringify(saved)).not.toContain("instructorSolution");

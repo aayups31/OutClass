@@ -69,6 +69,7 @@ export function CourseWorkshopPanel({
     [planJson, setPlanJson] = useState(""),
     [lessonJson, setLessonJson] = useState("");
   const [runtimeBackend, setRuntimeBackend] = useState("configured sandbox");
+  const [researchWeb, setResearchWeb] = useState(false);
   const [restoreCandidate, setRestoreCandidate] = useState<{
       backup: unknown;
       brief: CourseBrief;
@@ -106,6 +107,7 @@ export function CourseWorkshopPanel({
   useEffect(() => {
     setFeedback(job?.feedback || "");
     setCallBudget(job?.maxCalls || 17);
+    if (job) setResearchWeb(!!job.researchWeb);
     setApproveChange(false);
     setPlanJson(JSON.stringify(job?.plan || job?.proposedPlan || {}, null, 2));
   }, [job?.id, job?.revision]);
@@ -406,6 +408,14 @@ export function CourseWorkshopPanel({
               <label className="product-checkbox">
                 <input
                   type="checkbox"
+                  checked={researchWeb}
+                  onChange={(event) => setResearchWeb(event.target.checked)}
+                />
+                Search university courses online before planning
+              </label>
+              <label className="product-checkbox">
+                <input
+                  type="checkbox"
                   checked={approved}
                   onChange={(event) => setApproved(event.target.checked)}
                 />
@@ -422,6 +432,7 @@ export function CourseWorkshopPanel({
                       brief,
                       maxCalls: Math.min(100, brief.lessonCount * 2 + 5),
                       approveProvider: true,
+                      ...(researchWeb ? { researchWeb: true } : {}),
                     });
                     setJobs((rows) => [
                       ...rows,
@@ -474,6 +485,17 @@ export function CourseWorkshopPanel({
                   <label className="product-checkbox">
                     <input
                       type="checkbox"
+                      checked={researchWeb}
+                      onChange={(event) => {
+                        setResearchWeb(event.target.checked);
+                        setDirty(true);
+                      }}
+                    />
+                    Search university courses online
+                  </label>
+                  <label className="product-checkbox">
+                    <input
+                      type="checkbox"
                       checked={approveChange}
                       onChange={(event) =>
                         setApproveChange(event.target.checked)
@@ -492,6 +514,7 @@ export function CourseWorkshopPanel({
                           feedback,
                           maxCalls: callBudget,
                           approveProvider: true,
+                          researchWeb,
                         }),
                       )
                     }
@@ -610,7 +633,48 @@ export function CourseWorkshopPanel({
               {job.plan && (
                 <>
                   <h3>Course plan</h3>
-                  <p>{job.plan.rationale}</p>
+                  <p>
+                    {job.plan.rationale
+                      .split(/(\[web:[a-f0-9]{16}\])/g)
+                      .map((part, index) => {
+                        const source = job.webSources?.find(
+                          (item) => `[${item.id}]` === part,
+                        );
+                        return source ? (
+                          <a
+                            key={index}
+                            href={source.url}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            {source.title}
+                          </a>
+                        ) : (
+                          part
+                        );
+                      })}
+                  </p>
+                  {!!job.webSources?.length && (
+                    <details>
+                      <summary>
+                        University research · {job.webSources.length} sources
+                      </summary>
+                      <ul>
+                        {job.webSources.map((source) => (
+                          <li key={source.id}>
+                            <a
+                              href={source.url}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              {source.title}
+                            </a>
+                            <p>{source.text}</p>
+                          </li>
+                        ))}
+                      </ul>
+                    </details>
+                  )}
                   <ul>
                     {job.plan.outcomes.map((outcome) => (
                       <li key={outcome.id}>
@@ -658,6 +722,26 @@ export function CourseWorkshopPanel({
               {written && planned && (
                 <section aria-label="Workshop lesson editor">
                   <h3>{planned.title}</h3>
+                  {!!job.evidence[planned.id]?.some(
+                    (source) => "url" in source,
+                  ) && (
+                    <p>
+                      {(job.evidence[planned.id] || []).map((source) =>
+                        "url" in source &&
+                        written.sourceIds.includes(source.id) ? (
+                          <React.Fragment key={source.id}>
+                            <a
+                              href={source.url}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              {source.title}
+                            </a>{" "}
+                          </React.Fragment>
+                        ) : null,
+                      )}
+                    </p>
+                  )}
                   <details>
                     <summary>Protect instructor wording</summary>
                     <p>

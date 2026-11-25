@@ -4,6 +4,7 @@ import type { CompiledProject } from "../server/academy-compiler";
 import type { ProductAgentRun } from "../server/product-agents";
 import { ShareProposal } from "./agent-handoffs";
 import { AgentWorkPanel } from "./agent-work";
+import { webAcademySource, webSourceCredits } from "../academy-web-research";
 type API = <T>(route: string, body?: unknown) => Promise<T>;
 export function AgentPanel({
   domain,
@@ -29,6 +30,7 @@ export function AgentPanel({
   const [run, setRun] = useState<ProductAgentRun>();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [researchWeb, setResearchWeb] = useState(false);
   const current = useRef(entity?.id);
   current.current = entity?.id;
   useEffect(() => {
@@ -98,12 +100,25 @@ export function AgentPanel({
               <h3>
                 <Sparkles size={16} /> {name}
               </h3>
-              <span>One bounded model call</span>
+              <span>
+                {researchWeb ? "Search + one draft call" : "One draft call"}
+              </span>
             </div>
             <p>
               A source-aware proposal for this saved revision. You review the
               changes.
             </p>
+            {academyMode === "atlas" && (
+              <label className="product-checkbox">
+                <input
+                  type="checkbox"
+                  checked={researchWeb}
+                  disabled={busy}
+                  onChange={(event) => setResearchWeb(event.target.checked)}
+                />
+                Search university courses online
+              </label>
+            )}
             <button
               className="button"
               disabled={busy || !entity || dirty}
@@ -111,7 +126,9 @@ export function AgentPanel({
                 if (
                   !entity ||
                   !confirm(
-                    "Send this saved creator draft and selected lesson excerpts to your configured AI provider? This uses one bounded model call and may consume allowance or provider credits. No learner code is included.",
+                    researchWeb
+                      ? "Search public university courses using the course or lesson topic, then draft with the results? This uses a search and a draft call with your configured provider."
+                      : "Send this saved draft and selected lesson excerpts to your configured AI provider for one draft call?",
                   )
                 )
                   return;
@@ -126,6 +143,9 @@ export function AgentPanel({
                       entityId: target,
                       expectedRevision: entity.revision,
                       approveProvider: true,
+                      ...(academyMode === "atlas" && researchWeb
+                        ? { researchWeb: true }
+                        : {}),
                       ...(academyMode === "atlas" && lessonIndex !== undefined
                         ? { lessonIndex }
                         : {}),
@@ -154,12 +174,27 @@ export function AgentPanel({
                     <strong>{s.title}</strong>
                     <p>{s.detail}</p>
                     <small>
-                      {s.sourceIds
-                        .map(
-                          (id) =>
-                            run.sources.find((x) => x.id === id)?.title || id,
-                        )
-                        .join(" · ")}
+                      {s.sourceIds.map((id, index) => {
+                        const source = run.sources.find(
+                          (item) => item.id === id,
+                        );
+                        return (
+                          <React.Fragment key={id}>
+                            {index > 0 && " · "}
+                            {source?.url ? (
+                              <a
+                                href={source.url}
+                                target="_blank"
+                                rel="noreferrer"
+                              >
+                                {source.title}
+                              </a>
+                            ) : (
+                              source?.title || id
+                            )}
+                          </React.Fragment>
+                        );
+                      })}
                     </small>
                   </article>
                 ))}
@@ -183,7 +218,20 @@ export function AgentPanel({
                     <button
                       className="button"
                       disabled={dirty || entity?.revision !== run.revision}
-                      onClick={() => onApply(run.answer!.draftText)}
+                      onClick={() => {
+                        const cited = new Set(
+                          run.answer!.steps.flatMap((step) => step.sourceIds),
+                        );
+                        const webSources = run.sources.flatMap((source) => {
+                          const parsed = webAcademySource.safeParse(source);
+                          return parsed.success && cited.has(source.id)
+                            ? [parsed.data]
+                            : [];
+                        });
+                        onApply(
+                          run.answer!.draftText + webSourceCredits(webSources),
+                        );
+                      }}
                     >
                       Use draft text
                     </button>

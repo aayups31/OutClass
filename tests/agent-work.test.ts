@@ -148,14 +148,32 @@ function released() {
   return { c, release, creative, campaign };
 }
 it("delivers a reviewed assignment through Academy into real Learn, preserving starter files and idempotent application", async () => {
+  const source = {
+    id: "web:1111111111111111",
+    title: "Programming abstractions",
+    url: "https://web.stanford.edu/class/cs106b/",
+    text: "Use a trace to connect the collection operation to an invariant.",
+  };
   const c = course(),
-    model = vi.spyOn(app.ai, "structured").mockResolvedValue(lessonAnswer());
-  const input = request("academy", c.id),
+    answer = lessonAnswer();
+  answer.artifacts[0].sourceIds.push(source.id);
+  const search = vi
+    .spyOn(app.ai, "academyResearch")
+    .mockResolvedValue([source]);
+  const model = vi.spyOn(app.ai, "structured").mockResolvedValue(answer);
+  const input = {
+      ...request("academy", c.id),
+      researchWeb: true,
+      maxCalls: 2 as const,
+    },
     started = work.start(input);
   expect(work.start(input).id).toBe(started.id);
   const ready = await work.wait(started.id);
   expect(ready.phase).toBe("ready");
   expect(model).toHaveBeenCalledTimes(1);
+  expect(search).toHaveBeenCalledTimes(1);
+  expect(ready.calls).toBe(2);
+  expect(ready.sources).toContainEqual(source);
   expect(expansion.state().courses[0].revision).toBe(1);
   await expect(work.apply(ready.id, "0".repeat(64))).rejects.toThrow(/exact/);
   const delivered = await work.apply(ready.id, ready.reviewHash!);
@@ -176,6 +194,7 @@ it("delivers a reviewed assignment through Academy into real Learn, preserving s
   expect(release.lessons[0].learn!.acceptanceCriteria).toContain(
     "Empty input produces an empty result.",
   );
+  expect(release.lessons[0].content).toContain(source.url);
 });
 it("repairs invalid citations once, records the findings and obeys the approved call budget", async () => {
   const c = course(),

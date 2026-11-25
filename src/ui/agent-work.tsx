@@ -92,6 +92,7 @@ export function AgentWorkPanel({
     [lesson, setLesson] = useState(0),
     [asset, setAsset] = useState("");
   const [scaffold, setScaffold] = useState(forgeRequest?.kind);
+  const [researchWeb, setResearchWeb] = useState(false);
   useEffect(() => {
     if (forgeRequest) setScaffold(forgeRequest.kind);
   }, [forgeRequest]);
@@ -223,6 +224,7 @@ export function AgentWorkPanel({
         maxCalls,
         approveProvider: true,
         ...(domain === "academy" && scaffold ? { scaffold } : {}),
+        ...(domain === "academy" && researchWeb ? { researchWeb: true } : {}),
       });
       if (target.current === entityId) {
         if (
@@ -455,6 +457,20 @@ export function AgentWorkPanel({
               ))}
             </div>
           )}
+          {domain === "academy" && (
+            <label className="product-checkbox">
+              <input
+                type="checkbox"
+                checked={researchWeb}
+                disabled={busy || working(job?.phase)}
+                onChange={(event) => {
+                  setResearchWeb(event.target.checked);
+                  if (event.target.checked) setMaxCalls(2);
+                }}
+              />
+              Search university courses online
+            </label>
+          )}
           <div className="agent-work-actions">
             <button
               className="button primary"
@@ -492,7 +508,7 @@ export function AgentWorkPanel({
                 <select
                   aria-label="Agent call limit"
                   value={maxCalls}
-                  disabled={busy || working(job?.phase)}
+                  disabled={busy || working(job?.phase) || researchWeb}
                   onChange={(e) => setMaxCalls(Number(e.target.value) as 1 | 2)}
                 >
                   <option value={1}>1 · stop on validation failure</option>
@@ -575,7 +591,21 @@ export function AgentWorkPanel({
               <p className="agent-work-summary">{job.answer.summary}</p>
               <div className="agent-work-artifacts">
                 {job.answer.artifacts.map((a, i) => (
-                  <Artifact key={i} artifact={a} />
+                  <React.Fragment key={i}>
+                    <Artifact artifact={a} />
+                    {job.sources
+                      .filter(
+                        (source) =>
+                          !!source.url && a.sourceIds.includes(source.id),
+                      )
+                      .map((source) => (
+                        <p key={source.id}>
+                          <a href={source.url} target="_blank" rel="noreferrer">
+                            {source.title}
+                          </a>
+                        </p>
+                      ))}
+                  </React.Fragment>
                 ))}
               </div>
               {domain === "academy" && <AssignmentChanges job={job} />}
@@ -587,6 +617,11 @@ export function AgentWorkPanel({
                 {job.sources.map((s) => (
                   <details key={s.id}>
                     <summary>{s.title}</summary>
+                    {s.url && (
+                      <a href={s.url} target="_blank" rel="noreferrer">
+                        Open university source
+                      </a>
+                    )}
                     <pre>{s.text}</pre>
                   </details>
                 ))}
