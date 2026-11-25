@@ -1,4 +1,6 @@
 import OpenAI from "openai";
+import { searchAcademy } from "./academy-web-search.js";
+import { academyWebResults } from "../academy-web-research.js";
 import { z } from "zod";
 import { zodTextFormat } from "openai/helpers/zod";
 import type { Application } from "./application.js";
@@ -127,7 +129,7 @@ export class AIProvider {
             typeof body === "object" &&
             body &&
             "task" in body &&
-            String(body.task).startsWith("course_")
+            (String(body.task).startsWith("course_") || body.task === "academy_web_research")
             ? 190000
             : 35000,
         ),
@@ -310,6 +312,23 @@ export class AIProvider {
           : "Could not verify your personal AI connection. Check the key, model access and network in Settings.",
         503,
       );
+    }
+  }
+  async academyResearch(topic: string) {
+    assertClean(topic, "university search");
+    const config = this.config();
+    if (!this.ready() || config.mode === "local")
+      throw new UserError("Online research needs Included AI or an OpenAI key. Choose a provider or turn off online research.");
+    try {
+      if (config.mode === "included") {
+        const result = await this.request("answer", { task: "academy_web_research", context: topic, history: [] }, true);
+        return academyWebResults.parse(result.answer);
+      }
+      const client = new OpenAI({ apiKey: this.app.apiKey, maxRetries: 0 });
+      return await searchAcademy(client, process.env.OPENAI_ACADEMY_RESEARCH_MODEL || "gpt-5-mini", topic);
+    } catch (error) {
+      if (error instanceof UserError) throw error;
+      throw new UserError("University research could not complete with this AI provider. Retry or turn off online research.", 503);
     }
   }
   async structured<T extends z.ZodType>(options: {

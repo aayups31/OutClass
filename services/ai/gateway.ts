@@ -1,5 +1,6 @@
 import express from "express";
 import { signupResult } from "./signup-result.js";
+import { searchAcademy } from "../../src/server/academy-web-search.js";
 import { accountConfirmation, accountEmail, accountRegistration, accountSignIn, progressUpload } from "../../src/account-contract.js";
 import { z } from "zod";
 import { randomUUID } from "node:crypto";
@@ -619,6 +620,8 @@ export function productionDependencies(
       };
     },
     answer: async ({ task, context, history }) => {
+      if (task === "academy_web_research")
+        return await searchAcademy(client, process.env.OPENAI_ACADEMY_RESEARCH_MODEL || "gpt-5-mini", context);
       const schema = answerSchema(task, context);
       const response = await client.responses.parse(
         {

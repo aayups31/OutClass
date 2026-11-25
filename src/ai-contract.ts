@@ -1,3 +1,4 @@
+import { academyWebResults, academyWebInstructions } from "./academy-web-research.js";
 import { z } from "zod";
 import { lessonPractice, lessonPracticeInstructions } from "./lesson-practice-contract.js";
 import {
@@ -73,6 +74,7 @@ export const hostedRequest = z.object({
     "course_lesson",
     "course_critique",
     "lesson_practice",
+    "academy_web_research",
   ]),
   context: z.string().min(1).max(90000),
   history: z
@@ -95,6 +97,7 @@ export function answerSchema(
   task: z.infer<typeof hostedRequest>["task"],
   context?: string,
 ) {
+  if (task === "academy_web_research") return academyWebResults;
   if (task === "lesson_practice") return lessonPractice;
   if (task === "course_plan") return coursePlan;
   if (task === "course_lesson")
@@ -115,6 +118,7 @@ export function answerSchema(
 export function answerInstructions(
   task: z.infer<typeof hostedRequest>["task"],
 ) {
+  if (task === "academy_web_research") return academyWebInstructions;
   if (task === "lesson_practice") return lessonPracticeInstructions;
   if (task === "course_plan") return planningInstructions;
   if (task === "course_lesson")
