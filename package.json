@@ -1,6 +1,6 @@
 {
   "name": "git-for-learning",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "description": "A local learning workspace for Udemy, code, and sourced AI help.",
   "author": "Aayu Pratap Singh",
   "main": "dist/desktop/main.cjs",
